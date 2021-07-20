@@ -4208,9 +4208,7 @@ class GetHistory(Resource):
         try:
             conn = connect()
 
-            items = execute("""SELECT history.*, gr.photo,gr.gr_unique_id,gr.is_sublist_available,gr.start_day_and_time,gr.end_day_and_time
-                                FROM manifest.history,manifest.goals_routines gr where manifest.history.user_id= \'""" +user_id+ """\'
-                                AND gr.is_persistent = 'True' AND gr.is_available = 'True' AND gr.is_displayed_today = 'True'  ORDER BY history.id;""", 'get', conn)
+            items = execute("""SELECT * FROM history where user_id = \'""" +user_id+ """\';""", 'get', conn)
            
             response['message'] = 'successful'
             response['result'] = items['result']
@@ -5004,8 +5002,16 @@ class ChangeHistory(Resource):
                     if goals['result'][i]['is_displayed_today'].lower() == 'true':
                         if goals['result'][i]['is_persistent'].lower() == 'false':
                             user_history[i]['goal'] = goals['result'][i]['gr_unique_id']
+                            user_history[i]['photo'] = goals['result'][i]['photo']
+                            user_history[i]['is_sublist_available'] = goals['result'][i]['is_sublist_available']
+                            user_history[i]['start_day_and_time'] = goals['result'][i]['start_day_and_time']
+                            user_history[i]['end_day_and_time'] = goals['result'][i]['end_day_and_time']
                         else:
                             user_history[i]['routine'] = goals['result'][i]['gr_unique_id']
+                            user_history[i]['photo'] = goals['result'][i]['photo']
+                            user_history[i]['is_sublist_available'] = goals['result'][i]['is_sublist_available']
+                            user_history[i]['start_day_and_time'] = goals['result'][i]['start_day_and_time']
+                            user_history[i]['end_day_and_time'] = goals['result'][i]['end_day_and_time']
                         title  = goals['result'][i]['gr_title']
                         if "'" in title:
                             for v, char in enumerate(title):
