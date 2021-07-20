@@ -4208,7 +4208,10 @@ class GetHistory(Resource):
         try:
             conn = connect()
 
-            items = execute("""SELECT * FROM history where user_id = \'""" +user_id+ """\';""", 'get', conn)
+            items = execute("""SELECT history.*, gr.photo,gr.gr_unique_id,gr.is_sublist_available,gr.start_day_and_time,gr.end_day_and_time
+                                FROM manifest.history,manifest.goals_routines gr where manifest.history.user_id= \'""" +user_id+ """\'
+                                AND gr.is_persistent = 'True' AND gr.is_available = 'True' AND gr.is_displayed_today = 'True'
+                                GROUP BY history.id;""", 'get', conn)
            
             response['message'] = 'successful'
             response['result'] = items['result']
