@@ -1374,16 +1374,16 @@ class UpdateGR(Resource):
 
                 query = """UPDATE goals_routines
                                 SET gr_title = \'""" + gr_title + """\'
-                                    , is_available = \'""" + str(is_available).title() + """\'
+                                    ,is_available = \'""" + str(is_available).title() + """\'
                                     ,is_complete = \'""" + str(is_complete).title() + """\'
                                     ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
                                     ,is_displayed_today = \'""" + str(is_displayed_today).title() + """\'
                                     ,is_persistent = \'""" + str(is_persistent).title() + """\'
                                     ,is_timed = \'""" + str(is_timed).title() + """\'
-                                    ,start_day_and_time = \'""" + start_day_and_time + """\'
-                                    ,end_day_and_time = \'""" + end_day_and_time + """\'
-                                    ,datetime_started = \'""" + datetime_started + """\'
-                                    ,datetime_completed = \'""" + datetime_completed + """\'
+                                    ,gr_start_day_and_time = \'""" + start_day_and_time + """\'
+                                    ,gr_end_day_and_time = \'""" + end_day_and_time + """\'
+                                    ,gr_datetime_started = \'""" + datetime_started + """\'
+                                    ,gr_datetime_completed = \'""" + datetime_completed + """\'
                                     ,`repeat` = \'""" + str(repeat).title() + """\'
                                     ,repeat_type = \'""" + repeat_ends + """\'
                                     ,repeat_ends_on = \'""" + repeat_ends_on + """\'
@@ -1391,8 +1391,8 @@ class UpdateGR(Resource):
                                     ,repeat_week_days = \'""" + json.dumps(dict_week_days) + """\'
                                     ,repeat_frequency = \'""" + repeat_frequency + """\'
                                     ,repeat_occurences = \'""" + str(repeat_occurences) + """\'
-                                    ,expected_completion_time = \'""" + expected_completion_time + """\'
-                                    ,photo = \'""" + photo_url + """\'
+                                    ,gr_expected_completion_time = \'""" + expected_completion_time + """\'
+                                    ,gr_photo = \'""" + photo_url + """\'
                             WHERE gr_unique_id = \'""" +id+ """\';"""
                
             else:
@@ -1409,10 +1409,10 @@ class UpdateGR(Resource):
                                     ,is_displayed_today = \'""" + str(is_displayed_today).title() + """\'
                                     ,is_persistent = \'""" + str(is_persistent).title() + """\'
                                     ,is_timed = \'""" + str(is_timed).title() + """\'
-                                    ,start_day_and_time = \'""" + start_day_and_time + """\'
-                                    ,end_day_and_time = \'""" + end_day_and_time + """\'
-                                    ,datetime_started = \'""" + datetime_started + """\'
-                                    ,datetime_completed = \'""" + datetime_completed + """\'
+                                    ,gr_start_day_and_time = \'""" + start_day_and_time + """\'
+                                    ,gr_end_day_and_time = \'""" + end_day_and_time + """\'
+                                    ,gr_datetime_started = \'""" + datetime_started + """\'
+                                    ,gr_datetime_completed = \'""" + datetime_completed + """\'
                                     ,`repeat` = \'""" + str(repeat).title() + """\'
                                     ,repeat_type = \'""" + repeat_ends + """\'
                                     ,repeat_ends_on = \'""" + repeat_ends_on + """\'
@@ -1420,8 +1420,8 @@ class UpdateGR(Resource):
                                     ,repeat_every = \'""" + str(repeat_every) + """\'
                                     ,repeat_frequency = \'""" + repeat_frequency + """\'
                                     ,repeat_occurences = \'""" + str(repeat_occurences) + """\'
-                                    ,expected_completion_time = \'""" + expected_completion_time + """\'
-                                    ,photo = \'""" + gr_picture + """\'
+                                    ,gr_expected_completion_time = \'""" + expected_completion_time + """\'
+                                    ,gr_photo = \'""" + gr_picture + """\'
                             WHERE gr_unique_id = \'""" +id+ """\';"""
 
                 if icon_type == 'icon':
@@ -1839,7 +1839,8 @@ class UpdateIS(Resource):
         try:
             conn = connect()
 
-            is_id = request.form.get('unique_id')
+            audio = request.form.get('audio')
+            is_id = request.form.get('is_id')
             is_timed = request.form.get('is_timed')
             is_sequence = request.form.get('is_sequence')
             is_available = request.form.get('is_available')
@@ -1857,30 +1858,33 @@ class UpdateIS(Resource):
                     title = title[:i+1] + "'" + title[i+1:]
 
             if not photo:
-                items = execute("""UPDATE instructions_steps
-                                SET title =  \'""" + title + """\'
-                                , is_available = \'""" + str(is_available).title() + """\'
-                                , is_complete = \'""" + str(is_complete).title() + """\'
-                                , is_in_progress = \'""" + str(is_in_progress).title() + """\'
-                                , is_sequence = \'""" + str(is_sequence) + """\'
-                                , photo = \'""" + photo_url + """\'
-                                , is_timed = \'""" + str(is_timed).title() + """\'
-                                , expected_completion_time = \'""" + str(expected_completion_time) + """\'
-                                WHERE unique_id = \'""" + is_id + """\';""", 'post', conn)
+                query = """UPDATE instructions_steps
+                                SET is_title =  \'""" +title + """\'
+                                , is_sequence = \'""" +(is_sequence) + """\'
+                                , is_available = \'""" +str(is_available).title() + """\'
+                                , is_complete = \'""" +str(is_complete).title() + """\'
+                                , is_in_progress = \'""" +str(is_in_progress).title() + """\'
+                                , is_timed = \'""" +str(is_timed).title() + """\'
+                                , is_photo = \'""" +photo_url + """\'
+                               
+                                , is_expected_completion_time = \'""" + str(expected_completion_time) + """\'
+                                WHERE is_unique_id = \'""" +is_id + """\';"""
+                
 
             else:
                 is_picture = helper_upload_img(photo)
 
-                items = execute("""UPDATE instructions_steps
-                                SET title =  \'""" + title + """\'
-                                , is_available = \'""" + str(is_available).title() + """\'
-                                , is_complete = \'""" + str(is_complete).title() + """\'
-                                , is_in_progress = \'""" + str(is_in_progress).title() + """\'
-                                , is_sequence = \'""" + str(is_sequence) + """\'
-                                , photo = \'""" + is_picture + """\'
-                                , is_timed = \'""" + str(is_timed).title() + """\'
-                                , expected_completion_time = \'""" + str(expected_completion_time) + """\'
-                                WHERE unique_id = \'""" + is_id + """\';""", 'post', conn)
+                query = """UPDATE instructions_steps
+                                SET is_title =  \'""" +title + """\'
+                                , is_sequence = \'""" +(is_sequence) + """\'
+                                , is_available = \'""" +str(is_available).title() + """\'
+                                , is_complete = \'""" +str(is_complete).title() + """\'
+                                , is_in_progress = \'""" +str(is_in_progress).title() + """\'
+                                , is_timed = \'""" +str(is_timed).title() + """\'
+                                , is_photo = \'""" +is_picture + """\'
+                                , is_expected_completion_time = \'""" +str(expected_completion_time) + """\'
+                                WHERE is_unique_id = \'""" +is_id + """\';"""
+               
                 if icon_type == 'icon':
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
@@ -1905,9 +1909,12 @@ class UpdateIS(Resource):
                                 )VALUES(
                                     \'""" + NewID + """\'
                                     , \'""" + is_picture + """\'
-                                    , \'""" + user_id + """\');""", 'post', conn)
+                                    , \'""" + is_id + """\');""", 'post', conn)
+            
+            execute(query, 'post', conn)
             response['message'] = 'successful'
-
+            response['result'] = execute(query, 'post', conn)
+            
             return response, 200
         except:
             raise BadRequest('Request failed, please try again later.')
@@ -1955,13 +1962,13 @@ class UpdateAT(Resource):
                                 , is_in_progress = \'""" + str(is_in_progress).title() + """\'
                                 , is_sublist_available = \'""" + str(is_sublist_available).title() + """\'
                                 , is_must_do = \'""" + str(is_must_do).title() + """\'
-                                , photo = \'""" + photo_url + """\'
+                                , at_photo = \'""" + photo_url + """\'
                                 , is_timed = \'""" + str(is_timed).title() + """\'
-                                , datetime_completed =  \'""" + datetime_completed + """\'
-                                , datetime_started = \'""" + datetime_started + """\'
-                                , expected_completion_time = \'""" + expected_completion_time + """\'
-                                , available_start_time = \'""" + available_start_time + """\'
-                                , available_end_time = \'""" + available_end_time + """\'
+                                , at_datetime_completed =  \'""" + datetime_completed + """\'
+                                , at_datetime_started = \'""" + datetime_started + """\'
+                                , at_expected_completion_time = \'""" + expected_completion_time + """\'
+                                , at_available_start_time = \'""" + available_start_time + """\'
+                                , at_available_end_time = \'""" + available_end_time + """\'
                                 WHERE at_unique_id = \'""" +id+ """\';"""
 
             else:
@@ -1978,13 +1985,13 @@ class UpdateAT(Resource):
                                 , is_in_progress = \'""" + str(is_in_progress).title() + """\'
                                 , is_sublist_available = \'""" + str(is_sublist_available).title() + """\'
                                 , is_must_do = \'""" + str(is_must_do).title() + """\'
-                                , photo = \'""" + at_picture + """\'
+                                , at_photo = \'""" + at_picture + """\'
                                 , is_timed = \'""" + str(is_timed).title() + """\'
-                                , datetime_completed =  \'""" + datetime_completed + """\'
-                                , datetime_started = \'""" + datetime_started + """\'
-                                , expected_completion_time = \'""" + expected_completion_time + """\'
-                                , available_start_time = \'""" + available_start_time + """\'
-                                , available_end_time = \'""" + available_end_time + """\'
+                                , at_datetime_completed =  \'""" + datetime_completed + """\'
+                                , at_datetime_started = \'""" + datetime_started + """\'
+                                , at_expected_completion_time = \'""" + expected_completion_time + """\'
+                                , at_available_start_time = \'""" + available_start_time + """\'
+                                , at_available_end_time = \'""" + available_end_time + """\'
                                 WHERE at_unique_id = \'""" +id+ """\';"""
                     
                 if icon_type == 'icon':
@@ -2013,9 +2020,8 @@ class UpdateAT(Resource):
                                     , \'""" + at_picture + """\'
                                     , \'""" + user_id + """\');""", 'post', conn)
 
-            items = execute(query, 'post', conn)
+            execute(query, 'post', conn)
             response['message'] = 'successful'
-            response['result'] = "Update Successful"
 
             return response, 200
         except:
@@ -3772,7 +3778,7 @@ class UpdateISWatchMobile(Resource):
                         SET  
                             is_complete = \'""" + str(is_complete).title() + """\'
                             , is_in_progress =  \'""" + str(is_in_progress).title() + """\'
-                            WHERE unique_id = \'""" +id+ """\';"""
+                            WHERE is_unique_id = \'""" +id+ """\';"""
 
             execute(query, 'post', conn)
 
@@ -4963,6 +4969,70 @@ class Notifications(Resource):
         finally:
             disconnect(conn)
 
+class TodayGoalsRoutines(Resource):
+    def get(self, user_id):
+
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+            NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+            NewID = NewIDresponse['result'][0]['new_id']
+            print(NewID)
+            date_format='%m/%d/%Y %H:%M:%S'
+            current = datetime.now(tz=pytz.utc)
+            print(current)
+            """ current = current.astimezone(timezone('US/Pacific')) """
+           
+            date = current.strftime(date_format)
+            print(date)
+            current_time = current.strftime("%H:%M:%S")
+            current_time = datetime.strptime(current_time, "%H:%M:%S").time()
+            start = dt.time(0, 0, 0)
+            end = dt.time(0, 59, 59)
+            
+            if current_time>start and current_time > end:
+                date_affected = current.date()
+            else:
+                date_affected = current + timedelta(days=-1)
+                date_affected = date_affected.date()
+         # Get all goals and routines of the user
+            query = """
+            SELECT  user_id, 
+                gr_unique_id,
+                gr_title,
+                at_unique_id, 
+                at_title,
+                is_unique_id, 
+                is_title 
+            FROM manifest.goals_routines
+            JOIN manifest.actions_tasks ON gr_unique_id=goal_routine_id 
+            JOIN manifest.instructions_steps ON at_unique_id=at_id 
+            WHERE user_id= \'""" +user_id+ """\';
+                """
+            items = execute(query,'get', conn)
+            user_history =  [{} for sub in range(len(items['result']))]
+            if len(items['result']) >0:
+               for i in range(len(items['result'])):
+                user_history[i]['user_id'] = items['result'][i]['user_id']
+                user_history[i]['goal_id'] = items['result'][i]['gr_unique_id']
+                user_history[i]['goal_title'] = items['result'][i]['gr_title']
+                user_history[i]['action_id'] = items['result'][i]['at_unique_id']
+                user_history[i]['action_title'] = items['result'][i]['at_title']
+                user_history[i]['instruction_id'] = items['result'][i]['is_unique_id']
+                user_history[i]['instruction_title'] = items['result'][i]['is_title']     
+            
+            
+            response['message'] = 'successful'
+            response['result'] = str(json.dumps(user_history))
+
+            return response, 200
+        except:
+            raise BadRequest('Get Routines Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 class ChangeHistory(Resource):
     def post(self, user_id):
         
@@ -5002,6 +5072,7 @@ class ChangeHistory(Resource):
                     if goals['result'][i]['is_displayed_today'].lower() == 'true':
                         if goals['result'][i]['is_persistent'].lower() == 'false':
                             user_history[i]['goal'] = goals['result'][i]['gr_unique_id']
+                            user_history[i]['is_available'] = goals['result'][i]['is_available']
                             user_history[i]['photo'] = goals['result'][i]['photo']
                             user_history[i]['is_sublist_available'] = goals['result'][i]['is_sublist_available']
                             user_history[i]['start_day_and_time'] = goals['result'][i]['start_day_and_time']
@@ -5034,7 +5105,9 @@ class ChangeHistory(Resource):
 
                             for j in range(len(actions['result'])):
                                 action_history[j]['action'] = actions['result'][j]['at_unique_id']
-
+                                action_history[j]['photo'] = actions['result'][j]['photo']
+                                action_history[j]['is_sublist_available'] = actions['result'][j]['is_sublist_available']
+                                action_history[j]['is_available']=actions['result'][j]['is_available']
                                 title  = actions['result'][j]['at_title']
                                 if "'" in title:
                                     for v, char in enumerate(title):
@@ -5057,7 +5130,8 @@ class ChangeHistory(Resource):
                                     instruction_history = [{} for sub in range(len(instructions['result']))]
                                     for k in range(len(instructions['result'])):
                                         instruction_history[k]['instruction'] = instructions['result'][k]['unique_id']
-
+                                        instruction_history[k]['photo'] = instructions['result'][k]['photo']
+                                        instruction_history[k]['is_available'] = instructions['result'][k]['is_available']
                                         title  = instructions['result'][k]['title']
                                         if "'" in title:
                                             for v, char in enumerate(title):
@@ -6094,6 +6168,7 @@ class CopyGR(Resource):
 # Make sure port number is unused (i.e. don't use numbers 0-1023)
 
 # GET requests
+api.add_resource(TodayGoalsRoutines,'/api/v2/todaygoalsandroutines/<string:user_id>')
 api.add_resource(GoalsRoutines, '/api/v2/getgoalsandroutines/<string:user_id>') # working
 api.add_resource(RTS, '/api/v2/rts/<string:user_id>') # working
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>') # working
