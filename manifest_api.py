@@ -84,8 +84,14 @@ api = Api(app)
 
 # convert to UTC time zone when testing in local time zone
 utc = pytz.utc
+# These statment return Day and Time in GMT
 def getToday(): return datetime.strftime(datetime.now(utc), "%Y-%m-%d")
 def getNow(): return datetime.strftime(datetime.now(utc),"%Y-%m-%d %H:%M:%S")
+
+# These statment return Day and Time in Local Time - Not sure about PST vs PDT
+# def getToday(): return datetime.strftime(datetime.now(), "%Y-%m-%d")
+# def getNow(): return datetime.strftime(datetime.now(),"%Y-%m-%d %H:%M:%S")
+
 
 # Connect to MySQL database (API v2)
 def connect():
@@ -1371,6 +1377,7 @@ class UpdateGR(Resource):
                     dict_week_days["Saturday"] = "True"   
 
             if not photo:
+                print("if not photo")
 
                 query = """UPDATE goals_routines
                                 SET gr_title = \'""" + gr_title + """\'
@@ -1396,7 +1403,7 @@ class UpdateGR(Resource):
                             WHERE gr_unique_id = \'""" +id+ """\';"""
                
             else:
-                
+                print("photo file attached")
                 gr_picture = helper_upload_img(photo)
                
                 # Update G/R to database
@@ -1425,6 +1432,7 @@ class UpdateGR(Resource):
                             WHERE gr_unique_id = \'""" +id+ """\';"""
 
                 if icon_type == 'icon':
+                    print("icon type")
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
@@ -1454,7 +1462,8 @@ class UpdateGR(Resource):
                                     , \'""" + user_id + """\');""", 'post', conn)
             
             items = execute(query, 'post', conn)
-                
+
+            print("notifications sections")    
             # USER notfication
             query1 = """UPDATE notifications
                              SET   before_is_enable = \'""" + str(user_before_is_enabled).title() + """\'
@@ -1476,7 +1485,7 @@ class UpdateGR(Resource):
             print(noti_res)
 
             if len(noti_res['result']) == 0:
-               
+                print("notification")
                 execute("""UPDATE notifications
                              SET   
                                     before_time = \'""" + ta_before_time + """\'
@@ -1523,12 +1532,20 @@ class UpdateGR(Resource):
                                     , \'""" + ta_after_time + """\');""", 'post', conn)
             else:
             # TA notfication
+                print("notification else")
+                print(id, user_id, ta_id)
+                print(ta_before_time , ta_during_time, ta_after_time)
                 execute("""UPDATE notifications
                              SET   
                                     before_time = \'""" + ta_before_time + """\'
                                     , during_time = \'""" + ta_during_time + """\'
                                     , after_time  = \'""" + ta_after_time + """\'
                                 WHERE gr_at_id = \'""" +id+ """\' and user_ta_id  != \'""" +user_id+ """\';""", 'get', conn)
+                
+                print("after execute")
+                print(id, user_id, ta_id)
+                print(ta_before_time , ta_during_time, ta_after_time)
+
                 query2 = """UPDATE notifications
                                 SET   before_is_enable = \'""" + str(ta_before_is_enabled).title() + """\'
                                         , before_is_set  = \'""" + str(ta_before_is_set).title() + """\'
@@ -4213,6 +4230,29 @@ class GetHistory(Resource):
         response = {}
         try:
             conn = connect()
+            
+            current = datetime.now(tz=pytz.utc)
+            date_format='%Y-%m-%d'
+            date_affected = current.strftime(date_format)
+
+
+
+            currentGR = execute(""" SELECT * FROM manifest.history where user_id = \'""" +user_id+ """\' AND date_affected = \'""" +date_affected+ """\';""", 'get', conn)
+            print(currentGR)
+            
+            if len(currentGR['result']) == 0:
+                print("no info")
+                newCustomer = TodayGoalsRoutines.get(self, user_id)
+                print(newCustomer)
+            else:
+                print(currentGR['result'])
+                newCustomer = TodayGoalsRoutines.get(self, user_id)
+                print(newCustomer)
+
+
+
+
+
 
             items = execute("""SELECT * FROM history where user_id = \'""" +user_id+ """\';""", 'get', conn)
            
@@ -4970,6 +5010,9 @@ class Notifications(Resource):
             disconnect(conn)
 
 class TodayGoalsRoutines(Resource):
+    def __call__(self):
+        print("In Call")
+
     def get(self, user_id):
 
         response = {}
@@ -4980,12 +5023,13 @@ class TodayGoalsRoutines(Resource):
             NewIDresponse = execute("CALL get_history_id;",  'get', conn)
             NewID = NewIDresponse['result'][0]['new_id']
             print(NewID)
-            date_format='%m/%d/%Y %H:%M:%S'
+            datetime_format='%m/%d/%Y %H:%M:%S'
+            date_format='%Y-%m-%d'
             current = datetime.now(tz=pytz.utc)
             print(current)
             """ current = current.astimezone(timezone('US/Pacific')) """
            
-            date = current.strftime(date_format)
+            date = current.strftime(datetime_format)
             print(date)
             current_time = current.strftime("%H:%M:%S")
             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
@@ -5024,8 +5068,15 @@ class TodayGoalsRoutines(Resource):
                 user_history[i]['instruction_title'] = items['result'][i]['is_title']     
             
             
-            response['message'] = 'successful'
-            response['result'] = str(json.dumps(user_history))
+
+            response["id"] = NewID
+            response["user_id"] = user_id
+            response["date"] = date
+            response['details'] = str(json.dumps(user_history))
+            response["date_affected"] = current.strftime(date_format)
+
+
+            
 
             return response, 200
         except:
