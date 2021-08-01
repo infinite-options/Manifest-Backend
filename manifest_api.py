@@ -5052,7 +5052,9 @@ class ChangeHistory(Resource):
             current = current.astimezone(timezone('US/Pacific'))
             date = current.strftime(date_format)
             current_time = current.strftime("%H:%M:%S")
+            print(current_time)
             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
+            print(current_time)
             start = dt.time(0, 0, 0)
             end = dt.time(0, 59, 59)
             
@@ -5184,34 +5186,43 @@ class ChangeHistory(Resource):
                         WHERE gr_at_id = \'""" +goals['result'][i]['gr_unique_id']+"""\'""", 'post', conn)
             
             print("Before Print")
-            print("""INSERT INTO history                        
-                        (id
-                        , user_id
-                        , date
-                        , details
-                        , date_affected)
-                        VALUES
-                        (
-                         \'""" +NewID+ """\'
-                        ,\'""" +user_id+ """\'
-                        ,\'""" +date+ """\'
-                        ,\'""" +str(json.dumps(user_history))+ """\'
-                        ,\'""" +str(date_affected)+ """\');
-                        """)
-            print("Before Insert")
-            print("date: ", date)
 
-            query = """
-                INSERT INTO manifest.history
-                SET id = \'""" +NewID+ """\',
-                    user_id = \'""" +user_id+ """\',
-                    date = \'""" +str(date)+ """\',
-                    details = \'""" +str(json.dumps(user_history))+ """\',
-                    date_affected = \'""" +str(date_affected)+ """\';
-            """
+            # DETERMINE IF DATE ALREADY EXISTING THE HISTORY TABLE
+            print(user_id, date_affected)
+            currentGR = execute(""" SELECT * FROM manifest.history where user_id = \'""" +user_id+ """\' AND date_affected = \'""" +str(date_affected)+ """\';""", 'get', conn)
+            print(currentGR)
+            
+            if len(currentGR['result']) == 0:
+                print("no info")
 
-            items = execute(query, 'post', conn)
-            print(items)
+                query = """
+                    INSERT INTO manifest.history
+                    SET id = \'""" +NewID+ """\',
+                        user_id = \'""" +user_id+ """\',
+                        date = \'""" +str(date)+ """\',
+                        details = \'""" +str(json.dumps(user_history))+ """\',
+                        date_affected = \'""" +str(date_affected)+ """\';
+                """
+
+                items = execute(query, 'post', conn)
+                print(items)
+
+
+            else:
+                print(currentGR['result'])
+                print(currentGR['result'][0]['id'])
+                query = """
+                    UPDATE manifest.history
+                    SET id = \'""" +currentGR['result'][0]['id']+ """\',
+                        user_id = \'""" +user_id+ """\',
+                        date = \'""" +str(date)+ """\',
+                        details = \'""" +str(json.dumps(user_history))+ """\',
+                        date_affected = \'""" +str(date_affected)+ """\'
+                    WHERE id = \'""" +currentGR['result'][0]['id']+ """\';
+                """
+
+                items = execute(query, 'post', conn)
+                print(items)
 
 
             # execute("""INSERT INTO history                        
