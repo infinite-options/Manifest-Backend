@@ -5036,6 +5036,7 @@ class TodayGoalsRoutines(Resource):
 class ChangeHistory(Resource):
     def post(self, user_id):
         
+        print("in Change History")
         from datetime import datetime
         from pytz import timezone
         import pytz
@@ -5065,24 +5066,32 @@ class ChangeHistory(Resource):
             current_week_day = currentDate.strftime('%A').lower()
             goals = execute("""SELECT * FROM goals_routines WHERE user_id = \'""" +user_id+ """\';""", 'get', conn)
 
+
             user_history =  [{} for sub in range(len(goals['result']))]
+            print("user_history: ", user_history)
+
+            print("Before Routines")
 
             if len(goals['result']) > 0:
                 for i in range(len(goals['result'])):
+                    print("\nBefore If", i)
+                    print("user_history: ", user_history)
                     if goals['result'][i]['is_displayed_today'].lower() == 'true':
+                        print("\nGR Photo: ", goals['result'][i]['gr_photo'])
                         if goals['result'][i]['is_persistent'].lower() == 'false':
                             user_history[i]['goal'] = goals['result'][i]['gr_unique_id']
                             user_history[i]['is_available'] = goals['result'][i]['is_available']
-                            user_history[i]['photo'] = goals['result'][i]['photo']
+                            user_history[i]['photo'] = goals['result'][i]['gr_photo']
                             user_history[i]['is_sublist_available'] = goals['result'][i]['is_sublist_available']
-                            user_history[i]['start_day_and_time'] = goals['result'][i]['start_day_and_time']
-                            user_history[i]['end_day_and_time'] = goals['result'][i]['end_day_and_time']
+                            user_history[i]['start_day_and_time'] = goals['result'][i]['gr_start_day_and_time']
+                            user_history[i]['end_day_and_time'] = goals['result'][i]['gr_end_day_and_time']
                         else:
                             user_history[i]['routine'] = goals['result'][i]['gr_unique_id']
-                            user_history[i]['photo'] = goals['result'][i]['photo']
+                            user_history[i]['is_available'] = goals['result'][i]['is_available'] # Added this line 07/31/2021
+                            user_history[i]['photo'] = goals['result'][i]['gr_photo']
                             user_history[i]['is_sublist_available'] = goals['result'][i]['is_sublist_available']
-                            user_history[i]['start_day_and_time'] = goals['result'][i]['start_day_and_time']
-                            user_history[i]['end_day_and_time'] = goals['result'][i]['end_day_and_time']
+                            user_history[i]['start_day_and_time'] = goals['result'][i]['gr_start_day_and_time']
+                            user_history[i]['end_day_and_time'] = goals['result'][i]['gr_end_day_and_time']
                         title  = goals['result'][i]['gr_title']
                         if "'" in title:
                             for v, char in enumerate(title):
@@ -5097,18 +5106,32 @@ class ChangeHistory(Resource):
                         else:
                             user_history[i]['status'] = 'not started'
 
-                        actions = execute("""SELECT at_unique_id, at_title, is_complete, is_in_progress FROM actions_tasks 
+                        actions = execute("""SELECT * FROM actions_tasks 
                                             WHERE goal_routine_id = \'""" +goals['result'][i]['gr_unique_id']+ """\';""", 'get', conn)
 
+                        print("Before Actions")
                         if len(actions['result']) > 0:
                             action_history = [{} for sub in range(len(actions['result']))]
 
+                            # print(actions['result'])
+
+                            print("Before Action For Loop")
+
                             for j in range(len(actions['result'])):
+                                print(actions['result'][j]['at_unique_id'])
                                 action_history[j]['action'] = actions['result'][j]['at_unique_id']
-                                action_history[j]['photo'] = actions['result'][j]['photo']
+                                print(actions['result'][j]['at_photo'])
+                                action_history[j]['photo'] = actions['result'][j]['at_photo']
+                                print(actions['result'][j]['at_photo'])
                                 action_history[j]['is_sublist_available'] = actions['result'][j]['is_sublist_available']
+                                print(actions['result'][j]['is_sublist_available'])
                                 action_history[j]['is_available']=actions['result'][j]['is_available']
+                                print(actions['result'][j]['is_available'])
+                                action_history[j]['is_sublist_available'] = actions['result'][j]['is_sublist_available']
+                                print(actions['result'][j]['is_sublist_available'])
                                 title  = actions['result'][j]['at_title']
+                                print(actions['result'][j]['at_title'])
+
                                 if "'" in title:
                                     for v, char in enumerate(title):
                                         if char == "'":
@@ -5123,16 +5146,19 @@ class ChangeHistory(Resource):
                                 else:
                                     action_history[j]['status'] = 'not started'
 
+                                print("Before query")
+
                                 instructions = execute("""SELECT * FROM instructions_steps 
                                             WHERE at_id = \'""" +actions['result'][j]['at_unique_id']+ """\';""", 'get', conn)
 
+                                print("Before Steps")
                                 if len(instructions['result']) > 0:
                                     instruction_history = [{} for sub in range(len(instructions['result']))]
                                     for k in range(len(instructions['result'])):
-                                        instruction_history[k]['instruction'] = instructions['result'][k]['unique_id']
-                                        instruction_history[k]['photo'] = instructions['result'][k]['photo']
+                                        instruction_history[k]['instruction'] = instructions['result'][k]['is_unique_id']
+                                        instruction_history[k]['photo'] = instructions['result'][k]['is_photo']
                                         instruction_history[k]['is_available'] = instructions['result'][k]['is_available']
-                                        title  = instructions['result'][k]['title']
+                                        title  = instructions['result'][k]['is_title']
                                         if "'" in title:
                                             for v, char in enumerate(title):
                                                 if char == "'":
@@ -5149,12 +5175,15 @@ class ChangeHistory(Resource):
                             
                             user_history[i]['actions'] = action_history
 
+                    print("Before Update")
+                    
                     execute("""UPDATE notifications
                         SET before_is_set = \'""" +'False'+"""\'
                         , during_is_set = \'""" +'False'+"""\'
                         , after_is_set = \'""" +'False'+"""\' 
                         WHERE gr_at_id = \'""" +goals['result'][i]['gr_unique_id']+"""\'""", 'post', conn)
             
+            print("Before Print")
             print("""INSERT INTO history                        
                         (id
                         , user_id
@@ -5169,31 +5198,61 @@ class ChangeHistory(Resource):
                         ,\'""" +str(json.dumps(user_history))+ """\'
                         ,\'""" +str(date_affected)+ """\');
                         """)
-            execute("""INSERT INTO history                        
-                        (id
-                        , user_id
-                        , date
-                        , details
-                        , date_affected)
-                        VALUES
-                        (
-                         \'""" +NewID+ """\'
-                        ,\'""" +user_id+ """\'
-                        ,\'""" +date+ """\'
-                        ,\'""" +str(json.dumps(user_history))+ """\'
-                        ,\'""" +str(date_affected)+ """\');
-                        """, 'post', conn)
+            print("Before Insert")
+            print("date: ", date)
 
+            query = """
+                INSERT INTO manifest.history
+                SET id = \'""" +NewID+ """\',
+                    user_id = \'""" +user_id+ """\',
+                    date = \'""" +str(date)+ """\',
+                    details = \'""" +str(json.dumps(user_history))+ """\',
+                    date_affected = \'""" +str(date_affected)+ """\';
+            """
+
+            items = execute(query, 'post', conn)
+            print(items)
+
+
+            # execute("""INSERT INTO history                        
+            #             (id
+            #             , user_id
+            #             , date
+            #             , details
+            #             , date_affected)
+            #             VALUES
+            #             (
+            #              \'""" +NewID+ """\'
+            #             ,\'""" +user_id+ """\'
+            #             ,\'""" +date+ """\'
+            #             ,\'""" +str(json.dumps(user_history))+ """\'
+            #             ,\'""" +str(date_affected)+ """\');
+            #             """, 'post', conn)
+
+
+
+
+            print("Before For Loop")
             for goal in goals['result']:
+                print(0)
+                print(goal)
                 is_displayed_today = 'False'
-                datetime_str = goal['start_day_and_time']
+                print(0.1)
+                datetime_str = goal['gr_start_day_and_time']
+                print(0.2)
+                print(datetime_str)
                 datetime_str = datetime_str.replace(",", "")
+                print(0.3)
+                print(datetime_str)
                 start_date = datetime.strptime(datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                print(0.4)
                 repeat_week_days = json.loads(goal['repeat_week_days'])
+                print(0.5)
                 repeat_ends_on = (datetime.min).date()
                
                 week_days_unsorted = []
                 occurence_dates = []
+                print(1)
 
                 for key in repeat_week_days.keys():
                     if repeat_week_days[key].lower() == 'true':
@@ -5212,6 +5271,7 @@ class ChangeHistory(Resource):
                         if key.lower() == "sunday":
                             week_days_unsorted.append(7)
                 week_days = sorted(week_days_unsorted)
+                print(2)
 
                 if current_week_day == "monday":
                     current_week_day = 1
@@ -5227,6 +5287,7 @@ class ChangeHistory(Resource):
                     current_week_day = 6
                 if current_week_day == "sunday":
                     current_week_day = 7
+                print(3)
 
                 if goal['repeat'].lower() == 'false':
                     epoch = dt.datetime.utcfromtimestamp(0).date()
@@ -5253,6 +5314,7 @@ class ChangeHistory(Resource):
                     #                     , is_complete = \'""" +'False'+"""\'
                     #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
                 else:
+                    print(4)
                     if currentDate >= start_date:
 
                         if goal['repeat_type'].lower() == 'after':
