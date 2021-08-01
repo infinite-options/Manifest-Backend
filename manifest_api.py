@@ -4214,6 +4214,10 @@ class GetHistory(Resource):
         try:
             conn = connect()
 
+            print("before Function call")
+            TodayGoalsRoutines.post(self, user_id)
+            print("after Function call")
+
             items = execute("""SELECT * FROM history where user_id = \'""" +user_id+ """\';""", 'get', conn)
            
             response['message'] = 'successful'
@@ -4969,7 +4973,15 @@ class Notifications(Resource):
         finally:
             disconnect(conn)
 
-class TodayGoalsRoutines(Resource):
+
+
+
+
+
+
+
+
+class TodayGoalsRoutines_Anu(Resource):
     def get(self, user_id):
 
         response = {}
@@ -5033,7 +5045,11 @@ class TodayGoalsRoutines(Resource):
         finally:
             disconnect(conn)
 
-class ChangeHistory(Resource):
+
+class TodayGoalsRoutines(Resource):
+    def __call__(self):
+        print("In Call")
+
     def post(self, user_id):
         
         print("in Change History")
@@ -5192,6 +5208,7 @@ class ChangeHistory(Resource):
             currentGR = execute(""" SELECT * FROM manifest.history where user_id = \'""" +user_id+ """\' AND date_affected = \'""" +str(date_affected)+ """\';""", 'get', conn)
             print(currentGR)
             
+            # IF IT DOES NOT EXIST THEN INSERT INTO HISTORY TABLE
             if len(currentGR['result']) == 0:
                 print("no info")
 
@@ -5207,7 +5224,7 @@ class ChangeHistory(Resource):
                 items = execute(query, 'post', conn)
                 print(items)
 
-
+            # IF IT DOES EXIST THEN UPDATE HISTORY TABLE
             else:
                 print(currentGR['result'])
                 print(currentGR['result'][0]['id'])
@@ -5223,6 +5240,224 @@ class ChangeHistory(Resource):
 
                 items = execute(query, 'post', conn)
                 print(items)
+
+            response['message'] = 'successful'
+            
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+
+
+        
+
+class ChangeHistory(Resource):
+    def post(self, user_id):
+        
+        print("in Change History")
+        from datetime import datetime
+        from pytz import timezone
+        import pytz
+        
+        response = {}
+        try:
+            conn = connect()
+
+            
+
+            # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+            # NewID = NewIDresponse['result'][0]['new_id']
+            date_format='%m/%d/%Y %H:%M:%S'
+            current = datetime.now(tz=pytz.utc)
+            current = current.astimezone(timezone('US/Pacific'))
+            date = current.strftime(date_format)
+            current_time = current.strftime("%H:%M:%S")
+            print(current_time)
+            current_time = datetime.strptime(current_time, "%H:%M:%S").time()
+            print(current_time)
+            start = dt.time(0, 0, 0)
+            end = dt.time(0, 59, 59)
+            
+            if current_time>start and current_time > end:
+                date_affected = current.date()
+            else:
+                date_affected = current + timedelta(days=-1)
+                date_affected = date_affected.date()
+
+            currentDate = (dt.datetime.now().date())
+            current_week_day = currentDate.strftime('%A').lower()
+
+            # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
+            print("before Function call")
+            TodayGoalsRoutines.post(self, user_id)
+            print("after Function call")
+
+            goals = execute("""SELECT * FROM goals_routines WHERE user_id = \'""" +user_id+ """\';""", 'get', conn)
+
+
+            # user_history =  [{} for sub in range(len(goals['result']))]
+            # print("user_history: ", user_history)
+
+
+            
+
+
+
+
+            # print("Before Routines")
+
+            # if len(goals['result']) > 0:
+            #     for i in range(len(goals['result'])):
+            #         print("\nBefore If", i)
+            #         print("user_history: ", user_history)
+            #         if goals['result'][i]['is_displayed_today'].lower() == 'true':
+            #             print("\nGR Photo: ", goals['result'][i]['gr_photo'])
+            #             if goals['result'][i]['is_persistent'].lower() == 'false':
+            #                 user_history[i]['goal'] = goals['result'][i]['gr_unique_id']
+            #                 user_history[i]['is_available'] = goals['result'][i]['is_available']
+            #                 user_history[i]['photo'] = goals['result'][i]['gr_photo']
+            #                 user_history[i]['is_sublist_available'] = goals['result'][i]['is_sublist_available']
+            #                 user_history[i]['start_day_and_time'] = goals['result'][i]['gr_start_day_and_time']
+            #                 user_history[i]['end_day_and_time'] = goals['result'][i]['gr_end_day_and_time']
+            #             else:
+            #                 user_history[i]['routine'] = goals['result'][i]['gr_unique_id']
+            #                 user_history[i]['is_available'] = goals['result'][i]['is_available'] # Added this line 07/31/2021
+            #                 user_history[i]['photo'] = goals['result'][i]['gr_photo']
+            #                 user_history[i]['is_sublist_available'] = goals['result'][i]['is_sublist_available']
+            #                 user_history[i]['start_day_and_time'] = goals['result'][i]['gr_start_day_and_time']
+            #                 user_history[i]['end_day_and_time'] = goals['result'][i]['gr_end_day_and_time']
+            #             title  = goals['result'][i]['gr_title']
+            #             if "'" in title:
+            #                 for v, char in enumerate(title):
+            #                     if char == "'":
+            #                         title = title[:v+1] + "'" + title[v+1:]
+
+            #             user_history[i]['title'] = title
+            #             if goals['result'][i]['is_in_progress'].lower() == 'true':
+            #                 user_history[i]['status'] = 'in_progress'
+            #             elif goals['result'][i]['is_complete'].lower() == 'true':
+            #                 user_history[i]['status'] = 'completed'
+            #             else:
+            #                 user_history[i]['status'] = 'not started'
+
+            #             actions = execute("""SELECT * FROM actions_tasks 
+            #                                 WHERE goal_routine_id = \'""" +goals['result'][i]['gr_unique_id']+ """\';""", 'get', conn)
+
+            #             print("Before Actions")
+            #             if len(actions['result']) > 0:
+            #                 action_history = [{} for sub in range(len(actions['result']))]
+
+            #                 # print(actions['result'])
+
+            #                 print("Before Action For Loop")
+
+            #                 for j in range(len(actions['result'])):
+            #                     print(actions['result'][j]['at_unique_id'])
+            #                     action_history[j]['action'] = actions['result'][j]['at_unique_id']
+            #                     print(actions['result'][j]['at_photo'])
+            #                     action_history[j]['photo'] = actions['result'][j]['at_photo']
+            #                     print(actions['result'][j]['at_photo'])
+            #                     action_history[j]['is_sublist_available'] = actions['result'][j]['is_sublist_available']
+            #                     print(actions['result'][j]['is_sublist_available'])
+            #                     action_history[j]['is_available']=actions['result'][j]['is_available']
+            #                     print(actions['result'][j]['is_available'])
+            #                     action_history[j]['is_sublist_available'] = actions['result'][j]['is_sublist_available']
+            #                     print(actions['result'][j]['is_sublist_available'])
+            #                     title  = actions['result'][j]['at_title']
+            #                     print(actions['result'][j]['at_title'])
+
+            #                     if "'" in title:
+            #                         for v, char in enumerate(title):
+            #                             if char == "'":
+            #                                 title = title[:v+1] + "'" + title[v+1:]
+
+            #                     action_history[j]['title'] = title
+
+            #                     if actions['result'][j]['is_in_progress'].lower() == 'true':
+            #                         action_history[j]['status'] = 'in_progress'
+            #                     elif actions['result'][j]['is_complete'].lower() == 'true':
+            #                         action_history[j]['status'] = 'complete'
+            #                     else:
+            #                         action_history[j]['status'] = 'not started'
+
+            #                     print("Before query")
+
+            #                     instructions = execute("""SELECT * FROM instructions_steps 
+            #                                 WHERE at_id = \'""" +actions['result'][j]['at_unique_id']+ """\';""", 'get', conn)
+
+            #                     print("Before Steps")
+            #                     if len(instructions['result']) > 0:
+            #                         instruction_history = [{} for sub in range(len(instructions['result']))]
+            #                         for k in range(len(instructions['result'])):
+            #                             instruction_history[k]['instruction'] = instructions['result'][k]['is_unique_id']
+            #                             instruction_history[k]['photo'] = instructions['result'][k]['is_photo']
+            #                             instruction_history[k]['is_available'] = instructions['result'][k]['is_available']
+            #                             title  = instructions['result'][k]['is_title']
+            #                             if "'" in title:
+            #                                 for v, char in enumerate(title):
+            #                                     if char == "'":
+            #                                         title = title[:v+1] + "'" + title[v+1:]
+            #                             instruction_history[k]['title'] = title
+            #                             if instructions['result'][k]['is_in_progress'].lower() == 'true':
+            #                                 instruction_history[k]['status'] = 'in_progress'
+            #                             elif instructions['result'][k]['is_complete'].lower() == 'true':
+            #                                 instruction_history[k]['status'] = 'complete'
+            #                             else:
+            #                                 instruction_history[k]['status'] = 'not started'
+
+            #                         action_history[j]['instructions'] = instruction_history
+                            
+            #                 user_history[i]['actions'] = action_history
+
+            #         print("Before Update")
+                    
+            #         execute("""UPDATE notifications
+            #             SET before_is_set = \'""" +'False'+"""\'
+            #             , during_is_set = \'""" +'False'+"""\'
+            #             , after_is_set = \'""" +'False'+"""\' 
+            #             WHERE gr_at_id = \'""" +goals['result'][i]['gr_unique_id']+"""\'""", 'post', conn)
+            
+            # print("Before Print")
+
+            # # DETERMINE IF DATE ALREADY EXISTING THE HISTORY TABLE
+            # print(user_id, date_affected)
+            # currentGR = execute(""" SELECT * FROM manifest.history where user_id = \'""" +user_id+ """\' AND date_affected = \'""" +str(date_affected)+ """\';""", 'get', conn)
+            # print(currentGR)
+            
+            # if len(currentGR['result']) == 0:
+            #     print("no info")
+
+            #     query = """
+            #         INSERT INTO manifest.history
+            #         SET id = \'""" +NewID+ """\',
+            #             user_id = \'""" +user_id+ """\',
+            #             date = \'""" +str(date)+ """\',
+            #             details = \'""" +str(json.dumps(user_history))+ """\',
+            #             date_affected = \'""" +str(date_affected)+ """\';
+            #     """
+
+            #     items = execute(query, 'post', conn)
+            #     print(items)
+
+
+            # else:
+            #     print(currentGR['result'])
+            #     print(currentGR['result'][0]['id'])
+            #     query = """
+            #         UPDATE manifest.history
+            #         SET id = \'""" +currentGR['result'][0]['id']+ """\',
+            #             user_id = \'""" +user_id+ """\',
+            #             date = \'""" +str(date)+ """\',
+            #             details = \'""" +str(json.dumps(user_history))+ """\',
+            #             date_affected = \'""" +str(date_affected)+ """\'
+            #         WHERE id = \'""" +currentGR['result'][0]['id']+ """\';
+            #     """
+
+            #     items = execute(query, 'post', conn)
+            #     print(items)
 
 
             # execute("""INSERT INTO history                        
@@ -5578,7 +5813,7 @@ class ChangeHistory(Resource):
             
             return response, 200
         except:
-            raise BadRequest('Request failed, please try again later.')
+            raise BadRequest('Change History Request failed, please try again later.')
         finally:
             disconnect(conn)
 
