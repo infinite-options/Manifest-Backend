@@ -1071,19 +1071,19 @@ class AddNewGR(Resource):
                                 , is_persistent
                                 , is_sublist_available
                                 , is_timed
-                                , photo
+                                , gr_photo
                                 , `repeat`
                                 , repeat_type
                                 , repeat_ends_on
                                 , repeat_every
                                 , repeat_frequency
                                 , repeat_occurences
-                                , start_day_and_time
+                                , gr_start_day_and_time
                                 , repeat_week_days
-                                , datetime_completed
-                                , datetime_started
-                                , end_day_and_time
-                                , expected_completion_time)
+                                , gr_datetime_completed
+                                , gr_datetime_started
+                                , gr_end_day_and_time
+                                , gr_expected_completion_time)
                             VALUES 
                             ( \'""" + new_gr_id + """\'
                             , \'""" + gr_title + """\'
@@ -1126,19 +1126,19 @@ class AddNewGR(Resource):
                                 , is_persistent
                                 , is_sublist_available
                                 , is_timed
-                                , photo
+                                , gr_photo
                                 , `repeat`
                                 , repeat_type
                                 , repeat_ends_on
                                 , repeat_every
                                 , repeat_frequency
                                 , repeat_occurences
-                                , start_day_and_time
+                                , gr_start_day_and_time
                                 , repeat_week_days
-                                , datetime_completed
-                                , datetime_started
-                                , end_day_and_time
-                                , expected_completion_time)
+                                , gr_datetime_completed
+                                , gr_datetime_started
+                                , gr_end_day_and_time
+                                , gr_expected_completion_time)
                             VALUES 
                             ( \'""" + new_gr_id + """\'
                             , \'""" + gr_title + """\'
@@ -5052,7 +5052,7 @@ class TodayGoalsRoutines(Resource):
 
     def post(self, user_id):
         
-        print("in Change History")
+        print("in TodayGoalsRoutines")
         from datetime import datetime
         from pytz import timezone
         import pytz
@@ -5061,30 +5061,58 @@ class TodayGoalsRoutines(Resource):
         try:
             conn = connect()
 
+            # GETS NEW HISTORY TABLE UID
             NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+            print("NewIDresponse:", NewIDresponse)
             NewID = NewIDresponse['result'][0]['new_id']
+            print("new_id:", NewID)
+
+            # DEFINE DATE TIME FORMAT
             date_format='%m/%d/%Y %H:%M:%S'
+
+            # GET CURRENT DATETIME
             current = datetime.now(tz=pytz.utc)
+            print("Current Date Time in GMT: ", current)
             current = current.astimezone(timezone('US/Pacific'))
+            print("Current Date Time in PST: ", current)
+
             date = current.strftime(date_format)
+            print("Current Date Time in PST Formatted: ", date)
+
+            #  THESE TWO STATEMENTS ARE IDENTICAL
             current_time = current.strftime("%H:%M:%S")
-            print(current_time)
+            print("Current time: ", current_time)
             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
-            print(current_time)
+            print("Current time: ", current_time)
+
+            # DEFINITION OF FIRST HOUR IN A DAY
             start = dt.time(0, 0, 0)
+            print(start)
             end = dt.time(0, 59, 59)
-            
+            print(end)
+
+            print("Current time is: ", current_time)
+            # IF CURRENT TIME IS BEYOND THE FIRST HOUR OF THE DAY THEN STORE HISTORY WITH TODAYS DAY
             if current_time>start and current_time > end:
                 date_affected = current.date()
+                print(date_affected)
+
+            # IF CURRENT TIME IS WITHIN THE FIRST HOUR OF THE DAY THEN STORE HISTORY WITH YESTERDAYS DAY
             else:
                 date_affected = current + timedelta(days=-1)
+                print(date_affected)
                 date_affected = date_affected.date()
+                print(date_affected)
 
             currentDate = (dt.datetime.now().date())
+            print("Current Date: ", currentDate)
             current_week_day = currentDate.strftime('%A').lower()
+            print("Current Week Day (not used): ", current_week_day)
+
+            # GETS CURRENT GOALS AND ROUTINES
             goals = execute("""SELECT * FROM goals_routines WHERE user_id = \'""" +user_id+ """\';""", 'get', conn)
 
-
+            # CREATES INITIAL ARRAY FOR INCLUSION INTO HISTORY
             user_history =  [{} for sub in range(len(goals['result']))]
             print("user_history: ", user_history)
 
@@ -5226,8 +5254,9 @@ class TodayGoalsRoutines(Resource):
 
             # IF IT DOES EXIST THEN UPDATE HISTORY TABLE
             else:
+                print("info exists")
                 print(currentGR['result'])
-                print(currentGR['result'][0]['id'])
+                print("Existing id: ", currentGR['result'][0]['id'])
                 query = """
                     UPDATE manifest.history
                     SET id = \'""" +currentGR['result'][0]['id']+ """\',
