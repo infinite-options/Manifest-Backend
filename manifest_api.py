@@ -1786,17 +1786,18 @@ class AddNewIS(Resource):
             print(NewISID)
                 
             if not photo:
+                print("No Photo")
 
-                query.append("""INSERT INTO instructions_steps(unique_id
-                                , title
+                query.append("""INSERT INTO instructions_steps(is_unique_id
+                                , is_title
                                 , at_id
                                 , is_sequence
                                 , is_available
                                 , is_complete
                                 , is_in_progress
-                                , photo
+                                , is_photo
                                 , is_timed
-                                , expected_completion_time)
+                                , is_expected_completion_time)
                             VALUES 
                             ( \'""" + NewISID + """\'
                             , \'""" + title + """\'
@@ -1810,17 +1811,19 @@ class AddNewIS(Resource):
                             , \'""" + str(expected_completion_time) + """\');""")
             
             else:
+                print("photo")
                 is_picture = helper_upload_img(photo)
-                query.append("""INSERT INTO instructions_steps(unique_id
-                                , title
+                print(is_picture)
+                query.append("""INSERT INTO instructions_steps(is_unique_id
+                                , is_title
                                 , at_id
                                 , is_sequence
                                 , is_available
                                 , is_complete
                                 , is_in_progress
-                                , photo
+                                , is_photo
                                 , is_timed
-                                , expected_completion_time)
+                                , is_expected_completion_time)
                             VALUES 
                             ( \'""" + NewISID + """\'
                             , \'""" + title + """\'
@@ -1862,7 +1865,13 @@ class AddNewIS(Resource):
                                     , \'""" + 'Image Uploaded' + """\'
                                     , \'""" + user_id + """\');""", 'post', conn)
 
+            print(query[1])
             items = execute(query[1], 'post', conn)
+            print(items)
+            if items['code'] == 281:
+                response['Insert IS message'] = 'successful'
+            else:
+                response['Insert IS message'] = 'Did not post to IS Table'
 
             execute("""UPDATE actions_tasks
                                 SET 
