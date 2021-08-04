@@ -142,6 +142,7 @@ def serializeResponse(response):
 # OPTIONAL: Set skipSerialization to True to skip default JSON response serialization
 def execute(sql, cmd, conn, skipSerialization=False):
     response = {}
+    print("==> Execute Query: ", cmd)
     try:
         with conn.cursor() as cur:
             cur.execute(sql)
@@ -1057,6 +1058,7 @@ class AddNewGR(Resource):
             query = ["CALL get_gr_id;"]
             new_gr_id_response = execute(query[0],  'get', conn)
             new_gr_id = new_gr_id_response['result'][0]['new_id']
+            print(new_gr_id )
 
             # If picture is a link and not a file uploaded
             if not photo:
@@ -1577,6 +1579,7 @@ class AddNewAT(Resource):
             available_end_time = request.form.get('available_end_time')
             available_start_time = request.form.get('available_start_time')
             icon_type = request.form.get('type')
+            print("Form Input Complete")
 
             for i, char in enumerate(at_title):
                 if char == "'":
@@ -1585,9 +1588,11 @@ class AddNewAT(Resource):
             query = ["CALL get_at_id;"]
             NewATIDresponse = execute(query[0],  'get', conn)
             NewATID = NewATIDresponse['result'][0]['new_id']
+            print(NewATID)
             
             if not photo:
-                
+                print("No Photo")
+
                 query.append("""INSERT INTO actions_tasks(at_unique_id
                                 , at_title
                                 , goal_routine_id
@@ -1597,13 +1602,13 @@ class AddNewAT(Resource):
                                 , is_in_progress
                                 , is_sublist_available
                                 , is_must_do
-                                , photo
+                                , at_photo
                                 , is_timed
-                                , datetime_completed
-                                , datetime_started
-                                , expected_completion_time
-                                , available_start_time
-                                , available_end_time)
+                                , at_datetime_completed
+                                , at_datetime_started
+                                , at_expected_completion_time
+                                , at_available_start_time
+                                , at_available_end_time)
                             VALUES 
                             ( \'""" + NewATID + """\'
                             , \'""" + at_title + """\'
@@ -1621,9 +1626,43 @@ class AddNewAT(Resource):
                             , \'""" + expected_completion_time + """\'
                             , \'""" + available_start_time + """\'
                             , \'""" + available_end_time + """\' );""")
+                
+                # query.append("""INSERT INTO actions_tasks(at_unique_id
+                #                 , at_title
+                #                 , goal_routine_id
+                #                 , at_sequence
+                #                 , is_available
+                #                 , is_complete
+                #                 , is_in_progress
+                #                 , is_sublist_available
+                #                 , is_must_do
+                #                 , photo
+                #                 , is_timed
+                #                 , datetime_completed
+                #                 , datetime_started
+                #                 , expected_completion_time
+                #                 , available_start_time
+                #                 , available_end_time)
+                #             VALUES 
+                #             ( \'""" + NewATID + """\'
+                #             , \'""" + at_title + """\'
+                #             , \'""" + gr_id + """\'
+                #             , \'""" + '1' + """\'
+                #             , \'""" + str(is_available).title() + """\'
+                #             , \'""" + str(is_complete).title() + """\'
+                #             , \'""" + str(is_in_progress).title() + """\'
+                #             , \'""" + 'False'+ """\'
+                #             , \'""" + str(is_must_do).title() + """\'
+                #             , \'""" + photo_url + """\'
+                #             , \'""" + str(is_timed).title() + """\'
+                #             , \'""" + datetime_completed + """\'
+                #             , \'""" + datetime_started + """\'
+                #             , \'""" + expected_completion_time + """\'
+                #             , \'""" + available_start_time + """\'
+                #             , \'""" + available_end_time + """\' );""")
             
             else:
-                
+                print("photo")
                 at_picture = helper_upload_img(photo)
                 print(at_picture)
                 query.append("""INSERT INTO actions_tasks(at_unique_id
@@ -1635,18 +1674,18 @@ class AddNewAT(Resource):
                                 , is_in_progress
                                 , is_sublist_available
                                 , is_must_do
-                                , photo
+                                , at_photo
                                 , is_timed
-                                , datetime_completed
-                                , datetime_started
-                                , expected_completion_time
-                                , available_start_time
-                                , available_end_time)
+                                , at_datetime_completed
+                                , at_datetime_started
+                                , at_expected_completion_time
+                                , at_available_start_time
+                                , at_available_end_time)
                             VALUES 
                             ( \'""" + NewATID + """\'
                             , \'""" + at_title + """\'
                             , \'""" + gr_id + """\'
-                            , \'""" + '1' + """\'
+                            , \'""" + '2' + """\'
                             , \'""" + str(is_available).title() + """\'
                             , \'""" + str(is_complete).title() + """\'
                             , \'""" + str(is_in_progress).title() + """\'
@@ -1661,6 +1700,7 @@ class AddNewAT(Resource):
                             , \'""" + available_end_time + """\' );""")
 
                 if icon_type == 'icon':
+                    print("In icon")
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
@@ -1674,7 +1714,7 @@ class AddNewAT(Resource):
                                     , \'""" + at_picture + """\');""", 'post', conn)
                 
                 else:
-                     
+                    print("User Image")
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
@@ -1689,14 +1729,25 @@ class AddNewAT(Resource):
                                     , \'""" + 'Image Uploaded' + """\'
                                     , \'""" + user_id + """\');""", 'post', conn)
 
+            print("\nThis is query")
+            print(query)
+            print("\nThis is query[0]")
+            print(query[0])
+            print("\nThis is query[1]")
+            print(query[1])
             items = execute(query[1], 'post', conn)
+            print(items)
+            if items['code'] == 281:
+                response['Insert AT message'] = 'successful'
+            else:
+                response['Insert AT message'] = 'Did not post to AT Table'
 
             execute("""UPDATE goals_routines
                                 SET 
                                     is_sublist_available = \'""" + "True" + """\'   
                             WHERE gr_unique_id = \'""" +gr_id+ """\';""", 'post', conn)
 
-            response['message'] = 'successful'
+            response['Update GR message'] = 'successful'
             response['result'] = NewATID
 
             return response, 200
@@ -1732,6 +1783,7 @@ class AddNewIS(Resource):
             query = ["CALL get_is_id;"]
             NewISIDresponse = execute(query[0],  'get', conn)
             NewISID = NewISIDresponse['result'][0]['new_id']
+            print(NewISID)
                 
             if not photo:
 
