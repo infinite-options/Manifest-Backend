@@ -967,6 +967,7 @@ class ListAllPeople(Resource):
 # Add new Goal/Routine for a user
 class AddNewGR(Resource):
     def post(self):    
+        print("In AddNewGR") 
         response = {}
         items = {}
 
@@ -1555,7 +1556,8 @@ class UpdateGR(Resource):
 
 
 class AddNewAT(Resource):
-    def post(self):    
+    def post(self):
+        print("In AddNewAT") 
         response = {}
         items = {}
 
@@ -1739,6 +1741,7 @@ class AddNewAT(Resource):
             print(items)
             if items['code'] == 281:
                 response['Insert AT message'] = 'successful'
+                response['result'] = NewATID
             else:
                 response['Insert AT message'] = 'Did not post to AT Table'
 
@@ -1748,7 +1751,7 @@ class AddNewAT(Resource):
                             WHERE gr_unique_id = \'""" +gr_id+ """\';""", 'post', conn)
 
             response['Update GR message'] = 'successful'
-            response['result'] = NewATID
+            
 
             return response, 200
         except:
@@ -1757,12 +1760,17 @@ class AddNewAT(Resource):
             disconnect(conn)
 
 class AddNewIS(Resource):
-    def post(self):    
+    def post(self):
+        print("In AddNewIS")    
         response = {}
         items = {}
 
         try:
             conn = connect()
+
+            print("Photo File: ", request.files.get('photo'))
+            print("Test")
+            print("Photo URL: ", request.form.get('photo_url'))
 
             at_id = request.form.get('at_id')
             is_timed = request.form.get('is_timed')
@@ -1785,6 +1793,7 @@ class AddNewIS(Resource):
             NewISID = NewISIDresponse['result'][0]['new_id']
             print(NewISID)
                 
+            print(photo)
             if not photo:
                 print("No Photo")
 
@@ -1811,7 +1820,7 @@ class AddNewIS(Resource):
                             , \'""" + str(expected_completion_time) + """\');""")
             
             else:
-                print("photo")
+                print("Photo Exists")
                 is_picture = helper_upload_img(photo)
                 print(is_picture)
                 query.append("""INSERT INTO instructions_steps(is_unique_id
@@ -1836,9 +1845,13 @@ class AddNewIS(Resource):
                             , \'""" + str(is_timed).title() + """\'
                             , \'""" + str(expected_completion_time) + """\');""")
                 
+                print("After query")
                 if icon_type == 'icon':
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
+                    print("New Icon ID: ", NewID)
+
+                    description = "New Icon"
 
                     execute("""INSERT INTO icons(
                                 uid
@@ -1850,9 +1863,11 @@ class AddNewIS(Resource):
                                     , \'""" + is_picture + """\');""", 'post', conn)
                 
                 else:
-                     
+                    print("In else") 
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
+
+                    user_id = "100-000040"
 
                     execute("""INSERT INTO icons(
                                 uid
@@ -1863,13 +1878,15 @@ class AddNewIS(Resource):
                                     \'""" + NewID + """\'
                                     , \'""" + is_picture + """\'
                                     , \'""" + 'Image Uploaded' + """\'
-                                    , \'""" + user_id + """\');""", 'post', conn)
+                                    , \'""" + user_id + """\');
+                                    """, 'post', conn)
 
             print(query[1])
             items = execute(query[1], 'post', conn)
             print(items)
             if items['code'] == 281:
                 response['Insert IS message'] = 'successful'
+                response['message'] = 'successful'
             else:
                 response['Insert IS message'] = 'Did not post to IS Table'
 
@@ -1883,7 +1900,7 @@ class AddNewIS(Resource):
             res['at_id']  = at_id
             res['is_sublist_available'] = items['result'][0]['is_sublist_available']
             res['id'] = NewISID
-            response['message'] = 'successful'
+            
             response['result'] = res
 
             return response, 200
