@@ -2193,9 +2193,9 @@ class DeleteIS(Resource):
             data = request.get_json(force=True)
             res={}
             is_id = data['is_id']
-            at_id_response = execute("""Select at_id from instructions_steps WHERE unique_id = \'""" + is_id + """\';""", 'get', conn)
+            at_id_response = execute("""Select at_id from instructions_steps WHERE is_unique_id = \'""" + is_id + """\';""", 'get', conn)
             at_id = at_id_response['result'][0]['at_id']
-            query = ["""DELETE FROM instructions_steps WHERE unique_id = \'""" + is_id + """\';"""]
+            query = ["""DELETE FROM instructions_steps WHERE is_unique_id = \'""" + is_id + """\';"""]
             execute(query[0], 'post', conn)
             at_id_response_new = execute("""Select * from instructions_steps WHERE at_id = \'""" + at_id + """\';""", 'get', conn)
             
@@ -2237,7 +2237,7 @@ class TodayGR(Resource):
             query = ["""SELECT gr_title
                             , user_id
                             , gr_unique_id
-                            , start_day_and_time
+                            , gr_start_day_and_time
                             , repeat_frequency
                             , repeat_every
                             , `repeat`
@@ -3756,7 +3756,7 @@ class UpdateGRWatchMobile(Resource):
                             SET 
                                 is_complete = \'""" + str(is_complete).title() + """\'
                                 ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
-                                ,datetime_completed = \'""" + datetime_completed + """\'
+                                ,gr_datetime_completed = \'""" + datetime_completed + """\'
                         WHERE gr_unique_id = \'""" +id+ """\';"""
                 execute(query, 'post', conn)
 
@@ -3765,7 +3765,7 @@ class UpdateGRWatchMobile(Resource):
                             SET 
                                 is_complete = \'""" + str(is_complete).title() + """\'
                                 ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
-                                ,datetime_started = \'""" + datetime_started + """\'
+                                ,gr_datetime_started = \'""" + datetime_started + """\'
                         WHERE gr_unique_id = \'""" +id+ """\';"""
                 execute(query, 'post', conn)
 
@@ -3775,8 +3775,8 @@ class UpdateGRWatchMobile(Resource):
                                 SET 
                                     is_complete = \'""" + str(is_complete).title() + """\'
                                     ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
-                                    ,datetime_started = \'""" + datetime_started + """\'
-                                    ,datetime_completed = \'""" + datetime_completed + """\'
+                                    ,gr_datetime_started = \'""" + datetime_started + """\'
+                                    ,gr_datetime_completed = \'""" + datetime_completed + """\'
                             WHERE gr_unique_id = \'""" +id+ """\';"""
                 execute(query, 'post', conn)
 
@@ -3807,7 +3807,7 @@ class UpdateATWatchMobile(Resource):
                             SET  
                                 is_complete = \'""" + str(is_complete).title() + """\'
                                 , is_in_progress =  \'""" + str(is_in_progress).title() + """\'
-                                , datetime_completed =  \'""" + datetime_completed + """\'
+                                , at_datetime_completed =  \'""" + datetime_completed + """\'
                                 WHERE at_unique_id = \'""" +id+ """\';"""
                 execute(query, 'post', conn)
 
@@ -3816,7 +3816,7 @@ class UpdateATWatchMobile(Resource):
                             SET  
                                 is_complete = \'""" + str(is_complete).title() + """\'
                                 , is_in_progress =  \'""" + str(is_in_progress).title() + """\'
-                                , datetime_started = \'""" + datetime_started + """\'
+                                , at_datetime_started = \'""" + datetime_started + """\'
                                 WHERE at_unique_id = \'""" +id+ """\';"""
                 execute(query, 'post', conn)
 
@@ -3826,8 +3826,8 @@ class UpdateATWatchMobile(Resource):
                             SET  
                                 is_complete = \'""" + str(is_complete).title() + """\'
                                 , is_in_progress =  \'""" + str(is_in_progress).title() + """\'
-                                , datetime_completed =  \'""" + datetime_completed + """\'
-                                , datetime_started = \'""" + datetime_started + """\'
+                                , at_datetime_completed =  \'""" + datetime_completed + """\'
+                                , at_datetime_started = \'""" + datetime_started + """\'
                                 WHERE at_unique_id = \'""" +id+ """\';"""
                 execute(query, 'post', conn)
 
@@ -4297,6 +4297,26 @@ class GetHistory(Resource):
             print("after Function call")
 
             items = execute("""SELECT * FROM history where user_id = \'""" +user_id+ """\';""", 'get', conn)
+           
+            response['message'] = 'successful'
+            response['result'] = items['result']
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+class GetHistoryDate(Resource):
+    def get(self, user_id, date_affected):
+        response = {}
+        try:
+            conn = connect()
+
+            print("before Function call")
+            TodayGoalsRoutines.post(self, user_id)
+            print("after Function call")
+
+            items = execute("""SELECT * FROM history where user_id = \'""" +user_id+ """\' AND date_affected = \'"""+ date_affected +"""\' ;""", 'get', conn)
            
             response['message'] = 'successful'
             response['result'] = items['result']
@@ -6362,19 +6382,19 @@ class CopyGR(Resource):
                                 , is_persistent
                                 , is_sublist_available
                                 , is_timed
-                                , photo
+                                , gr_photo
                                 , `repeat`
                                 , repeat_type
                                 , repeat_ends_on
                                 , repeat_every
                                 , repeat_frequency
                                 , repeat_occurences
-                                , start_day_and_time
+                                , gr_start_day_and_time
                                 , repeat_week_days
-                                , datetime_completed
-                                , datetime_started
-                                , end_day_and_time
-                                , expected_completion_time)
+                                , gr_datetime_completed
+                                , gr_datetime_started
+                                , gr_end_day_and_time
+                                , gr_expected_completion_time)
                             VALUES 
                             ( \'""" + new_gr_id + """\'
                             , \'""" + goal_routine_response[0]['gr_title'] + """\'
@@ -6506,13 +6526,13 @@ class CopyGR(Resource):
                             , is_in_progress
                             , is_sublist_available
                             , is_must_do
-                            , photo
+                            , at_photo
                             , is_timed
-                            , datetime_completed
-                            , datetime_started
-                            , expected_completion_time
-                            , available_start_time
-                            , available_end_time)
+                            , at_datetime_completed
+                            , at_datetime_started
+                            , at_expected_completion_time
+                            , at_available_start_time
+                            , at_available_end_time)
                         VALUES 
                         ( \'""" + NewATID + """\'
                         , \'""" + action_response[j]['at_title'] + """\'
@@ -6543,16 +6563,16 @@ class CopyGR(Resource):
                             NewISIDresponse = execute(query[0],  'get', conn)
                             NewISID = NewISIDresponse['result'][0]['new_id']
 
-                            execute("""INSERT INTO instructions_steps(unique_id
-                                            , title
+                            execute("""INSERT INTO instructions_steps(is_unique_id
+                                            , is_title
                                             , at_id
                                             , is_sequence
                                             , is_available
                                             , is_complete
                                             , is_in_progress
-                                            , photo
+                                            , is_photo
                                             , is_timed
-                                            , expected_completion_time)
+                                            , is_expected_completion_time)
                                         VALUES 
                                         ( \'""" + NewISID + """\'
                                         , \'""" + instructions[k]['title'] + """\'
@@ -6615,6 +6635,7 @@ api.add_resource(GetIconsOther, '/api/v2/getIconsOther')
 api.add_resource(GetImages, '/api/v2/getImages/<string:user_id>')
 api.add_resource(GetPeopleImages, '/api/v2/getPeopleImages/<string:ta_id>')
 api.add_resource(GetHistory, '/api/v2/getHistory/<string:user_id>')
+api.add_resource(GetHistoryDate, '/api/v2/getHistoryDate/<string:user_id>,<string:date_affected>')
 api.add_resource(GoalHistory, '/api/v2/goalHistory/<string:user_id>')
 api.add_resource(ParticularGoalHistory, '/api/v2/particularGoalHistory/<string:user_id>')
 api.add_resource(RoutineHistory, '/api/v2/routineHistory/<string:user_id>')
