@@ -3029,6 +3029,7 @@ class CreateNewUser(Resource):
             email_id = data['email_id']
             first_name = data['first_name']
             last_name = data['last_name']
+            time_zone = data['time_zone']
             google_auth_token = data['google_auth_token']
             google_refresh_token = data['google_refresh_token']
 
@@ -3051,6 +3052,7 @@ class CreateNewUser(Resource):
                                 , user_last_name
                                 , google_auth_token
                                 , google_refresh_token
+                                , time_zone
                                 , user_have_pic
                                 , user_picture
                                 , user_social_media
@@ -3064,6 +3066,7 @@ class CreateNewUser(Resource):
                                 , \'""" + last_name + """\'
                                 , \'""" + google_auth_token + """\'
                                 , \'""" + google_refresh_token + """\'
+                                , \'""" + time_zone + """\'
                                 , \'""" + 'False' + """\'
                                 , \'""" + '' + """\'
                                 , \'""" + 'GOOGLE' + """\'
