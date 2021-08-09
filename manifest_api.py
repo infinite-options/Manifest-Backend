@@ -6329,16 +6329,16 @@ class CopyGR(Resource):
     def post(self):
         response = {}
         items = {}
-
+        print("In copy GR")
         try:
-
+            print("In try block")
             conn = connect()
             data = request.get_json(force=True)
 
             user_id = data['user_id']
             goal_routine_id = data['gr_id']
             ta_id = data['ta_id']
-
+        
             timezone_query = execute("""SELECT time_zone FROM users where user_unique_id = \'""" +user_id+ """\';""", 'get', conn)
             timezone = timezone_query['result'][0]['time_zone']
         
@@ -6347,15 +6347,16 @@ class CopyGR(Resource):
             notification = execute("""SELECT * FROM notifications WHERE gr_at_id = \'""" +goal_routine_id+ """\';""", 'get', conn)
 
             goal_routine_response = items['result']
-            
-            time =  goal_routine_response[0]['start_day_and_time'].split(',')
+            print(goal_routine_response)
+            time =  goal_routine_response[0]['gr_start_day_and_time'].split(',')
+            print(time)
             time[1] = time[1][1:]
-            time1 =  goal_routine_response[0]['end_day_and_time'].split(',')
+            time1 =  goal_routine_response[0]['gr_end_day_and_time'].split(',')
             time1[1] = time1[1][1:]
-            datetime_str = goal_routine_response[0]['start_day_and_time']
+            datetime_str = goal_routine_response[0]['gr_start_day_and_time']
             datetime_str = datetime_str.replace(",", "")
             datetime_object1 = datetime.strptime(datetime_str, '%m/%d/%Y %I:%M:%S %p')
-            datetime_str = goal_routine_response[0]['end_day_and_time']
+            datetime_str = goal_routine_response[0]['gr_end_day_and_time']
             datetime_str = datetime_str.replace(",", "")
             datetime_object2 = datetime.strptime(datetime_str, '%m/%d/%Y %I:%M:%S %p')
             diff = datetime_object2 - datetime_object1
@@ -6406,7 +6407,7 @@ class CopyGR(Resource):
                             , \'""" + goal_routine_response[0]['is_persistent'] + """\'
                             , \'""" + goal_routine_response[0]['is_sublist_available'] + """\'
                             , \'""" + 'False' + """\'
-                            , \'""" + goal_routine_response[0]['photo'] + """\'
+                            , \'""" + goal_routine_response[0]['gr_photo'] + """\'
                             , \'""" + goal_routine_response[0]['repeat'] + """\'
                             , \'""" + goal_routine_response[0]['repeat_type'] + """\'
                             , \'""" + goal_routine_response[0]['repeat_ends_on'] + """\'
@@ -6415,10 +6416,10 @@ class CopyGR(Resource):
                             , \'""" + str(goal_routine_response[0]['repeat_occurences']) + """\'
                             , \'""" + str(start_date_time) + """\'
                             , \'""" + goal_routine_response[0]['repeat_week_days'] + """\'
-                            , \'""" + goal_routine_response[0]['datetime_completed'] + """\'
-                            , \'""" + goal_routine_response[0]['datetime_started'] + """\'
+                            , \'""" + goal_routine_response[0]['gr_datetime_completed'] + """\'
+                            , \'""" + goal_routine_response[0]['gr_datetime_started'] + """\'
                             , \'""" + str(end_date_time) + """\'
-                            , \'""" + goal_routine_response[0]['expected_completion_time'] + """\');""", 'post', conn)
+                            , \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\');""", 'post', conn)
            
             # New Notification ID
             new_notification_id_response = execute("CALL get_notification_id;",  'get', conn)
@@ -6543,13 +6544,13 @@ class CopyGR(Resource):
                         , \'""" + 'False' + """\'
                         , \'""" + action_response[j]['is_sublist_available'] + """\'
                         , \'""" + action_response[j]['is_must_do'] + """\'
-                        , \'""" + action_response[j]['photo'] + """\'
+                        , \'""" + action_response[j]['at_photo'] + """\'
                         , \'""" + action_response[j]['is_timed'] + """\'
-                        , \'""" + action_response[j]['datetime_completed'] + """\'
-                        , \'""" + action_response[j]['datetime_started'] + """\'
-                        , \'""" + action_response[j]['expected_completion_time'] + """\'
-                        , \'""" + action_response[j]['available_start_time'] + """\'
-                        , \'""" + action_response[j]['available_end_time'] + """\' );""", 'post', conn)
+                        , \'""" + action_response[j]['at_datetime_completed'] + """\'
+                        , \'""" + action_response[j]['at_datetime_started'] + """\'
+                        , \'""" + action_response[j]['at_expected_completion_time'] + """\'
+                        , \'""" + action_response[j]['at_available_start_time'] + """\'
+                        , \'""" + action_response[j]['at_available_end_time'] + """\' );""", 'post', conn)
 
                     res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +action_response[j]['at_unique_id']+ """\';""", 'get', conn)
 
@@ -6575,15 +6576,15 @@ class CopyGR(Resource):
                                             , is_expected_completion_time)
                                         VALUES 
                                         ( \'""" + NewISID + """\'
-                                        , \'""" + instructions[k]['title'] + """\'
+                                        , \'""" + instructions[k]['is_title'] + """\'
                                         , \'""" + NewATID + """\'
                                         , \'""" + str(instructions[k]['is_sequence']) + """\'
                                         , \'""" + instructions[k]['is_available'] + """\'
                                         , \'""" + instructions[k]['is_complete'] + """\'
                                         , \'""" + instructions[k]['is_in_progress'] + """\'
-                                        , \'""" + instructions[k]['photo'] + """\'
+                                        , \'""" + instructions[k]['is_photo'] + """\'
                                         , \'""" + instructions[k]['is_timed'] + """\'
-                                        , \'""" + instructions[k]['expected_completion_time'] + """\');""", 'post', conn)
+                                        , \'""" + instructions[k]['is_expected_completion_time'] + """\');""", 'post', conn)
                             
 
             response['message'] = 'successful'
@@ -6655,17 +6656,17 @@ api.add_resource(GetVersionNumber, '/api/v2/getVersionNumber') # working
 
 # POST requests
 api.add_resource(AnotherTAAccess, '/api/v2/anotherTAAccess') #working
-api.add_resource(AddNewAT, '/api/v2/addAT')
-api.add_resource(AddNewIS, '/api/v2/addIS')
-api.add_resource(AddNewGR, '/api/v2/addGR')
-api.add_resource(UpdateGR, '/api/v2/updateGR')
-api.add_resource(UpdateAT, '/api/v2/updateAT')
-api.add_resource(UpdateIS, '/api/v2/updateIS')
+api.add_resource(AddNewAT, '/api/v2/addAT') #working
+api.add_resource(AddNewIS, '/api/v2/addIS') #working
+api.add_resource(AddNewGR, '/api/v2/addGR') #working
+api.add_resource(UpdateGR, '/api/v2/updateGR') #working
+api.add_resource(UpdateAT, '/api/v2/updateAT') #working
+api.add_resource(UpdateIS, '/api/v2/updateIS') #working
 
 api.add_resource(DeleteAT, '/api/v2/deleteAT')
 api.add_resource(DeleteIS, '/api/v2/deleteIS')
 
-api.add_resource(DeleteGR, '/api/v2/deleteGR')
+api.add_resource(DeleteGR, '/api/v2/deleteGR') #working
 api.add_resource(CreateNewPeople, '/api/v2/addPeople') #working
 api.add_resource(DeletePeople, '/api/v2/deletePeople')
 api.add_resource(UpdateTime, '/api/v2/updateTime/<user_id>')
@@ -6695,7 +6696,7 @@ api.add_resource(UpdateHappy, '/api/v2/updateHappy')
 api.add_resource(UpdateImportant, '/api/v2/updateImportant')
 api.add_resource(DeleteUser, '/api/v2/deleteUser')
 api.add_resource(UpdateVersionNumber, '/api/v2/updateVersionNumber')
-api.add_resource(CopyGR, '/api/v2/copyGR')
+api.add_resource(CopyGR, '/api/v2/copyGR') #working
 
 # api.add_resource(ChangeSublist, '/api/v2/changeSub/<string:user_id>')
 
