@@ -6710,35 +6710,54 @@ class CopyGR(Resource):
             print(goal_routine_response)
             time = goal_routine_response[0]['gr_start_day_and_time'].split(',')
             print(time)
-            time[1] = time[1][1:]
+            # time[1] = time[1][1:]
+            # print(time[1])
+
             time1 = goal_routine_response[0]['gr_end_day_and_time'].split(',')
-            time1[1] = time1[1][1:]
+            print(time1)
+            # time1[1] = time1[1][1:]
+            # print(time1[1])
+
             datetime_str = goal_routine_response[0]['gr_start_day_and_time']
+            print(datetime_str)
             datetime_str = datetime_str.replace(",", "")
+            print(datetime_str)
             datetime_object1 = datetime.strptime(
-                datetime_str, '%m/%d/%Y %I:%M:%S %p')
+                datetime_str, '%Y-%m-%d %I:%M:%S %p')
+            print(datetime_object1)
+
             datetime_str = goal_routine_response[0]['gr_end_day_and_time']
+            print(datetime_str)
             datetime_str = datetime_str.replace(",", "")
+            print(datetime_str)
             datetime_object2 = datetime.strptime(
-                datetime_str, '%m/%d/%Y %I:%M:%S %p')
+                datetime_str, '%Y-%m-%d %I:%M:%S %p')
+            print(datetime_object2)
+
             diff = datetime_object2 - datetime_object1
-
+            print(diff)
             now_timestamp = datetime.now(pytz.timezone(timezone))
-
+            print(now_timestamp)
             start_day_and_time = now_timestamp
+            print(start_day_and_time)
             # while running locally on windows use '#' instead of '-' in the format string
             start_date_time = str(start_day_and_time.strftime(
-                "%-m/%-d/%Y")) + ", " + str(time[1])
+                "%Y-%m-%d")) + " " + str(start_day_and_time.strftime(
+                    "%I:%M:%S %p"))
+            print(start_date_time)
             end_day_and_time = start_day_and_time + diff
+            print(end_day_and_time)
             # while running locally on windows use '#' instead of '-' in the format string
             end_date_time = str(end_day_and_time.strftime(
-                "%-m/%-d/%Y")) + ", " + str(time1[1])
-
+                "%Y/%-m/%-d")) + " " + str(start_day_and_time.strftime(
+                    "%I:%M:%S %p"))
+            print(end_date_time)
             # New Goal/Routine ID
             query = ["CALL get_gr_id;"]
             new_gr_id_response = execute(query[0],  'get', conn)
             new_gr_id = new_gr_id_response['result'][0]['new_id']
-
+            print(new_gr_id)
+            print("Before insert")
             execute("""INSERT INTO goals_routines(gr_unique_id
                                 , gr_title
                                 , user_id
@@ -6786,18 +6805,27 @@ class CopyGR(Resource):
                             , \'""" + goal_routine_response[0]['gr_datetime_started'] + """\'
                             , \'""" + str(end_date_time) + """\'
                             , \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\');""", 'post', conn)
+            print("After insert")
 
             # New Notification ID
             new_notification_id_response = execute(
                 "CALL get_notification_id;",  'get', conn)
             new_notfication_id = new_notification_id_response['result'][0]['new_id']
+            print(new_notfication_id)
 
             notifications = notification['result']
+            print(notifications[0]['user_ta_id'])
+            print(notifications)
+
             person_id = ""
-            if notifications[0]['user_ta_id'][0] == '1':
+            if notifications[0]['user_ta_id'] == '1':
                 person_id = user_id
+                print("User id", person_id)
             else:
                 person_id = ta_id
+                print("TA id", person_id)
+
+            print("Before notifications insert")
 
             execute("""Insert into notifications
                                 (notification_id
