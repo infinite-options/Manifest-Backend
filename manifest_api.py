@@ -3178,17 +3178,28 @@ class TASocialLogin(Resource):
 
 class CreateNewUser(Resource):
     def post(self):
+        print("In create new user")
         response = {}
         items = {}
         timestamp = getNow()
         try:
             conn = connect()
             data = request.get_json(force=True)
-
+            print("In try")
             email_id = data['email_id']
+            print(email_id)
+            first_name = data['first_name']
+            print(first_name)
+            last_name = data['last_name']
+            print(last_name)
+            time_zone = data['time_zone']
+            print(time_zone)
             ta_people_id = data['ta_people_id']
+            print(ta_people_id)
             google_auth_token = data['google_auth_token']
+            print(google_auth_token)
             google_refresh_token = data['google_refresh_token']
+            print(google_refresh_token)
 
             user_id_response = execute("""SELECT user_unique_id FROM users
                                             WHERE user_email_id = \'""" + email_id + """\';""", 'get', conn)
@@ -3204,8 +3215,11 @@ class CreateNewUser(Resource):
                                 user_unique_id
                                 , user_timestamp
                                 , user_email_id
+                                , user_first_name
+                                , user_last_name
                                 , google_auth_token
                                 , google_refresh_token
+                                , time_zone
                                 , user_have_pic
                                 , user_picture
                                 , user_social_media
@@ -3215,8 +3229,11 @@ class CreateNewUser(Resource):
                                 \'""" + new_user_id + """\'
                                 , \'""" + timestamp + """\'
                                 , \'""" + email_id + """\'
+                                , \'""" + first_name + """\'
+                                , \'""" + last_name + """\'
                                 , \'""" + google_auth_token + """\'
                                 , \'""" + google_refresh_token + """\'
+                                , \'""" + time_zone + """\'
                                 , \'""" + 'False' + """\'
                                 , \'""" + '' + """\'
                                 , \'""" + 'GOOGLE' + """\'
