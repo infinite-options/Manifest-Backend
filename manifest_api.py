@@ -6864,11 +6864,13 @@ class CopyGR(Resource):
             new_notification_id_response = execute(
                 "CALL get_notification_id;",  'get', conn)
             new_notfication_id = new_notification_id_response['result'][0]['new_id']
-
-            if notifications[1]['user_ta_id'][0] == '1':
+            print(new_notfication_id)
+            if notifications[1]['user_ta_id'] == '1':
                 person_id = user_id
+                print("User id", person_id)
             else:
                 person_id = ta_id
+                print("TA id", person_id)
 
             execute("""Insert into notifications
                                 (notification_id
@@ -6913,7 +6915,8 @@ class CopyGR(Resource):
                     query = ["CALL get_at_id;"]
                     NewATIDresponse = execute(query[0],  'get', conn)
                     NewATID = NewATIDresponse['result'][0]['new_id']
-
+                    print(NewATID)
+                    print("Before action insert")
                     execute("""INSERT INTO actions_tasks(at_unique_id
                             , at_title
                             , goal_routine_id
@@ -6948,19 +6951,21 @@ class CopyGR(Resource):
                         , \'""" + action_response[j]['at_available_start_time'] + """\'
                         , \'""" + action_response[j]['at_available_end_time'] + """\' );""", 'post', conn)
 
+                    print("After action insert")
                     res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
                                       action_response[j]['at_unique_id'] + """\';""", 'get', conn)
-
+                    print(res_ins)
                     if len(res_ins['result']) > 0:
-
+                        print("in instruction insert")
                         instructions = res_ins['result']
-
+                        print(instructions)
                         for k in range(len(instructions)):
 
                             query = ["CALL get_is_id;"]
                             NewISIDresponse = execute(query[0],  'get', conn)
                             NewISID = NewISIDresponse['result'][0]['new_id']
-
+                            print(NewISID)
+                            print("Before instruction insert")
                             execute("""INSERT INTO instructions_steps(is_unique_id
                                             , is_title
                                             , at_id
