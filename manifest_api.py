@@ -864,7 +864,7 @@ class ListAllTAForCopy(Resource):
                                 , ta_email_id
                         FROM ta_people
                         JOIN relationship on ta_unique_id = ta_people_id
-                        and advisor = '1';"""
+                        and advisor = '1' ORDER BY ta_first_name ASC;"""
 
             idTAResponse = execute(query, 'get', conn)
 
@@ -881,7 +881,8 @@ class ListAllTAForCopy(Resource):
                         ON user_unique_id = user_uid
                         JOIN ta_people
                         ON ta_people_id = ta_unique_id
-                        WHERE advisor = '1' and ta_email_id = \'""" + idTAResponse['result'][i]['ta_email_id'] + """\';"""
+                        WHERE advisor = '1' and ta_email_id = \'""" + idTAResponse['result'][i]['ta_email_id'] + """\'
+                        ORDER BY user_first_name ASC;"""
 
                 userResponse = execute(query1, 'get', conn)
                 idTAResponse['result'][i]['users'] = userResponse['result']
@@ -907,7 +908,7 @@ class ListAllUsersForCopy(Resource):
             userResponse = execute(""" SELECT DISTINCT user_unique_id
                                 , CONCAT(user_first_name, SPACE(1), user_last_name) as name
                                 , user_email_id
-                        FROM users;""", 'get', conn)
+                        FROM users ORDER BY user_first_name ASC;""", 'get', conn)
 
             for i in range(len(userResponse['result'])):
                 taResponse = execute(""" SELECT DISTINCT ta_unique_id
@@ -918,7 +919,8 @@ class ListAllUsersForCopy(Resource):
                         FROM ta_people
                         JOIN relationship on ta_unique_id = ta_people_id
                         WHERE user_uid = \'""" + userResponse['result'][i]['user_unique_id'] + """\'
-                        and advisor = '1';""", 'get', conn)
+                        and advisor = '1'
+                        ORDER BY ta_first_name ASC;""", 'get', conn)
 
                 userResponse['result'][i]['TA'] = taResponse['result']
             response['message'] = 'successful'
