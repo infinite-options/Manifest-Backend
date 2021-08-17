@@ -3344,9 +3344,10 @@ class UpdateAboutMe(Resource):
     def post(self):
         response = {}
         items = {}
-
+        print("In about me")
         try:
             conn = connect()
+            print("In try")
 
             timestamp = getNow()
 
@@ -3371,18 +3372,19 @@ class UpdateAboutMe(Resource):
             message_card = request.form.get('message_card')
             message_day = request.form.get('message_day')
             picture = request.files.get('picture')
-            people = request.form.get('people')
-            time_settings = request.form.get("timeSettings")
+            # people = request.form.get('people')
+            # time_settings = request.form.get("timeSettings")
             photo_url = request.form.get("photo_url")
-            time_settings = json.loads(time_settings)
-            afternoon_time = time_settings["afternoon"]
-            day_end = time_settings["dayEnd"]
-            day_start = time_settings["dayStart"]
-            evening_time = time_settings["evening"]
-            morning_time = time_settings["morning"]
-            night_time = time_settings["night"]
-            time_zone = time_settings["timeZone"]
-            print(time_settings)
+            # time_settings = json.loads(time_settings)
+            afternoon_time = request.form.get('afternoon')
+            day_end = request.form.get('dayEnd')
+            day_start = request.form.get('dayStart')
+            evening_time = request.form.get('evening')
+            morning_time = request.form.get('morning')
+            night_time = request.form.get('night')
+            time_zone = request.form.get('timeZone')
+            print(user_id)
+            # print(time_settings)
 
             # birth_date = birth_date[0:len(birth_date)-1]
             if not picture:
