@@ -3555,15 +3555,17 @@ class UpdatePeople(Resource):
 
             user_id = request.form.get('user_id')
             ta_id = request.form.get('ta_id')
-            people_id = request.form.get('ta_people_id')
-            people_name = request.form.get('name')
-            people_relationship = request.form.get('relationship')
-            people_phone_number = request.form.get('phone_number')
-            people_important = request.form.get('important')
-            people_have_pic = request.form.get('have_pic')
-            people_pic = request.files.get('pic')
+            ta_people_id = request.form.get('ta_people_id')
+            people_name = request.form.get('people_name')
+            people_relationship = request.form.get('people_relationship')
+            people_phone_number = request.form.get('people_phone_number')
+            people_important = request.form.get('people_important')
+            people_have_pic = request.form.get('people_have_pic')
+            people_pic = request.files.get('people_pic')
             photo_url = request.form.get("photo_url")
-
+            print(user_id)
+            print(ta_people_id)
+            print(people_name)
             list = people_name.split(" ", 1)
             first_name = list[0]
             if len(list) == 1:
@@ -3577,10 +3579,10 @@ class UpdatePeople(Resource):
                             , ta_timestamp = \'""" + timestamp + """\'
                             , ta_last_name = \'""" + last_name + """\'
                             , ta_phone_number =  \'""" + people_phone_number + """\'
-                        WHERE ta_unique_id = \'""" + people_id + """\' ;""", 'post', conn)
+                        WHERE ta_unique_id = \'""" + ta_people_id + """\' ;""", 'post', conn)
 
             relationResponse = execute("""SELECT id FROM relationship 
-                            WHERE ta_people_id = \'""" + people_id + """\' 
+                            WHERE ta_people_id = \'""" + ta_people_id + """\' 
                             and user_uid = \'""" + user_id + """\';""", 'get', conn)
 
             people_picture_url = ""
@@ -3596,7 +3598,7 @@ class UpdatePeople(Resource):
                                         , ta_have_pic =  \'""" + str(people_have_pic).title() + """\'
                                         , ta_picture = \'""" + photo_url + """\'
                                         , important = \'""" + str(people_important).title() + """\'
-                                    WHERE ta_people_id = \'""" + people_id + """\' 
+                                    WHERE ta_people_id = \'""" + ta_people_id + """\' 
                                     and user_uid = \'""" + user_id + """\' ;""", 'post', conn)
 
                 if len(relationResponse['result']) == 0:
@@ -3616,7 +3618,7 @@ class UpdatePeople(Resource):
                                         , advisor)
                                         VALUES 
                                         ( \'""" + NewRelationID + """\'
-                                        , \'""" + people_id + """\'
+                                        , \'""" + ta_people_id + """\'
                                         , \'""" + user_id + """\'
                                         , \'""" + timestamp + """\'
                                         , \'""" + people_relationship + """\'
@@ -3637,7 +3639,7 @@ class UpdatePeople(Resource):
                                         , ta_have_pic =  \'""" + str(people_have_pic).title() + """\'
                                         , ta_picture = \'""" + people_picture_url + """\'
                                         , important = \'""" + str(people_important).title() + """\'
-                                    WHERE ta_people_id = \'""" + people_id + """\' 
+                                    WHERE ta_people_id = \'""" + ta_people_id + """\' 
                                     and user_uid = \'""" + user_id + """\' ;""", 'post', conn)
 
                 if len(relationResponse['result']) == 0:
@@ -3657,7 +3659,7 @@ class UpdatePeople(Resource):
                                         , advisor)
                                         VALUES 
                                         ( \'""" + NewRelationID + """\'
-                                        , \'""" + people_id + """\'
+                                        , \'""" + ta_people_id + """\'
                                         , \'""" + user_id + """\'
                                         , \'""" + timestamp + """\'
                                         , \'""" + people_relationship + """\'
