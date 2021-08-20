@@ -2647,10 +2647,11 @@ class CreateNewPeople(Resource):
             #phone_number = request.form.get('phone_number')
             picture = request.files.get('picture')
             important = request.form.get('important')
-
+            photo_url = request.form.get("photo_url")
             first_name_list = []
 
             if not picture:
+
                 have_pic = 'FALSE'
             else:
                 have_pic = 'TRUE'
@@ -2690,7 +2691,7 @@ class CreateNewPeople(Resource):
                     if picture:
                         people_picture_url = helper_upload_img(picture)
                     else:
-                        people_picture_url = ''
+                        people_picture_url = photo_url
 
                     execute("""UPDATE relationship
                                 SET r_timestamp = \'""" + str(ts) + """\'
@@ -2706,7 +2707,7 @@ class CreateNewPeople(Resource):
                         people_picture_url = helper_upload_img(
                             picture, str(user_id) + '-' + str(NewRelationID))
                     else:
-                        people_picture_url = ''
+                        people_picture_url = photo_url
 
                     execute("""INSERT INTO relationship(
                         id
@@ -2738,7 +2739,7 @@ class CreateNewPeople(Resource):
                 if picture:
                     people_picture_url = helper_upload_img(picture)
                 else:
-                    people_picture_url = ''
+                    people_picture_url = photo_url
 
                 execute("""INSERT INTO ta_people(
                                         ta_unique_id
