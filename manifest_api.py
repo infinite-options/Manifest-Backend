@@ -2343,7 +2343,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             new_date = datetime_object
                             while(new_date <= cur_date):
                                 if(new_date == cur_date):
@@ -2358,7 +2358,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             start_week = datetime_object.isocalendar()[1]
                             new_week = start_week
                             new_date = datetime_object
@@ -2378,7 +2378,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             start_month = datetime_object.month
                             new_month = start_month
                             new_date = datetime_object
@@ -2398,7 +2398,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             start_year = datetime_object.year
                             new_year = start_year
                             new_date = datetime_object
@@ -2421,7 +2421,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             new_date = datetime_object
                             occurence = 1
                             while new_date <= cur_date and occurence <= int(grResponse['result'][i]['repeat_occurences']):
@@ -2457,7 +2457,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             start_month = datetime_object.month
                             new_month = start_week
                             new_date = datetime_object
@@ -2480,7 +2480,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             start_year = datetime_object.year
                             new_year = start_year
                             new_date = datetime_object
@@ -2503,7 +2503,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             end_datetime = grResponse['result'][i]['repeat_ends_on']
                             end_datetime = end_datetime.replace(
                                 " GMT-0700 (Pacific Daylight Time)", "")
@@ -2525,7 +2525,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             end_datetime = grResponse['result'][i]['repeat_ends_on']
                             end_datetime = end_datetime.replace(
                                 " GMT-0700 (Pacific Daylight Time)", "")
@@ -2554,7 +2554,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             end_datetime = grResponse['result'][i]['repeat_ends_on']
                             end_datetime = end_datetime.replace(
                                 " GMT-0700 (Pacific Daylight Time)", "")
@@ -2581,7 +2581,7 @@ class TodayGR(Resource):
                             datetime_str = grResponse['result'][i]['start_day_and_time']
                             datetime_str = datetime_str.replace(",", "")
                             datetime_object = datetime.strptime(
-                                datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                             end_datetime = grResponse['result'][i]['repeat_ends_on']
                             end_datetime = end_datetime.replace(
                                 " GMT-0700 (Pacific Daylight Time)", "")
@@ -2606,7 +2606,7 @@ class TodayGR(Resource):
                     print(grResponse['result'][i])
                     datetime_str = datetime_str.replace(",", "")
                     datetime_object = datetime.strptime(
-                        datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                        datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                     print(datetime_object)
                     if(datetime_object == cur_date):
                         listGR.append(grResponse['result'][i]['gr_unique_id'])
@@ -5924,9 +5924,9 @@ class ChangeHistory(Resource):
                 print(datetime_str)
                 datetime_str = datetime_str.replace(",", "")
                 print(0.3)
-                print(datetime_str)
-                start_date = datetime.strptime(
-                    datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                print(datetime_str,type(datetime_str))
+                
+                start_date = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                 print(0.4)
                 repeat_week_days = json.loads(goal['repeat_week_days'])
                 print(0.5)
@@ -5998,10 +5998,16 @@ class ChangeHistory(Resource):
                     #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
                 else:
                     print(4)
+                    print(currentDate)
+                    print(start_date)
                     if currentDate >= start_date:
-
+                        print("In if")
+                        print("In if repeat type", goal['repeat_type'])
+                        print("In if repeat frequency", goal['repeat_frequency'])
                         if goal['repeat_type'].lower() == 'after':
+                            print("In if after")
                             if goal['repeat_frequency'].lower() == 'day':
+                                print("In if if if")
                                 print("day")
                                 repeat_occurences = goal['repeat_occurences'] - 1
                                 repeat_every = goal['repeat_every']
@@ -6012,6 +6018,7 @@ class ChangeHistory(Resource):
                                 print(repeat_ends_on)
 
                             elif goal['repeat_frequency'].lower() == 'week':
+                                print("in if if elif")
                                 numberOfWeek = 0
 
                                 init_date = start_date
@@ -6080,6 +6087,7 @@ class ChangeHistory(Resource):
                                 #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
 
                             elif goal['repeat_frequency'].lower() == 'month':
+                                print("in if elif month")
                                 print("month")
                                 repeat_occurences = goal['repeat_occurences'] - 1
                                 repeat_every = goal['repeat_every']
@@ -6100,15 +6108,20 @@ class ChangeHistory(Resource):
                                 print(repeat_ends_on)
 
                         elif goal['repeat_type'].lower() == 'never':
+                            print("In if never ")
                             print("never")
                             repeat_ends_on = currentDate
                             print(goal['gr_title'], repeat_ends_on)
 
                         elif goal['repeat_type'].lower() == 'on':
+                            print("In if on ")
+                            print("in goal repeat ends on", goal['repeat_ends_on'])
                             repeat_ends = goal['repeat_ends_on']
+                            print(repeat_ends)
                             repeat_ends_on = repeat_ends[:24]
-                            repeat_ends_on = datetime.strptime(
-                                repeat_ends_on, "%a %b %d %Y %H:%M:%S").date()
+                            print(repeat_ends_on)
+                            #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+                            repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
 
                     if currentDate <= repeat_ends_on:
                         repeat_every = int(goal['repeat_every'])
@@ -6294,7 +6307,7 @@ class Calender(Resource):
                 datetime_str = goal['start_day_and_time']
                 datetime_str = datetime_str.replace(",", "")
                 start_date = datetime.strptime(
-                    datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+                    datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
                 repeat_week_days = json.loads(goal['repeat_week_days'])
                 repeat_ends_on = (datetime.min).date()
 
@@ -6426,7 +6439,7 @@ class Calender(Resource):
                             repeat_ends = goal['repeat_ends_on']
                             repeat_ends_on = repeat_ends[:24]
                             repeat_ends_on = datetime.strptime(
-                                repeat_ends_on, "%a %b %d %Y %H:%M:%S").date()
+                                repeat_ends_on, "%Y-%m-%d").date()
 
                     if currentDate <= repeat_ends_on:
                         repeat_every = int(goal['repeat_every'])
