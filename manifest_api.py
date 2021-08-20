@@ -2635,20 +2635,20 @@ class CreateNewPeople(Resource):
     def post(self):
         response = {}
         items = {}
-
+        print("In create new People")
         try:
             conn = connect()
             ts = getNow()
-
+            print("In try")
             user_id = request.form.get('user_id')
-            email_id = request.form.get('email_id')
+            #email_id = request.form.get('email_id')
             name = request.form.get('name')
             relation_type = request.form.get('relationship')
-            phone_number = request.form.get('phone_number')
+            #phone_number = request.form.get('phone_number')
             picture = request.files.get('picture')
-            important = 'False'
+            important = request.form.get('important')
 
-            email_list = []
+            first_name_list = []
 
             if not picture:
                 have_pic = 'FALSE'
@@ -2662,22 +2662,25 @@ class CreateNewPeople(Resource):
             else:
                 last_name = list[1]
 
+            print(first_name)
             query = ["Call get_relation_id;"]
             NewRelationIDresponse = execute(query[0], 'get', conn)
             NewRelationID = NewRelationIDresponse['result'][0]['new_id']
+            print("relation Id", NewRelationID)
 
-            query.append("""SELECT ta_email_id FROM ta_people;""")
+            query.append("""SELECT ta_first_name FROM ta_people;""")
             peopleResponse = execute(query[1], 'get', conn)
-            email_list = []
+            first_name_list = []
 
             for i in range(len(peopleResponse['result'])):
-                email_id_existing = peopleResponse['result'][i]['ta_email_id']
-                email_list.append(email_id_existing)
+                first_name_id_existing = peopleResponse['result'][i]['ta_first_name']
+                first_name_list.append(first_name_id_existing)
+            print(first_name_list)
 
-            if email_id in email_list:
-
+            if first_name in first_name_list:
+                print('if')
                 typeResponse = execute(
-                    """SELECT ta_unique_id from ta_people WHERE ta_email_id = \'""" + email_id + """\';""", 'get', conn)
+                    """SELECT ta_unique_id from ta_people WHERE ta_first_name = \'""" + first_name + """\';""", 'get', conn)
 
                 relationResponse = execute("""SELECT id from relationship 
                                             WHERE ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\'
@@ -2727,6 +2730,7 @@ class CreateNewPeople(Resource):
                             , \'""" + str(0) + """\')""", 'post', conn)
 
             else:
+                print('else')
                 NewPeopleIDresponse = execute(
                     "CALL get_ta_people_id;", 'get', conn)
                 NewPeopleID = NewPeopleIDresponse['result'][0]['new_id']
@@ -2748,12 +2752,12 @@ class CreateNewPeople(Resource):
                                         VALUES ( 
                                             \'""" + NewPeopleID + """\'
                                             , \'""" + ts + """\'
-                                            , \'""" + email_id + """\'
+                                            , \'""" + '' + """\'
                                             , \'""" + first_name + """\'
                                             , \'""" + last_name + """\'
                                             , \'""" + '' + """\'
                                             , \'""" + '' + """\'
-                                            , \'""" + phone_number + """\')""", 'post', conn)
+                                            , \'""" + '' + """\')""", 'post', conn)
 
                 execute("""INSERT INTO relationship(
                                         id
