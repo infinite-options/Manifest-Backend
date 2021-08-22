@@ -1003,6 +1003,7 @@ class ListAllPeople(Resource):
                             , ta_email_id as email
                             , ta_have_pic as have_pic
                             , important as important
+                            , emploer as employer
                             , CONCAT(ta_first_name, SPACE(1), ta_last_name) as name
                             , ta_phone_number as phone_number
                             , ta_picture as pic
