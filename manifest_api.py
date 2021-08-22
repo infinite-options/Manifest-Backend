@@ -3562,6 +3562,8 @@ class UpdatePeople(Resource):
             ta_id = request.form.get('ta_id')
             ta_people_id = request.form.get('ta_people_id')
             people_name = request.form.get('people_name')
+            people_email = request.form.get('people_email')
+            people_employer = request.form.get('people_employer')
             people_relationship = request.form.get('people_relationship')
             people_phone_number = request.form.get('people_phone_number')
             people_important = request.form.get('people_important')
@@ -3584,6 +3586,8 @@ class UpdatePeople(Resource):
                             , ta_timestamp = \'""" + timestamp + """\'
                             , ta_last_name = \'""" + last_name + """\'
                             , ta_phone_number =  \'""" + people_phone_number + """\'
+                            , ta_email_id = \'""" + people_email + """\'
+                            , employer = \'""" + people_employer + """\'
                         WHERE ta_unique_id = \'""" + ta_people_id + """\' ;""", 'post', conn)
 
             relationResponse = execute("""SELECT id FROM relationship 
