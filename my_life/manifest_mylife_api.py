@@ -55,7 +55,7 @@ from env_file import RDS_PW, S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
 RDS_HOST = 'io-mysqldb8.cxjnrciilyjq.us-west-1.rds.amazonaws.com'
 RDS_PORT = 3306
 RDS_USER = 'admin'
-RDS_DB = 'manifest'
+RDS_DB = 'manifest_mylife'
 s3 = boto3.client('s3')
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
@@ -3580,12 +3580,14 @@ class UpdatePeople(Resource):
                 last_name = ''
             else:
                 last_name = list[1]
-
+            print(first_name)
+            print(people_relationship)
             if(people_relationship == 'Advisor'):
                 advisor = 1;
             else:
                 advisor =0;
-            
+            print(advisor)
+
             execute("""UPDATE  ta_people
                         SET 
                             ta_first_name = \'""" + first_name + """\'
@@ -3603,7 +3605,50 @@ class UpdatePeople(Resource):
             people_picture_url = ""
 
             if not people_pic:
+                print("if not")
+                if len(relationResponse['result']) > 0:
+                    print("if not if")
+                    items = execute("""UPDATE  relationship
+                                    SET 
+                                        r_timestamp = \'""" + timestamp + """\'
+                                        , relation_type = \'""" + people_relationship + """\'
+                                        , ta_have_pic =  \'""" + str(people_have_pic).title() + """\'
+                                        , ta_picture = \'""" + photo_url + """\'
+                                        , important = \'""" + str(people_important).title() + """\'
+                                        , advisor = \'""" + str(advisor).title() + """\'
+                                    WHERE ta_people_id = \'""" + ta_people_id + """\' 
+                                    and user_uid = \'""" + user_id + """\' ;""", 'post', conn)
 
+                if len(relationResponse['result']) == 0:
+                    print("if not if if")
+                    NewRelationIDresponse = execute(
+                        "Call get_relation_id;", 'get', conn)
+                    NewRelationID = NewRelationIDresponse['result'][0]['new_id']
+
+                    execute("""INSERT INTO relationship
+                                        (id
+                                        , ta_people_id
+                                        , user_uid
+                                        , r_timestamp
+                                        , relation_type
+                                        , ta_have_pic
+                                        , ta_picture
+                                        , important
+                                        , advisor)
+                                        VALUES 
+                                        ( \'""" + NewRelationID + """\'
+                                        , \'""" + ta_people_id + """\'
+                                        , \'""" + user_id + """\'
+                                        , \'""" + timestamp + """\'
+                                        , \'""" + people_relationship + """\'
+                                        , \'""" + str(people_have_pic).title() + """\'
+                                        , \'""" + photo_url + """\'
+                                        , \'""" + str(people_important).title() + """\'
+                                        , \'""" + str(advisor).title() + """\');""", 'post', conn)
+
+            else:
+                people_picture_url = helper_upload_img(people_pic)
+                print("Else")
                 if len(relationResponse['result']) > 0:
 
                     items = execute("""UPDATE  relationship
@@ -3611,7 +3656,7 @@ class UpdatePeople(Resource):
                                         r_timestamp = \'""" + timestamp + """\'
                                         , relation_type = \'""" + people_relationship + """\'
                                         , ta_have_pic =  \'""" + str(people_have_pic).title() + """\'
-                                        , ta_picture = \'""" + photo_url + """\'
+                                        , ta_picture = \'""" + people_picture_url + """\'
                                         , important = \'""" + str(people_important).title() + """\'
                                         , advisor = \'""" + advisor + """\'
                                     WHERE ta_people_id = \'""" + ta_people_id + """\' 
@@ -3639,50 +3684,9 @@ class UpdatePeople(Resource):
                                         , \'""" + timestamp + """\'
                                         , \'""" + people_relationship + """\'
                                         , \'""" + str(people_have_pic).title() + """\'
-                                        , \'""" + photo_url + """\'
-                                        , \'""" + str(people_important).title() + """\'
-                                        , \'""" + str(0) + """\');""", 'post', conn)
-
-            else:
-                people_picture_url = helper_upload_img(people_pic)
-
-                if len(relationResponse['result']) > 0:
-
-                    items = execute("""UPDATE  relationship
-                                    SET 
-                                        r_timestamp = \'""" + timestamp + """\'
-                                        , relation_type = \'""" + people_relationship + """\'
-                                        , ta_have_pic =  \'""" + str(people_have_pic).title() + """\'
-                                        , ta_picture = \'""" + people_picture_url + """\'
-                                        , important = \'""" + str(people_important).title() + """\'
-                                    WHERE ta_people_id = \'""" + ta_people_id + """\' 
-                                    and user_uid = \'""" + user_id + """\' ;""", 'post', conn)
-
-                if len(relationResponse['result']) == 0:
-                    NewRelationIDresponse = execute(
-                        "Call get_relation_id;", 'get', conn)
-                    NewRelationID = NewRelationIDresponse['result'][0]['new_id']
-
-                    execute("""INSERT INTO relationship
-                                        (id
-                                        , ta_people_id
-                                        , user_uid
-                                        , r_timestamp
-                                        , relation_type
-                                        , ta_have_pic
-                                        , ta_picture
-                                        , important
-                                        , advisor)
-                                        VALUES 
-                                        ( \'""" + NewRelationID + """\'
-                                        , \'""" + ta_people_id + """\'
-                                        , \'""" + user_id + """\'
-                                        , \'""" + timestamp + """\'
-                                        , \'""" + people_relationship + """\'
-                                        , \'""" + str(people_have_pic).title() + """\'
                                         , \'""" + people_picture_url + """\'
                                         , \'""" + str(people_important).title() + """\'
-                                        , \'""" + str(0) + """\');""", 'post', conn)
+                                        , \'""" + str(advisor).title() + """\');""", 'post', conn)
 
                 NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                 NewID = NewIDresponse['result'][0]['new_id']
@@ -5443,9 +5447,9 @@ class TodayGoalsRoutines_Anu(Resource):
                 at_title,
                 is_unique_id, 
                 is_title 
-            FROM manifest.goals_routines
-            JOIN manifest.actions_tasks ON gr_unique_id=goal_routine_id 
-            JOIN manifest.instructions_steps ON at_unique_id=at_id 
+            FROM manifest_mylife.goals_routines
+            JOIN manifest_mylife.actions_tasks ON gr_unique_id=goal_routine_id 
+            JOIN manifest_mylife.instructions_steps ON at_unique_id=at_id 
             WHERE user_id= \'""" + user_id + """\';
                 """
             items = execute(query, 'get', conn)
@@ -5666,7 +5670,7 @@ class TodayGoalsRoutines(Resource):
 
             # DETERMINE IF DATE ALREADY EXISTING THE HISTORY TABLE
             print(user_id, date_affected)
-            currentGR = execute(""" SELECT * FROM manifest.history where user_id = \'""" + user_id +
+            currentGR = execute(""" SELECT * FROM manifest_mylife.history where user_id = \'""" + user_id +
                                 """\' AND date_affected = \'""" + str(date_affected) + """\';""", 'get', conn)
             print(currentGR)
 
@@ -5675,7 +5679,7 @@ class TodayGoalsRoutines(Resource):
                 print("no info")
 
                 query = """
-                    INSERT INTO manifest.history
+                    INSERT INTO manifest_mylife.history
                     SET id = \'""" + NewID + """\',
                         user_id = \'""" + user_id + """\',
                         date = \'""" + str(date) + """\',
@@ -5692,7 +5696,7 @@ class TodayGoalsRoutines(Resource):
                 print(currentGR['result'])
                 print("Existing id: ", currentGR['result'][0]['id'])
                 query = """
-                    UPDATE manifest.history
+                    UPDATE manifest_mylife.history
                     SET id = \'""" + currentGR['result'][0]['id'] + """\',
                         user_id = \'""" + user_id + """\',
                         date = \'""" + str(date) + """\',
@@ -5875,14 +5879,14 @@ class ChangeHistory(Resource):
 
             # # DETERMINE IF DATE ALREADY EXISTING THE HISTORY TABLE
             # print(user_id, date_affected)
-            # currentGR = execute(""" SELECT * FROM manifest.history where user_id = \'""" +user_id+ """\' AND date_affected = \'""" +str(date_affected)+ """\';""", 'get', conn)
+            # currentGR = execute(""" SELECT * FROM manifest_mylife.history where user_id = \'""" +user_id+ """\' AND date_affected = \'""" +str(date_affected)+ """\';""", 'get', conn)
             # print(currentGR)
 
             # if len(currentGR['result']) == 0:
             #     print("no info")
 
             #     query = """
-            #         INSERT INTO manifest.history
+            #         INSERT INTO manifest_mylife.history
             #         SET id = \'""" +NewID+ """\',
             #             user_id = \'""" +user_id+ """\',
             #             date = \'""" +str(date)+ """\',
@@ -5897,7 +5901,7 @@ class ChangeHistory(Resource):
             #     print(currentGR['result'])
             #     print(currentGR['result'][0]['id'])
             #     query = """
-            #         UPDATE manifest.history
+            #         UPDATE manifest_mylife.history
             #         SET id = \'""" +currentGR['result'][0]['id']+ """\',
             #             user_id = \'""" +user_id+ """\',
             #             date = \'""" +str(date)+ """\',
