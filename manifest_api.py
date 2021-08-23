@@ -3581,6 +3581,11 @@ class UpdatePeople(Resource):
             else:
                 last_name = list[1]
 
+            if(people_relationship == 'Advisor'):
+                advisor = 1;
+            else:
+                advisor =0;
+            
             execute("""UPDATE  ta_people
                         SET 
                             ta_first_name = \'""" + first_name + """\'
@@ -3608,6 +3613,7 @@ class UpdatePeople(Resource):
                                         , ta_have_pic =  \'""" + str(people_have_pic).title() + """\'
                                         , ta_picture = \'""" + photo_url + """\'
                                         , important = \'""" + str(people_important).title() + """\'
+                                        , advisor = \'""" + advisor + """\'
                                     WHERE ta_people_id = \'""" + ta_people_id + """\' 
                                     and user_uid = \'""" + user_id + """\' ;""", 'post', conn)
 
