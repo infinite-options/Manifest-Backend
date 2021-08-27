@@ -147,7 +147,7 @@ def serializeResponse(response):
 
 def execute(sql, cmd, conn, skipSerialization=False):
     response = {}
-    print("==> Execute Query: ", cmd)
+    print("==> Execute Query: ", cmd,sql[0:30])
     try:
         with conn.cursor() as cur:
             cur.execute(sql)
