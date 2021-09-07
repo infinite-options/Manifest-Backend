@@ -5717,6 +5717,26 @@ class TodayGoalsRoutines(Resource):
             disconnect(conn)
 
 
+# CRON JOB
+def PMChangeHistory():
+    # print("Entering CRON Job section")
+
+    try:
+        conn = connect()
+
+        items = execute(
+            """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
+
+        response['message'] = 'successful'
+        response['result'] = items['result']
+        return response, 200
+    except:
+        raise BadRequest('Request failed, please try again later.')
+    finally:
+        disconnect(conn)
+
+
+
 class ChangeHistory(Resource):
     def post(self, user_id):
 
