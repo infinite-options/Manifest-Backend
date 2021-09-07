@@ -5725,10 +5725,10 @@ def PMChangeHistory():
         conn = connect()
 
         # GETS NEW HISTORY TABLE UID
-        NewIDresponse = execute("CALL get_history_id;",  'get', conn)
-        print("NewIDresponse:", NewIDresponse)
-        NewID = NewIDresponse['result'][0]['new_id']
-        print("new_id:", NewID)
+        # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+        # print("NewIDresponse:", NewIDresponse)
+        # NewID = NewIDresponse['result'][0]['new_id']
+        # print("new_id:", NewID)
 
         # items = execute(
         #     """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
@@ -5738,7 +5738,7 @@ def PMChangeHistory():
 
         query = """
                     INSERT INTO manifest.pm_history
-                    SET id = \'""" + NewID + """\',
+                    SET id = \'""" + '800-000027' + """\',
                         user_id = \'""" + '100-000027' + """\',
                         date = \'""" + str(date) + """\',
                         details = \'""" + '[{}]' + """\',
@@ -5748,9 +5748,11 @@ def PMChangeHistory():
         items = execute(query, 'post', conn)
         print(items)
 
-        response['message'] = 'successful'
-        response['result'] = items['result']
-        return response, 200
+        # response['message'] = 'successful'
+        # response['result'] = items['result']
+        # return response, 200
+        return 200
+
     except:
         raise BadRequest('Request failed, please try again later.')
     finally:
