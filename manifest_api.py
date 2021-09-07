@@ -5741,7 +5741,7 @@ def PMChangeHistory():
                     SET id = \'""" + NewID + """\',
                         user_id = \'""" + '100-000027' + """\',
                         date = \'""" + str(date) + """\',
-                        details = \'""" + 'Testing' + """\',
+                        details = \'""" + '[{}]' + """\',
                         date_affected = \'""" + str(date) + """\';
                 """
 
