@@ -5724,13 +5724,29 @@ def PMChangeHistory():
     try:
         conn = connect()
 
-        items = execute(
-            """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
+        # GETS NEW HISTORY TABLE UID
+        NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+        print("NewIDresponse:", NewIDresponse)
+        NewID = NewIDresponse['result'][0]['new_id']
+        print("new_id:", NewID)
+
+        # items = execute(
+        #     """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
 
         # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
-        print("before Function call")
-        TodayGoalsRoutines.post(self, '100-000027')
-        print("after Function call")
+
+
+        query = """
+                    INSERT INTO manifest.pm_history
+                    SET id = \'""" + NewID + """\',
+                        user_id = \'""" + '100-000027' + """\',
+                        date = \'""" + str(date) + """\',
+                        details = \'""" + 'Testing' + """\',
+                        date_affected = \'""" + str(date) + """\';
+                """
+
+        items = execute(query, 'post', conn)
+        print(items)
 
         response['message'] = 'successful'
         response['result'] = items['result']
