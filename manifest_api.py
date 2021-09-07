@@ -5727,6 +5727,11 @@ def PMChangeHistory():
         items = execute(
             """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
 
+        # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
+        print("before Function call")
+        TodayGoalsRoutines.post(self, '100-000027')
+        print("after Function call")
+
         response['message'] = 'successful'
         response['result'] = items['result']
         return response, 200
