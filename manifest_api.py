@@ -5870,14 +5870,23 @@ def PMChangeHistory():
             # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
 
 
+            # query = """
+            #             INSERT INTO manifest.pm_history
+            #             SET id = '800-000027',
+            #                 user_id = '800-000027',
+            #                 date = '800-000027',
+            #                 details = \'""" + '[]' + """\',
+            #                 date_affected = '800-000027',;
+            #         """
+
             query = """
                         INSERT INTO manifest.pm_history
-                        SET id = '800-000027',
-                            user_id = '800-000027',
-                            date = '800-000027',
-                            details = \'""" + '[]' + """\',
-                            date_affected = '800-000027',;
-                    """
+                        SET 
+                        id = '100-000001',
+                        user_id = '100-000001',
+                        date = '100-000001',
+                        date_affected = '100-000001';
+                        """
 
             items = execute(query, 'post', conn)
             print(items)
