@@ -5857,6 +5857,7 @@ def PMChangeHistory():
         try:
             conn = connect()
 
+            print("In PMChangeHistory")
             # GETS NEW HISTORY TABLE UID
             # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
             # print("NewIDresponse:", NewIDresponse)
@@ -5871,11 +5872,11 @@ def PMChangeHistory():
 
             query = """
                         INSERT INTO manifest.pm_history
-                        SET id = \'""" + str(datetime.datetime.now) + """\',
-                            user_id = \'""" + '100-000027' + """\',
-                            date = \'""" + str(date) + """\',
-                            details = \'""" + '[{}]' + """\',
-                            date_affected = \'""" + str(date) + """\';
+                        SET id = '800-000027',
+                            user_id = '800-000027',
+                            date = '800-000027',
+                            details = \'""" + '[]' + """\',
+                            date_affected = '800-000027',;
                     """
 
             items = execute(query, 'post', conn)
