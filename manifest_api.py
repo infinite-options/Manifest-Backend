@@ -5842,14 +5842,18 @@ class Notifications(Resource):
 
 
 # CRON JOB
-class PMChangeHistory(Resource):
 
-    def __call__(self):
-        print("In Call")
 
-    # print("Entering CRON Job section")
+# class PMChangeHistory(Resource):
 
-    def post(self):
+#     def __call__(self):
+#         print("In Call")
+
+#     # print("Entering CRON Job section")
+
+#     def post(self):
+def PMChangeHistory():
+
         try:
             conn = connect()
 
@@ -5867,7 +5871,7 @@ class PMChangeHistory(Resource):
 
             query = """
                         INSERT INTO manifest.pm_history
-                        SET id = \'""" + '800-000027' + """\',
+                        SET id = \'""" + str(datetime.datetime.now) + """\',
                             user_id = \'""" + '100-000027' + """\',
                             date = \'""" + str(date) + """\',
                             details = \'""" + '[{}]' + """\',
@@ -7352,7 +7356,7 @@ api.add_resource(UpdateAboutMe2, '/api/v2/update')
 api.add_resource(UploadIcons, '/api/v2/uploadIcons')
 api.add_resource(UpdatePeople, '/api/v2/updatePeople')
 api.add_resource(ChangeHistory, '/api/v2/changeHistory/<string:user_id>')
-api.add_resource(PMChangeHistory, '/api/v2/PMChangeHistory')
+# api.add_resource(PMChangeHistory, '/api/v2/PMChangeHistory')
 api.add_resource(ChangeHistory_annotated, '/api/v2/ChangeHistory_annotated/<string:user_id>')
 api.add_resource(ExistingUser, '/api/v2/existingUser')
 api.add_resource(ResetGR, '/api/v2/resetGR/<string:gr_id>')
