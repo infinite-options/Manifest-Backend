@@ -781,38 +781,22 @@ class AddNewGR(Resource):
             new_notfication_id = new_notification_id_response['result'][0]['new_id']
 
             # TA notfication
-            query.append("""Insert into notifications
-                                (notification_id
-                                    , user_ta_id
-                                    , gr_at_id
-                                    , before_is_enable
-                                    , before_is_set
-                                    , before_message
-                                    , before_time
-                                    , during_is_enable
-                                    , during_is_set
-                                    , during_message
-                                    , during_time
-                                    , after_is_enable
-                                    , after_is_set
-                                    , after_message
-                                    , after_time) 
-                                VALUES
-                                (     \'""" + new_notfication_id + """\'
-                                    , \'""" + ta_id + """\'
-                                    , \'""" + new_gr_id + """\'
-                                    , \'""" + str(ta_before_is_enable).title() + """\'
-                                    , \'""" + str(ta_before_is_set).title() + """\'
-                                    , \'""" + ta_before_message + """\'
-                                    , \'""" + ta_before_time + """\'
-                                    , \'""" + str(ta_during_is_enable).title() + """\'
-                                    , \'""" + str(ta_during_is_set).title() + """\'
-                                    , \'""" + ta_during_message + """\'
-                                    , \'""" + ta_during_time + """\'
-                                    , \'""" + str(ta_after_is_enable).title() + """\'
-                                    , \'""" + str(ta_after_is_set).title() + """\'
-                                    , \'""" + ta_after_message + """\'
-                                    , \'""" + ta_after_time + """\');""")
+            query.append("""INSERT into notifications
+                            SET notification_id = \'""" + new_notfication_id + """\', 
+                                user_ta_id = \'""" + ta_id + """\', 
+                                gr_at_id = \'""" + new_gr_id + """\', 
+                                before_is_enable = \'""" + str(ta_before_is_enable).title() + """\', 
+                                before_is_set =\'""" + str(ta_before_is_set).title() + """\', 
+                                before_message = \'""" + ta_before_message + """\', 
+                                before_time = \'""" + ta_before_time + """\', 
+                                during_is_enable = \'""" + str(ta_during_is_enable).title() + """\', 
+                                during_is_set = \'""" + str(ta_during_is_set).title() + """\', 
+                                during_message = \'""" + ta_during_message + """\', 
+                                during_time = \'""" + ta_during_time + """\', 
+                                after_is_enable = \'""" + str(ta_after_is_enable).title() + """\', 
+                                after_is_set = \'""" + str(ta_after_is_set).title() + """\', 
+                                after_message = \'""" + ta_after_message + """\', 
+                                after_time = \'""" + ta_after_time + """\';""")
             execute(query[2], 'post', conn)
 
             # New notification ID
@@ -821,38 +805,22 @@ class AddNewGR(Resource):
             UserNotificationID = UserNotificationIDresponse['result'][0]['new_id']
 
             # User notfication
-            query.append("""Insert into notifications
-                                (notification_id
-                                    , user_ta_id
-                                    , gr_at_id
-                                    , before_is_enable
-                                    , before_is_set
-                                    , before_message
-                                    , before_time
-                                    , during_is_enable
-                                    , during_is_set
-                                    , during_message
-                                    , during_time
-                                    , after_is_enable
-                                    , after_is_set
-                                    , after_message
-                                    , after_time) 
-                                VALUES
-                                (     \'""" + UserNotificationID + """\'
-                                    , \'""" + user_id + """\'
-                                    , \'""" + new_gr_id + """\'
-                                    , \'""" + str(user_before_is_enable).title() + """\'
-                                    , \'""" + str(user_before_is_set).title() + """\'
-                                    , \'""" + user_before_message + """\'
-                                    , \'""" + user_before_time + """\'
-                                    , \'""" + str(user_during_is_enable).title() + """\'
-                                    , \'""" + str(user_during_is_set).title() + """\'
-                                    , \'""" + user_during_message + """\'
-                                    , \'""" + user_during_time + """\'
-                                    , \'""" + str(user_after_is_enable).title() + """\'
-                                    , \'""" + str(user_after_is_set).title() + """\'
-                                    , \'""" + user_after_message + """\'
-                                    , \'""" + user_after_time + """\');""")
+            query.append("""INSERT into notifications
+                            SET notification_id = \'""" + UserNotificationID + """\',
+                                user_ta_id = \'""" + user_id + """\',
+                                gr_at_id = \'""" + new_gr_id + """\',
+                                before_is_enable = \'""" + str(user_before_is_enable).title() + """\',
+                                before_is_set = \'""" + str(user_before_is_set).title() + """\',
+                                before_message = \'""" + user_before_message + """\',
+                                before_time = \'""" + user_before_time + """\',
+                                during_is_enable = \'""" + str(user_during_is_enable).title() + """\',
+                                during_is_set = \'""" + str(user_during_is_set).title() + """\',
+                                during_message = \'""" + user_during_message + """\',
+                                during_time = \'""" + user_during_time + """\',
+                                after_is_enable = \'""" + str(user_after_is_enable).title() + """\',
+                                after_is_set = \'""" + str(user_after_is_set).title() + """\',
+                                after_message = \'""" + user_after_message + """\',
+                                after_time = \'""" + user_after_time + """\');""")
             items = execute(query[3], 'post', conn)
 
             response['message'] = 'successful'
@@ -1073,38 +1041,22 @@ class UpdateGR(Resource):
                 UserNotificationID = UserNotificationIDresponse['result'][0]['new_id']
 
                 # User notfication
-                execute("""Insert into notifications
-                                (notification_id
-                                    , user_ta_id
-                                    , gr_at_id
-                                    , before_is_enable
-                                    , before_is_set
-                                    , before_message
-                                    , before_time
-                                    , during_is_enable
-                                    , during_is_set
-                                    , during_message
-                                    , during_time
-                                    , after_is_enable
-                                    , after_is_set
-                                    , after_message
-                                    , after_time) 
-                                VALUES
-                                (     \'""" + UserNotificationID + """\'
-                                    , \'""" + ta_id + """\'
-                                    , \'""" + id + """\'
-                                    , \'""" + str(ta_before_is_enabled).title() + """\'
-                                    , \'""" + str(ta_before_is_set).title() + """\'
-                                    , \'""" + ta_before_message + """\'
-                                    , \'""" + ta_before_time + """\'
-                                    , \'""" + str(ta_during_is_enabled).title() + """\'
-                                    , \'""" + str(ta_during_is_set).title() + """\'
-                                    , \'""" + ta_during_message + """\'
-                                    , \'""" + ta_during_time + """\'
-                                    , \'""" + str(ta_after_is_enabled).title() + """\'
-                                    , \'""" + str(ta_after_is_set).title() + """\'
-                                    , \'""" + ta_after_message + """\'
-                                    , \'""" + ta_after_time + """\');""", 'post', conn)
+                execute("""INSERT into notifications
+                           SET notification_id = \'""" + UserNotificationID + """\',
+                                user_ta_id = \'""" + ta_id + """\',
+                                gr_at_id = \'""" + id + """\',
+                                before_is_enable = \'""" + str(ta_before_is_enabled).title() + """\',
+                                before_is_set = \'""" + str(ta_before_is_set).title() + """\',
+                                before_message = \'""" + ta_before_message + """\',
+                                before_time = \'""" + ta_before_time + """\',
+                                during_is_enable = \'""" + str(ta_during_is_enabled).title() + """\',
+                                during_is_set = \'""" + str(ta_during_is_set).title() + """\',
+                                during_message = \'""" + ta_during_message + """\',
+                                during_time = \'""" + ta_during_time + """\',
+                                after_is_enable = \'""" + str(ta_after_is_enabled).title() + """\',
+                                after_is_set = \'""" + str(ta_after_is_set).title() + """\',
+                                after_message = \'""" + ta_after_message + """\',
+                                after_time = \'""" + ta_after_time + """\');""", 'post', conn)
             else:
                 # TA notfication
                 execute("""UPDATE notifications
@@ -1176,39 +1128,23 @@ class AddNewAT(Resource):
             if not photo:
                 print("No Photo")
 
-                query.append("""INSERT INTO actions_tasks(at_unique_id
-                                , at_title
-                                , goal_routine_id
-                                , at_sequence
-                                , is_available
-                                , is_complete
-                                , is_in_progress
-                                , is_sublist_available
-                                , is_must_do
-                                , at_photo
-                                , is_timed
-                                , at_datetime_completed
-                                , at_datetime_started
-                                , at_expected_completion_time
-                                , at_available_start_time
-                                , at_available_end_time)
-                            VALUES 
-                            ( \'""" + NewATID + """\'
-                            , \'""" + at_title + """\'
-                            , \'""" + gr_id + """\'
-                            , \'""" + '1' + """\'
-                            , \'""" + str(is_available).title() + """\'
-                            , \'""" + str(is_complete).title() + """\'
-                            , \'""" + str(is_in_progress).title() + """\'
-                            , \'""" + 'False' + """\'
-                            , \'""" + str(is_must_do).title() + """\'
-                            , \'""" + photo_url + """\'
-                            , \'""" + str(is_timed).title() + """\'
-                            , \'""" + datetime_completed + """\'
-                            , \'""" + datetime_started + """\'
-                            , \'""" + expected_completion_time + """\'
-                            , \'""" + available_start_time + """\'
-                            , \'""" + available_end_time + """\' );""")
+                query.append("""INSERT INTO actions_tasks
+                                SET at_unique_id = \'""" + NewATID + """\',
+                                    at_title = \'""" + at_title + """\',
+                                    goal_routine_id = \'""" + gr_id + """\',
+                                    at_sequence = \'""" + '1' + """\',
+                                    is_available = \'""" + str(is_available).title() + """\',
+                                    is_complete = \'""" + str(is_complete).title() + """\',
+                                    is_in_progress = \'""" + str(is_in_progress).title() + """\',
+                                    is_sublist_available = \'""" + 'False' + """\',
+                                    is_must_do = \'""" + str(is_must_do).title() + """\',
+                                    at_photo = \'""" + photo_url + """\',
+                                    is_timed = \'""" + str(is_timed).title() + """\',
+                                    at_datetime_completed = \'""" + datetime_completed + """\',
+                                    at_datetime_started = \'""" + datetime_started + """\',
+                                    at_expected_completion_time = \'""" + expected_completion_time + """\',
+                                    at_available_start_time = \'""" + available_start_time + """\',
+                                    at_available_end_time = \'""" + available_end_time + """\' );""")
 
                 # query.append("""INSERT INTO actions_tasks(at_unique_id
                 #                 , at_title
@@ -1248,27 +1184,24 @@ class AddNewAT(Resource):
                 print("photo")
                 at_picture = helper_upload_img(photo)
                 print(at_picture)
-                query.append("""INSERT INTO actions_tasks(at_unique_id
-                                , at_title
-                                , goal_routine_id
-                                , at_sequence
-                                , is_available
-                                , is_complete
-                                , is_in_progress
-                                , is_sublist_available
-                                , is_must_do
-                                , at_photo
-                                , is_timed
-                                , at_datetime_completed
-                                , at_datetime_started
-                                , at_expected_completion_time
-                                , at_available_start_time
-                                , at_available_end_time)
-                            VALUES 
-                            ( \'""" + NewATID + """\'
-                            , \'""" + at_title + """\'
-                            , \'""" + gr_id + """\'
-                            , \'""" + '2' + """\'
+                query.append("""INSERT INTO actions_tasks
+                                SET at_unique_id = \'""" + NewATID + """\',
+                                    at_title = \'""" + at_title + """\',
+                                    goal_routine_id = \'""" + gr_id + """\',
+                                    at_sequence = \'""" + '2' + """\',
+                                    is_available = ,
+                                    is_complete = ,
+                                    is_in_progress = ,
+                                    is_sublist_available = ,
+                                    is_must_do = ,
+                                    at_photo = ,
+                                    is_timed = ,
+                                    at_datetime_completed = ,
+                                    at_datetime_started = ,
+                                    at_expected_completion_time = ,
+                                    at_available_start_time = ,
+                                    at_available_end_time =) 
+                            , 
                             , \'""" + str(is_available).title() + """\'
                             , \'""" + str(is_complete).title() + """\'
                             , \'""" + str(is_in_progress).title() + """\'
