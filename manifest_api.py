@@ -5859,10 +5859,10 @@ def PMChangeHistory():
 
             print("In PMChangeHistory")
             # GETS NEW HISTORY TABLE UID
-            # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
-            # print("NewIDresponse:", NewIDresponse)
-            # NewID = NewIDresponse['result'][0]['new_id']
-            # print("new_id:", NewID)
+            NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+            print("NewIDresponse:", NewIDresponse)
+            NewID = NewIDresponse['result'][0]['new_id']
+            print("new_id:", NewID)
 
             # items = execute(
             #     """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
@@ -5879,10 +5879,20 @@ def PMChangeHistory():
             #                 date_affected = '800-000027',;
             #         """
 
+            # THIS QUERY WORKS
+            # query = """
+            #             INSERT INTO manifest.pm_history
+            #             SET 
+            #             id = '100-000001',
+            #             user_id = '100-000001',
+            #             date = '100-000001',
+            #             date_affected = '100-000001';
+            #             """
+
             query = """
                         INSERT INTO manifest.pm_history
                         SET 
-                        id = '100-000001',
+                        id = \'"""+ NewID +"""\',
                         user_id = '100-000001',
                         date = '100-000001',
                         date_affected = '100-000001';
@@ -5913,37 +5923,47 @@ class ChangeHistory_annotated(Resource):
         try:
             conn = connect()
 
+            # MAY NOT NEED ANY OF THIS SINCE IT HAPPENS IN TODAYGOALSROUTINE
             # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
             # NewID = NewIDresponse['result'][0]['new_id']
             date_format = '%m/%d/%Y %H:%M:%S'
             current = datetime.now(tz=pytz.utc)
-            print(current)
+            print("\nUTC Time is: ", current)
             current = current.astimezone(timezone('US/Pacific'))
-            print(current)
+            print("PST Time is: ", current)
+
             date = current.strftime(date_format)
-            print(date)
+            print("\nDate Time Stamp: ", date)
+
+            # THESE TWO STATEMENTS ARE IDENTICAL
             current_time = current.strftime("%H:%M:%S")
-            print(current_time)
+            print("Time Stamp: ", current_time)
             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
-            print(current_time)
+            print("Time Stamp: ", current_time)
+
+            # SET START AND END TIMES TO MIDNIGHT TO 1AM
             start = dt.time(0, 0, 0)
+            print("Start time: ", start)
             end = dt.time(0, 59, 59)
+            print("End time: ", end)
 
             # DETERMINE DATE AFFECTED
+            # IF CURRENT TIME IS AFTER START AND END THEN IT IS TODAY
             if current_time > start and current_time > end:
                 date_affected = current.date()
+            # IF CURRENT TIME IS AFTER START AND BEFORE END THEN IT IS YESTERDAY
             else:
                 date_affected = current + timedelta(days=-1)
                 date_affected = date_affected.date()
-            print(date_affected)
+            print("Date Affected: ", date_affected)
 
             currentDate = (dt.datetime.now().date())
-            print(currentDate)
+            print("Current Date: ", currentDate)
             current_week_day = currentDate.strftime('%A').lower()
-            print(current_week_day)
+            print("Current Weekday: ", current_week_day)
 
             # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
-            print("before Function call")
+            print("\nbefore Function call")
             TodayGoalsRoutines.post(self, user_id)
             print("after Function call")
 
@@ -5952,22 +5972,20 @@ class ChangeHistory_annotated(Resource):
 
             print("Before For Loop")
             for goal in goals['result']:
-                print(0)
-                print("\nGoal is: ", goal)
+                print("\nGoal/Routine is: ", goal)
                 is_displayed_today = 'False'
-                print(0.1)
+                print("Not sure why we set is_displayed today to False: ", is_displayed_today)
                 datetime_str = goal['gr_start_day_and_time']
-                print(0.2)
                 print(datetime_str)
                 datetime_str = datetime_str.replace(",", "")
-                print(0.3)
                 print(datetime_str,type(datetime_str))
                 
                 start_date = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                print(0.4)
+                print(start_date)
                 repeat_week_days = json.loads(goal['repeat_week_days'])
-                print(0.5)
+                print(repeat_week_days)
                 repeat_ends_on = (datetime.min).date()
+                print(repeat_ends_on)
 
                 week_days_unsorted = []
                 occurence_dates = []
@@ -5991,8 +6009,8 @@ class ChangeHistory_annotated(Resource):
                         if key.lower() == "sunday":
                             week_days_unsorted.append(7)
                 week_days = sorted(week_days_unsorted)
-                print(week_days)
-                print(2)
+                print("Repeat Days: ", week_days)
+                
 
                 print(current_week_day)
                 if current_week_day == "monday":
@@ -6045,7 +6063,10 @@ class ChangeHistory_annotated(Resource):
                         print("In if")
                         print("In if repeat type", goal['repeat_type'])
                         print("In if repeat frequency", goal['repeat_frequency'])
-                        if goal['repeat_type'].lower() == 'after':
+
+                        # IF REPEAT ENDS AFTER
+                        # if goal['repeat_type'].lower() == 'after':
+                        if goal['repeat_type'].lower() == 'occur':
                             print("In if after")
                             if goal['repeat_frequency'].lower() == 'day':
                                 print("In if if if")
@@ -6148,12 +6169,14 @@ class ChangeHistory_annotated(Resource):
                                     relativedelta(years=end_year)
                                 print(repeat_ends_on)
 
+                        # IF REPEAT NEVER ENDS
                         elif goal['repeat_type'].lower() == 'never':
                             print("In if never ")
                             print("never")
                             repeat_ends_on = currentDate
                             print(goal['gr_title'], repeat_ends_on)
 
+                        # IF REPEAT ENDS ON A SPECIFIC DAY
                         elif goal['repeat_type'].lower() == 'on':
                             print("In if on ")
                             print("in goal repeat ends on", goal['repeat_ends_on'])
@@ -6164,17 +6187,23 @@ class ChangeHistory_annotated(Resource):
                             #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
                             repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
 
+                    print("\nRepeat End on: ", repeat_ends_on)
                     if currentDate <= repeat_ends_on:
                         repeat_every = int(goal['repeat_every'])
-
+                        print("\nRepeat Every: ", repeat_every)
+                        print("Repeat Frequency: ", goal['repeat_frequency'])
                         if goal['repeat_frequency'].lower() == 'day':
                             epoch = dt.datetime.utcfromtimestamp(0).date()
                             current_time = (
                                 currentDate - epoch).total_seconds() * 1000.0
+                            print("Current time: ", current_time)
                             start_time = (
                                 start_date - epoch).total_seconds() * 1000.0
+                            print("Start time: ", start_time)
+                            # THIS STATEMENT DETERMINES IF IS_DISPLAYED IS TRUE OR FALSE
                             is_displayed_today = (math.floor(
                                 (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
+                            print("is_displayed_today: ", is_displayed_today)
 
                             # execute("""UPDATE goals_routines
                             #     SET is_in_progress = \'""" +'False'+"""\'
@@ -6268,25 +6297,34 @@ class ChangeHistory_annotated(Resource):
                 print("Pragya")
                 
                 # TEMPORARILY COMMENT OUT TO SEE WHAT THE REST OF THE FUNCTION DOES
-                # execute("""UPDATE goals_routines
-                #                 SET is_in_progress = \'""" + 'False'+"""\'
-                #                 , is_complete = \'""" + 'False'+"""\'
-                #                 , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
-                #                 WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                # execute("""UPDATE actions_tasks
-                #             SET is_in_progress = \'""" + 'False'+"""\'
-                #             , is_complete = \'""" + 'False'+"""\'
-                #             WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+                print("\nThe Bottom Line: ")
+                print(goal['gr_unique_id'])
+                print(goal['gr_title'])
+                print("Is Displayed Today: ", is_displayed_today)
+                print("************")
+                print(str(is_displayed_today).title())
 
-                # actions_task_response = execute(
-                #     """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
-                # if len(actions_task_response['result']) > 0:
-                #     for i in range(len(actions_task_response['result'])):
-                #         execute("""UPDATE instructions_steps
-                #                     SET is_in_progress = \'""" + 'False'+"""\'
-                #                     , is_complete = \'""" + 'False'+"""\'
-                #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+                execute("""UPDATE goals_routines
+                                SET is_in_progress = \'""" + 'False'+"""\'
+                                , is_complete = \'""" + 'False'+"""\'
+                                , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
+                                WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                execute("""UPDATE actions_tasks
+                            SET is_in_progress = \'""" + 'False'+"""\'
+                            , is_complete = \'""" + 'False'+"""\'
+                            WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                actions_task_response = execute(
+                    """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+                print("AT length: ", len(actions_task_response['result']))
+                if len(actions_task_response['result']) > 0:
+                    for i in range(len(actions_task_response['result'])):
+                        execute("""UPDATE instructions_steps
+                                    SET is_in_progress = \'""" + 'False'+"""\'
+                                    , is_complete = \'""" + 'False'+"""\'
+                                    WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
 
             response['message'] = 'successful'
 
@@ -6599,7 +6637,8 @@ class ChangeHistory(Resource):
                         print("In if")
                         print("In if repeat type", goal['repeat_type'])
                         print("In if repeat frequency", goal['repeat_frequency'])
-                        if goal['repeat_type'].lower() == 'after':
+                        # if goal['repeat_type'].lower() == 'after':
+                        if goal['repeat_type'].lower() == 'occur':
                             print("In if after")
                             if goal['repeat_frequency'].lower() == 'day':
                                 print("In if if if")
