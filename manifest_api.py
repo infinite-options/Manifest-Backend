@@ -2831,25 +2831,15 @@ class AnotherTAAccess(Resource):
 
             # Add new relationship
             query.append("""INSERT INTO relationship
-                                        (id
-                                        , r_timestamp
-                                        , ta_people_id
-                                        , user_uid
-                                        , relation_type
-                                        , ta_have_pic
-                                        , ta_picture
-                                        , important
-                                        , advisor)
-                            VALUES 
-                                        ( \'""" + str(new_relation_id) + """\'
-                                        , \'""" + str(timestamp) + """\'
-                                        , \'""" + str(ta_id) + """\'
-                                        , \'""" + str(user_id) + """\'
-                                        , \'""" + 'advisor' + """\'
-                                        , \'""" + 'False' + """\'
-                                        , \'""" + '' + """\'
-                                        , \'""" + 'True' + """\'
-                                        , \'""" + str(1) + """\');""")
+                            SET id = \'""" + str(new_relation_id) + """\',
+                                r_timestamp = \'""" + str(timestamp) + """\',
+                                ta_people_id = \'""" + str(ta_id) + """\',
+                                user_uid = \'""" + str(user_id) + """\',
+                                relation_type = \'""" + 'advisor' + """\',
+                                ta_have_pic = \'""" + 'False' + """\',
+                                ta_picture = \'""" + '' + """\',
+                                important = \'""" + 'True' + """\',
+                                advisor = \'""" + str(1) + """\');""") 
 
             items = execute(query[1], 'post', conn)
 
@@ -2979,26 +2969,16 @@ class CreateNewPeople(Resource):
                     else:
                         people_picture_url = photo_url
 
-                    execute("""INSERT INTO relationship(
-                        id
-                        , r_timestamp
-                        , ta_people_id
-                        , user_uid
-                        , relation_type
-                        , ta_have_pic
-                        , ta_picture
-                        , important
-                        , advisor)
-                        VALUES ( 
-                            \'""" + NewRelationID + """\'
-                            , \'""" + str(ts) + """\'
-                            , \'""" + typeResponse['result'][0]['ta_unique_id'] + """\'
-                            , \'""" + user_id + """\'
-                            , \'""" + relation_type + """\'
-                            , \'""" + str(have_pic).title() + """\'
-                            , \'""" + people_picture_url + """\'
-                            , \'""" + str(important).title() + """\'
-                            , \'""" + str(0) + """\')""", 'post', conn)
+                    execute("""INSERT INTO relationship
+                               SET id = \'""" + NewRelationID + """\',
+                                   r_timestamp = \'""" + str(ts) + """\',
+                                   ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\',
+                                   user_uid = \'""" + user_id + """\',
+                                   relation_type = \'""" + relation_type + """\',
+                                   ta_have_pic = \'""" + str(have_pic).title() + """\',
+                                   ta_picture = \'""" + people_picture_url + """\',
+                                   important = \'""" + str(important).title() + """\',
+                                   advisor = \'""" + str(0) + """\')""", 'post', conn) 
 
             else:
                 print('else')
@@ -3011,45 +2991,26 @@ class CreateNewPeople(Resource):
                 else:
                     people_picture_url = photo_url
 
-                execute("""INSERT INTO ta_people(
-                                        ta_unique_id
-                                        , ta_timestamp
-                                        , ta_email_id
-                                        , ta_first_name
-                                        , ta_last_name
-                                        , employer
-                                        , password_hashed
-                                        , ta_phone_number)
-                                        VALUES ( 
-                                            \'""" + NewPeopleID + """\'
-                                            , \'""" + ts + """\'
-                                            , \'""" + '' + """\'
-                                            , \'""" + first_name + """\'
-                                            , \'""" + last_name + """\'
-                                            , \'""" + '' + """\'
-                                            , \'""" + '' + """\'
-                                            , \'""" + '' + """\')""", 'post', conn)
+                execute("""INSERT INTO ta_people
+                           SET ta_unique_id = \'""" + NewPeopleID + """\',
+                               ta_timestamp = \'""" + ts + """\',
+                               ta_email_id = \'""" + '' + """\',
+                               ta_first_name = \'""" + first_name + """\',
+                               ta_last_name = \'""" + last_name + """\',
+                               employer = \'""" + '' + """\',
+                               password_hashed = \'""" + '' + """\',
+                               ta_phone_number = \'""" + '' + """\')""", 'post', conn) 
 
-                execute("""INSERT INTO relationship(
-                                        id
-                                        , r_timestamp
-                                        , ta_people_id
-                                        , user_uid
-                                        , relation_type
-                                        , ta_have_pic
-                                        , ta_picture
-                                        , important
-                                        , advisor)
-                                        VALUES ( 
-                                            \'""" + NewRelationID + """\'
-                                            , \'""" + str(ts) + """\'
-                                            , \'""" + NewPeopleID + """\'
-                                            , \'""" + user_id + """\'
-                                            , \'""" + relation_type + """\'
-                                            , \'""" + str(have_pic).title() + """\'
-                                            , \'""" + people_picture_url + """\'
-                                            , \'""" + str(important).title() + """\'
-                                            , \'""" + str(0) + """\')""", 'post', conn)
+                execute("""INSERT INTO relationship 
+                           SET id = \'""" + NewRelationID + """\',
+                               r_timestamp = \'""" + str(ts) + """\',
+                               ta_people_id = \'""" + NewPeopleID + """\',
+                               user_uid = \'""" + user_id + """\',
+                               relation_type = \'""" + relation_type + """\',
+                               ta_have_pic = \'""" + str(have_pic).title() + """\',
+                               ta_picture = \'""" + people_picture_url + """\',
+                               important = \'""" + str(important).title() + """\',
+                               advisor = \'""" + str(0) + """\')""", 'post', conn) 
 
             response['message'] = 'successful'
 
@@ -3374,25 +3335,15 @@ class NewTA(Resource):
                     guid = user_info[0]['cust_guid_device_id_notification']
 
                 execute("""INSERT INTO ta_people(
-                                            ta_unique_id
-                                            , ta_timestamp
-                                            , ta_email_id
-                                            , ta_first_name
-                                            , ta_last_name
-                                            , employer
-                                            , password_hashed
-                                            , ta_phone_number
-                                            , ta_guid_device_id_notification)                                        
-                                            VALUES ( 
-                                                \'""" + new_ta_id + """\'
-                                                , \'""" + ts + """\'
-                                                , \'""" + email_id + """\'
-                                                , \'""" + first_name + """\'
-                                                , \'""" + last_name + """\'
-                                                , \'""" + employer + """\'
-                                                , \'""" + key + """\'
-                                                , \'""" + phone_number + """\'
-                                                , \'""" + guid + """\')""", 'post', conn)
+                           SET ta_unique_id = \'""" + new_ta_id + """\',
+                               ta_timestamp = \'""" + ts + """\',
+                               ta_email_id  = \'""" + email_id + """\',
+                               ta_first_name = \'""" + first_name + """\',
+                               ta_last_name = \'""" + last_name + """\',
+                               employer = \'""" + employer + """\',
+                               password_hashed = \'""" + key + """\',
+                               ta_phone_number = \'""" + phone_number + """\',
+                               ta_guid_device_id_notification = \'""" + guid + """\')""", 'post', conn)
                 response['message'] = 'successful'
                 response['result'] = new_ta_id
 
@@ -3431,22 +3382,14 @@ class TASocialSignUP(Resource):
                     "CALL get_ta_people_id;", 'get', conn)
                 new_ta_id = new_ta_id_response['result'][0]['new_id']
 
-                execute("""INSERT INTO ta_people(
-                                                ta_unique_id
-                                                , ta_timestamp
-                                                , ta_email_id
-                                                , ta_first_name
-                                                , ta_last_name
-                                                , employer
-                                                , ta_phone_number)
-                                            VALUES ( 
-                                                \'""" + new_ta_id + """\'
-                                                , \'""" + ts + """\'
-                                                , \'""" + email_id + """\'
-                                                , \'""" + first_name + """\'
-                                                , \'""" + last_name + """\'
-                                                , \'""" + employer + """\'
-                                                , \'""" + phone_number + """\')""", 'post', conn)
+                execute("""INSERT INTO ta_people
+                           SET ta_unique_id = \'""" + new_ta_id + """\',
+                               ta_timestamp = \'""" + ts + """\',
+                               ta_email_id = \'""" + email_id + """\',
+                               ta_first_name = \'""" + first_name + """\',
+                               ta_last_name = \'""" + last_name + """\',
+                               employer = \'""" + employer + """\',
+                               ta_phone_number = \'""" + phone_number + """\')""", 'post', conn)
                 response['message'] = 'successful'
                 response['result'] = new_ta_id
 
@@ -3573,58 +3516,34 @@ class CreateNewUser(Resource):
                 user_id_response = execute("CAll get_user_id;", 'get', conn)
                 new_user_id = user_id_response['result'][0]['new_id']
 
-                execute("""INSERT INTO users(
-                                user_unique_id
-                                , user_timestamp
-                                , user_email_id
-                                , user_first_name
-                                , user_last_name
-                                , google_auth_token
-                                , google_refresh_token
-                                , time_zone
-                                , user_have_pic
-                                , user_picture
-                                , user_social_media
-                                , new_account
-                                , cust_guid_device_id_notification)
-                            VALUES ( 
-                                \'""" + new_user_id + """\'
-                                , \'""" + timestamp + """\'
-                                , \'""" + email_id + """\'
-                                , \'""" + first_name + """\'
-                                , \'""" + last_name + """\'
-                                , \'""" + google_auth_token + """\'
-                                , \'""" + google_refresh_token + """\'
-                                , \'""" + time_zone + """\'
-                                , \'""" + 'False' + """\'
-                                , \'""" + '' + """\'
-                                , \'""" + 'GOOGLE' + """\'
-                                , \'""" + 'True' + """\'
-                                , \'""" + 'null' + """\')""", 'post', conn)
+                execute("""INSERT INTO users
+                           SET user_unique_id = \'""" + new_user_id + """\',
+                               user_timestamp = \'""" + timestamp + """\',
+                               user_email_id = \'""" + email_id + """\',
+                               user_first_name = \'""" + first_name + """\',
+                               user_last_name = \'""" + last_name + """\',
+                               google_auth_token = \'""" + google_auth_token + """\',
+                               google_refresh_token = \'""" + google_refresh_token + """\',
+                               time_zone = \'""" + time_zone + """\',
+                               user_have_pic = \'""" + 'False' + """\',
+                               user_picture = \'""" + '' + """\',
+                               user_social_media = \'""" + 'GOOGLE' + """\',
+                               new_account = \'""" + 'True' + """\',
+                               cust_guid_device_id_notification = \'""" + 'null' + """\')""", 'post', conn)
 
                 NewRelationIDresponse = execute(
                     "Call get_relation_id;", 'get', conn)
                 NewRelationID = NewRelationIDresponse['result'][0]['new_id']
                 execute("""INSERT INTO relationship
-                        (id
-                        , r_timestamp
-                        , ta_people_id
-                        , user_uid
-                        , relation_type
-                        , ta_have_pic
-                        , ta_picture
-                        , important
-                        , advisor)
-                        VALUES 
-                        ( \'""" + NewRelationID + """\'
-                        , \'""" + timestamp + """\'
-                        , \'""" + ta_people_id + """\'
-                        , \'""" + new_user_id + """\'
-                        , \'""" + 'advisor' + """\'
-                        , \'""" + 'False' + """\'
-                        , \'""" + '' + """\'
-                        , \'""" + 'True' + """\'
-                        , \'""" + str(1) + """\');""", 'post', conn)
+                           SET id = \'""" + NewRelationID + """\',
+                               r_timestamp = \'""" + timestamp + """\',
+                               ta_people_id = \'""" + ta_people_id + """\',
+                               user_uid = \'""" + new_user_id + """\',
+                               relation_type = \'""" + 'advisor' + """\',
+                               ta_have_pic = \'""" + 'False' + """\',
+                               ta_picture = \'""" + '' + """\',
+                               important = \'""" + 'True' + """\',
+                               advisor = \'""" + str(1) + """\');""", 'post', conn) 
 
                 response['message'] = 'successful'
                 response['result'] = new_user_id
@@ -3664,25 +3583,15 @@ class ExistingUser(Resource):
                             "Call get_relation_id;", 'get', conn)
                         NewRelationID = NewRelationIDresponse['result'][0]['new_id']
                         execute("""INSERT INTO relationship
-                                                (id
-                                                , ta_people_id
-                                                , user_uid
-                                                , r_timestamp
-                                                , relation_type
-                                                , ta_have_pic
-                                                , ta_picture
-                                                , important
-                                                , advisor)
-                                                VALUES 
-                                                ( \'""" + NewRelationID + """\'
-                                                , \'""" + ta_people_id + """\'
-                                                , \'""" + user_id_response['result'][0]['user_unique_id'] + """\'
-                                                , \'""" + timestamp + """\'
-                                                , \'""" + 'advisor' + """\'
-                                                , \'""" + 'False' + """\'
-                                                , \'""" + '' + """\'
-                                                , \'""" + 'True' + """\'
-                                                , \'""" + str(1) + """\');""", 'post', conn)
+                                   SET id = \'""" + NewRelationID + """\',
+                                   ta_people_id = \'""" + ta_people_id + """\',
+                                   user_uid = \'""" + user_id_response['result'][0]['user_unique_id'] + """\',
+                                   r_timestamp = \'""" + timestamp + """\',
+                                   relation_type = \'""" + 'advisor' + """\',
+                                   ta_have_pic = \'""" + 'False' + """\',
+                                   ta_picture = \'""" + '' + """\',
+                                   important = \'""" + 'True' + """\',
+                                   advisor = \'""" + str(1) + """\');""", 'post', conn) 
                         print("Added")
                 response['message'] = user_id_response['result'][0]['new_account']
 
@@ -3972,25 +3881,15 @@ class UpdatePeople(Resource):
                     NewRelationID = NewRelationIDresponse['result'][0]['new_id']
 
                     execute("""INSERT INTO relationship
-                                        (id
-                                        , ta_people_id
-                                        , user_uid
-                                        , r_timestamp
-                                        , relation_type
-                                        , ta_have_pic
-                                        , ta_picture
-                                        , important
-                                        , advisor)
-                                        VALUES 
-                                        ( \'""" + NewRelationID + """\'
-                                        , \'""" + ta_people_id + """\'
-                                        , \'""" + user_id + """\'
-                                        , \'""" + timestamp + """\'
-                                        , \'""" + people_relationship + """\'
-                                        , \'""" + str(people_have_pic).title() + """\'
-                                        , \'""" + photo_url + """\'
-                                        , \'""" + str(people_important).title() + """\'
-                                        , \'""" + str(advisor).title() + """\');""", 'post', conn)
+                               SET id = \'""" + NewRelationID + """\',
+                               ta_people_id = \'""" + ta_people_id + """\',
+                               user_uid = \'""" + user_id + """\',
+                               r_timestamp = \'""" + timestamp + """\',
+                               relation_type = \'""" + people_relationship + """\',
+                               ta_have_pic = \'""" + str(people_have_pic).title() + """\',
+                               ta_picture = \'""" + photo_url + """\',
+                               important = \'""" + str(people_important).title() + """\',
+                               advisor = \'""" + str(advisor).title() + """\');""", 'post', conn) 
 
             else:
                 people_picture_url = helper_upload_img(people_pic)
@@ -4014,41 +3913,25 @@ class UpdatePeople(Resource):
                     NewRelationID = NewRelationIDresponse['result'][0]['new_id']
 
                     execute("""INSERT INTO relationship
-                                        (id
-                                        , ta_people_id
-                                        , user_uid
-                                        , r_timestamp
-                                        , relation_type
-                                        , ta_have_pic
-                                        , ta_picture
-                                        , important
-                                        , advisor)
-                                        VALUES 
-                                        ( \'""" + NewRelationID + """\'
-                                        , \'""" + ta_people_id + """\'
-                                        , \'""" + user_id + """\'
-                                        , \'""" + timestamp + """\'
-                                        , \'""" + people_relationship + """\'
-                                        , \'""" + str(people_have_pic).title() + """\'
-                                        , \'""" + people_picture_url + """\'
-                                        , \'""" + str(people_important).title() + """\'
-                                        , \'""" + str(advisor).title() + """\');""", 'post', conn)
+                               SET id = \'""" + NewRelationID + """\',
+                                   ta_people_id = \'""" + ta_people_id + """\',
+                                   user_uid = \'""" + user_id + """\',
+                                   r_timestamp = \'""" + timestamp + """\',
+                                   relation_type = \'""" + people_relationship + """\',
+                                   ta_have_pic = \'""" + str(people_have_pic).title() + """\',
+                                   ta_picture = \'""" + people_picture_url + """\',
+                                   important = \'""" + str(people_important).title() + """\',
+                                   advisor = \'""" + str(advisor).title() + """\');""", 'post', conn) 
 
                 NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                 NewID = NewIDresponse['result'][0]['new_id']
 
-                execute("""INSERT INTO icons(
-                            uid
-                            , url
-                            , Description
-                            , user_id
-                            , ta_id
-                            )VALUES(
-                                \'""" + NewID + """\'
-                                , \'""" + people_picture_url + """\'
-                                , \'""" + 'People Picture' + """\'
-                                , \'""" + user_id + """\'
-                                , \'""" + ta_id + """\');""", 'post', conn)
+                execute("""INSERT INTO icons
+                           SET uid = \'""" + NewID + """\',
+                               url = \'""" + people_picture_url + """\',
+                               Description = \'""" + 'People Picture' + """\',
+                               user_id = \'""" + user_id + """\',
+                               ta_id = \'""" + ta_id + """\');""", 'post', conn) 
 
             response['message'] = 'successful'
             response['result'] = 'Update to People successful'
@@ -4101,25 +3984,15 @@ class UpdateNameTimeZone(Resource):
             NewRelationID = NewRelationIDresponse['result'][0]['new_id']
 
             execute("""INSERT INTO relationship
-                        (id
-                        , r_timestamp
-                        , ta_people_id
-                        , user_uid
-                        , relation_type
-                        , ta_have_pic
-                        , ta_picture
-                        , important
-                        , advisor)
-                        VALUES 
-                        ( \'""" + NewRelationID + """\'
-                        , \'""" + timestamp + """\'
-                        , \'""" + ta_people_id + """\'
-                        , \'""" + user_unique_id + """\'
-                        , \'""" + 'advisor' + """\'
-                        , \'""" + 'False' + """\'
-                        , \'""" + '' + """\'
-                        , \'""" + 'True' + """\'
-                        , \'""" + str(1) + """\');""", 'post', conn)
+                       SET id = \'""" + NewRelationID + """\',
+                           r_timestamp = \'""" + timestamp + """\',
+                           ta_people_id = \'""" + ta_people_id + """\',
+                           user_uid = \'""" + user_unique_id + """\',
+                           relation_type = \'""" + 'advisor' + """\',
+                           ta_have_pic = \'""" + 'False' + """\' ,
+                           ta_picture = \'""" + '' + """\',
+                           important = \'""" + 'True' + """\',
+                           advisor = \'""" + str(1) + """\');""", 'post', conn) 
 
             response['message'] = 'successful'
             response['result'] = items
@@ -4457,15 +4330,10 @@ class AddCoordinates(Resource):
             timestamp = data['timestamp']
 
             execute(""" INSERT INTO coordinates
-                        (     x
-                            , y
-                            , z
-                            , timestamp)
-                            VALUES (
-                                \'""" + str(x) + """\'
-                                ,\'""" + str(y) + """\'
-                                , \'""" + str(z) + """\'
-                                , \'""" + str(timestamp) + """\'
+                        SET x = \'""" + str(x) + """\',
+                            y = \'""" + str(y) + """\',
+                            z = \'""" + str(z) + """\',
+                            timestamp = \'""" + str(timestamp) + """\'
                             );""", 'post', conn)
 
             response['message'] = 'successful'
@@ -4764,14 +4632,10 @@ class UploadIcons(Resource):
 
             new_icon_url = helper_icon_img(photo_url)
             print(new_icon_url)
-            execute("""INSERT INTO icons(
-                        uid
-                        , Description
-                        , url
-                        )VALUES(
-                            \'""" + NewID + """\'
-                            , \'""" + description + """\'
-                            , \'""" + new_icon_url + """\');""", 'post', conn)
+            execute("""INSERT INTO icons
+                       SET uid = \'""" + NewID + """\',
+                           Description = \'""" + description + """\',
+                           url = \'""" + new_icon_url + """\');""", 'post', conn)
             response['message'] = "Uploaded"
             return response, 200
         except:
@@ -5576,19 +5440,11 @@ class AboutHistory(Resource):
             new_id = NewIDresponse['result'][0]['new_id']
 
             items = execute("""INSERT into about_me_history
-                                (   about_history_id
-                                    , category
-                                    , name
-                                    , datetime_gmt
-                                    , user_id
-                                )
-                                VALUES
-                                (
-                                    \'""" + new_id + """\'
-                                    , \'""" + category + """\'
-                                    , \'""" + name + """\'
-                                    , \'""" + timestamp + """\'
-                                    , \'""" + user_id + """\'
+                               SET about_history_id = \'""" + new_id + """\',
+                                   category = \'""" + category + """\',
+                                   name = \'""" + name + """\',
+                                   datetime_gmt = \'""" + timestamp + """\',
+                                   user_id = \'""" + user_id + """\' 
                                 );""", 'post', conn)
 
             response['message'] = 'successful'
