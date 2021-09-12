@@ -5817,11 +5817,11 @@ def ManifestCRON():
 
     try:
         conn = connect()
-        print("\nbefore Function call")
-        PMChangeHistory.get()
+        print("\nStarting CRON Job")
+        PMChangeHistory.get(self)
         print("after Function call")
     except:
-        raise BadRequest('Request failed, please try again later.')
+        raise BadRequest('CRON JOB Request failed, please try again later.')
     finally:
         disconnect(conn)
 
@@ -6392,7 +6392,7 @@ class PMChangeHistory(Resource):
             return 200
 
         except:
-            raise BadRequest('Request failed, please try again later.')
+            raise BadRequest('PMChangeHistory Request failed, please try again later.')
         finally:
             disconnect(conn)
 
