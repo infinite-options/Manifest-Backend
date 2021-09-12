@@ -101,8 +101,8 @@ utc = pytz.utc
 # def getNow(): return datetime.strftime(datetime.now(utc),"%Y-%m-%d %H:%M:%S")
 
 # These statment return Day and Time in Local Time - Not sure about PST vs PDT
-def getToday(): return datetime.strftime(datetime.now(utc), "%Y-%m-%d")
-def getNow(): return datetime.strftime(datetime.now(utc), "%Y-%m-%d %H:%M:%S")
+def getToday(): return datetime.strftime(datetime.now(), "%Y-%m-%d")
+def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 
 
 # NOTIFICATIONS
@@ -2446,77 +2446,13 @@ class CopyGR(Resource):
         finally:
             disconnect(conn)
 
-class TodayGoalsRoutines_Anu(Resource):
-    def get(self, user_id):
-
-        response = {}
-        items = {}
-        try:
-
-            conn = connect()
-            NewIDresponse = execute("CALL get_history_id;",  'get', conn)
-            NewID = NewIDresponse['result'][0]['new_id']
-            print(NewID)
-            date_format = '%m/%d/%Y %H:%M:%S'
-            current = datetime.now(tz=pytz.utc)
-            print(current)
-            """ current = current.astimezone(timezone('US/Pacific')) """
-
-            date = current.strftime(date_format)
-            print(date)
-            current_time = current.strftime("%H:%M:%S")
-            current_time = datetime.strptime(current_time, "%H:%M:%S").time()
-            start = dt.time(0, 0, 0)
-            end = dt.time(0, 59, 59)
-
-            if current_time > start and current_time > end:
-                date_affected = current.date()
-            else:
-                date_affected = current + timedelta(days=-1)
-                date_affected = date_affected.date()
-         # Get all goals and routines of the user
-            query = """
-            SELECT  user_id, 
-                gr_unique_id,
-                gr_title,
-                at_unique_id, 
-                at_title,
-                is_unique_id, 
-                is_title 
-            FROM manifest.goals_routines
-            JOIN manifest.actions_tasks ON gr_unique_id=goal_routine_id 
-            JOIN manifest.instructions_steps ON at_unique_id=at_id 
-            WHERE user_id= \'""" + user_id + """\';
-                """
-            items = execute(query, 'get', conn)
-            user_history = [{} for sub in range(len(items['result']))]
-            if len(items['result']) > 0:
-                for i in range(len(items['result'])):
-                    user_history[i]['user_id'] = items['result'][i]['user_id']
-                    user_history[i]['goal_id'] = items['result'][i]['gr_unique_id']
-                    user_history[i]['goal_title'] = items['result'][i]['gr_title']
-                    user_history[i]['action_id'] = items['result'][i]['at_unique_id']
-                    user_history[i]['action_title'] = items['result'][i]['at_title']
-                    user_history[i]['instruction_id'] = items['result'][i]['is_unique_id']
-                    user_history[i]['instruction_title'] = items['result'][i]['is_title']
-
-            response['message'] = 'successful'
-            response['result'] = str(json.dumps(user_history))
-
-            return response, 200
-        except:
-            raise BadRequest(
-                'Get Routines Request failed, please try again later.')
-        finally:
-            disconnect(conn)
-
 class TodayGoalsRoutines(Resource):
     def __call__(self):
         print("In Call")
 
     def post(self, user_id):
 
-        print("in TodayGoalsRoutines")
+        print("in TodayGoalsRoutines for user ", user_id)
         from datetime import datetime
         from pytz import timezone
         import pytz
@@ -2529,7 +2465,7 @@ class TodayGoalsRoutines(Resource):
             NewIDresponse = execute("CALL get_history_id;",  'get', conn)
             print("NewIDresponse:", NewIDresponse)
             NewID = NewIDresponse['result'][0]['new_id']
-            print("new_id:", NewID)
+            print("New History id:", NewID)
 
             # DEFINE DATE TIME FORMAT
             date_format = '%m/%d/%Y %H:%M:%S'
@@ -2539,6 +2475,11 @@ class TodayGoalsRoutines(Resource):
             print("Current Date Time in GMT: ", current)
             current = current.astimezone(timezone('US/Pacific'))
             print("Current Date Time in PST: ", current)
+
+            currentDate = (dt.datetime.now().date())
+            print("Current Date (not sure if GMT or PST): ", currentDate)
+            current_week_day = currentDate.strftime('%A').lower()
+            print("Current Week Day (not used): ", current_week_day)
 
             date = current.strftime(date_format)
             print("Current Date Time in PST Formatted: ", date)
@@ -2551,31 +2492,33 @@ class TodayGoalsRoutines(Resource):
 
             # DEFINITION OF FIRST HOUR IN A DAY
             start = dt.time(0, 0, 0)
-            print(start)
+            print("Day Start: ", start)
             end = dt.time(0, 59, 59)
-            print(end)
+            print("Day End: ", end)
 
             print("Current time is: ", current_time)
             # IF CURRENT TIME IS BEYOND THE FIRST HOUR OF THE DAY THEN STORE HISTORY WITH TODAYS DAY
             if current_time > start and current_time > end:
                 date_affected = current.date()
-                print(date_affected)
+                print("Date affected: ", date_affected)
 
             # IF CURRENT TIME IS WITHIN THE FIRST HOUR OF THE DAY THEN STORE HISTORY WITH YESTERDAYS DAY
             else:
                 date_affected = current + timedelta(days=-1)
                 print(date_affected)
                 date_affected = date_affected.date()
-                print(date_affected)
+                print("Date affected: ", date_affected)
 
-            currentDate = (dt.datetime.now().date())
-            print("Current Date: ", currentDate)
-            current_week_day = currentDate.strftime('%A').lower()
-            print("Current Week Day (not used): ", current_week_day)
+
+
+
+
+
 
             # GETS CURRENT GOALS AND ROUTINES
             goals = execute(
                 """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
+            # print(goals)
 
             # CREATES INITIAL ARRAY FOR INCLUSION INTO HISTORY
             user_history = [{} for sub in range(len(goals['result']))]
@@ -2584,11 +2527,16 @@ class TodayGoalsRoutines(Resource):
             print("Before Routines")
 
             if len(goals['result']) > 0:
+                print("Goals/Routines Exist.  Start For Loop")
                 for i in range(len(goals['result'])):
                     print("\nBefore If", i)
                     print("user_history: ", user_history)
+                    print("\ncurrent goal: ", goals['result'][i])
+                    # IF GR IS_DISPLAYED TODAY THEN PROCESS IT OTHERWISE SKIP
                     if goals['result'][i]['is_displayed_today'].lower() == 'true':
-                        print("\nGR Photo: ", goals['result'][i]['gr_photo'])
+                        print("\nCurrent goal is active. Proceed", goals['result'][i]['is_displayed_today'])
+                        # print("\nGR Photo: ", goals['result'][i]['gr_photo'])
+                        # IF IS_PERSISTENT IS FALSE THEN IT IS A GOAL OTHERWISE IT IS A ROUTINE
                         if goals['result'][i]['is_persistent'].lower() == 'false':
                             user_history[i]['goal'] = goals['result'][i]['gr_unique_id']
                             user_history[i]['is_available'] = goals['result'][i]['is_available']
@@ -2604,13 +2552,19 @@ class TodayGoalsRoutines(Resource):
                             user_history[i]['is_sublist_available'] = goals['result'][i]['is_sublist_available']
                             user_history[i]['start_day_and_time'] = goals['result'][i]['gr_start_day_and_time']
                             user_history[i]['end_day_and_time'] = goals['result'][i]['gr_end_day_and_time']
+                        
+                        # SET TITLE FIELD
                         title = goals['result'][i]['gr_title']
+
+                        # REPLACES ' WITH ... SO ... WORKS
                         if "'" in title:
                             for v, char in enumerate(title):
                                 if char == "'":
                                     title = title[:v+1] + "'" + title[v+1:]
 
                         user_history[i]['title'] = title
+
+                        # SET STATUS FIELD
                         if goals['result'][i]['is_in_progress'].lower() == 'true':
                             user_history[i]['status'] = 'in_progress'
                         elif goals['result'][i]['is_complete'].lower() == 'true':
@@ -2618,11 +2572,15 @@ class TodayGoalsRoutines(Resource):
                         else:
                             user_history[i]['status'] = 'not started'
 
+
+                        # PROCESS ANY ACTIONS RELATED TO THE CURRENT GOAL
+                        print("Before Actions FOR GOAL: ", title, goals['result'][i]['gr_unique_id'])
                         actions = execute("""SELECT * FROM actions_tasks 
                                             WHERE goal_routine_id = \'""" + goals['result'][i]['gr_unique_id'] + """\';""", 'get', conn)
-
-                        print("Before Actions")
+                        print(actions)
+                        
                         if len(actions['result']) > 0:
+                            print("Actions Exist.  Start For Loop")
                             action_history = [{}
                                               for sub in range(len(actions['result']))]
 
@@ -2635,18 +2593,14 @@ class TodayGoalsRoutines(Resource):
                                 action_history[j]['action'] = actions['result'][j]['at_unique_id']
                                 print(actions['result'][j]['at_photo'])
                                 action_history[j]['photo'] = actions['result'][j]['at_photo']
-                                print(actions['result'][j]['at_photo'])
+                                print(actions['result'][j]['is_sublist_available'])
                                 action_history[j]['is_sublist_available'] = actions['result'][j]['is_sublist_available']
-                                print(actions['result'][j]
-                                      ['is_sublist_available'])
-                                action_history[j]['is_available'] = actions['result'][j]['is_available']
                                 print(actions['result'][j]['is_available'])
-                                action_history[j]['is_sublist_available'] = actions['result'][j]['is_sublist_available']
-                                print(actions['result'][j]
-                                      ['is_sublist_available'])
+                                action_history[j]['is_available'] = actions['result'][j]['is_available']
                                 title = actions['result'][j]['at_title']
                                 print(actions['result'][j]['at_title'])
 
+                                # PROCESS TITLE
                                 if "'" in title:
                                     for v, char in enumerate(title):
                                         if char == "'":
@@ -2655,6 +2609,7 @@ class TodayGoalsRoutines(Resource):
 
                                 action_history[j]['title'] = title
 
+                                # PROCESS STATUS
                                 if actions['result'][j]['is_in_progress'].lower() == 'true':
                                     action_history[j]['status'] = 'in_progress'
                                 elif actions['result'][j]['is_complete'].lower() == 'true':
@@ -2662,19 +2617,24 @@ class TodayGoalsRoutines(Resource):
                                 else:
                                     action_history[j]['status'] = 'not started'
 
-                                print("Before query")
+                                # PROCESS ANY INSTRUCTIONS OR STEPS RELATED TO THE CURRENT GOAL/ACTION
+                                print("\nBefore Instruction query")
 
                                 instructions = execute("""SELECT * FROM instructions_steps 
                                             WHERE at_id = \'""" + actions['result'][j]['at_unique_id'] + """\';""", 'get', conn)
+                                print(instructions)
 
                                 print("Before Steps")
                                 if len(instructions['result']) > 0:
+                                    print("Steps Exist.  Start For Loop")
                                     instruction_history = [
                                         {} for sub in range(len(instructions['result']))]
                                     for k in range(len(instructions['result'])):
                                         instruction_history[k]['instruction'] = instructions['result'][k]['is_unique_id']
                                         instruction_history[k]['photo'] = instructions['result'][k]['is_photo']
                                         instruction_history[k]['is_available'] = instructions['result'][k]['is_available']
+
+                                        # PROCESS TITLE
                                         title = instructions['result'][k]['is_title']
                                         if "'" in title:
                                             for v, char in enumerate(title):
@@ -2682,6 +2642,8 @@ class TodayGoalsRoutines(Resource):
                                                     title = title[:v+1] + \
                                                         "'" + title[v+1:]
                                         instruction_history[k]['title'] = title
+
+                                        # PROCESS STATUS
                                         if instructions['result'][k]['is_in_progress'].lower() == 'true':
                                             instruction_history[k]['status'] = 'in_progress'
                                         elif instructions['result'][k]['is_complete'].lower() == 'true':
@@ -2693,7 +2655,7 @@ class TodayGoalsRoutines(Resource):
 
                             user_history[i]['actions'] = action_history
 
-                    print("Before Update")
+                    print("\nBefore Reset Notifications Update")
 
                     execute("""UPDATE notifications
                         SET before_is_set = \'""" + 'False'+"""\'
@@ -2701,13 +2663,13 @@ class TodayGoalsRoutines(Resource):
                         , after_is_set = \'""" + 'False'+"""\' 
                         WHERE gr_at_id = \'""" + goals['result'][i]['gr_unique_id']+"""\'""", 'post', conn)
 
-            print("Before Print")
+            print("\nBefore Print")
 
             # DETERMINE IF DATE ALREADY EXISTING THE HISTORY TABLE
             print(user_id, date_affected)
             currentGR = execute(""" SELECT * FROM manifest.history where user_id = \'""" + user_id +
                                 """\' AND date_affected = \'""" + str(date_affected) + """\';""", 'get', conn)
-            print(currentGR)
+            # print(currentGR)
 
             # IF IT DOES NOT EXIST THEN INSERT INTO HISTORY TABLE
             if len(currentGR['result']) == 0:
@@ -2728,7 +2690,6 @@ class TodayGoalsRoutines(Resource):
             # IF IT DOES EXIST THEN UPDATE HISTORY TABLE
             else:
                 print("info exists")
-                print(currentGR['result'])
                 print("Existing id: ", currentGR['result'][0]['id'])
                 query = """
                     UPDATE manifest.history
@@ -2771,27 +2732,36 @@ class GetNotifications(Resource):
 
             items = execute(query, 'get', conn)
             goal_routine_response = items['result']
-
+            # print("GR Response: ", goal_routine_response)
             all_users = execute(
                 """Select user_unique_id, time_zone from users;""", 'get', conn)
+            # print("All Users: ", all_users)
             all_ta = execute(
                 """Select ta_unique_id from ta_people;""", 'get', conn)
+            # print("All TAs: ", all_ta)
 
             for i in range(len(all_users['result'])):
                 users.append(all_users['result'][i]['user_unique_id'])
+                # print(users)
 
             for i in range(len(all_ta['result'])):
                 ta.append(all_ta['result'][i]['ta_unique_id'])
+                # print(ta)
 
+            print(len(goal_routine_response))
             for i in range(len(goal_routine_response)):
                 gr_id = goal_routine_response[i]['gr_unique_id']
+                print(gr_id)
                 # Get all notifications of each goal and routine
                 res = execute(
                     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
-
+                print(res)
                 # Get TA info if first notification is of TA
+                print(len(res['result']))
                 if len(res['result']) > 0:
                     for j in range(len(res['result'])):
+                        print("\nJ counter: ", j)
+                        print(res['result'][j]['user_ta_id'][0])
                         if res['result'][j]['user_ta_id'][0] == '2' and res['result'][j]['user_ta_id'] in ta:
                             query1 = """SELECT ta_guid_device_id_notification FROM ta_people where ta_unique_id = \'""" + \
                                 res['result'][j]['user_ta_id'] + """\';"""
@@ -5842,68 +5812,570 @@ class Notifications(Resource):
 
 
 # CRON JOB
-
-
-# class PMChangeHistory(Resource):
+class PMChangeHistory(Resource):
 
 #     def __call__(self):
 #         print("In Call")
 
-#     # print("Entering CRON Job section")
+    def get(self):
 
-#     def post(self):
-def PMChangeHistory():
+# def PMChangeHistory():
+        from pytz import timezone
 
         try:
             conn = connect()
+            response = {}
 
             print("In PMChangeHistory")
-            # GETS NEW HISTORY TABLE UID
-            NewIDresponse = execute("CALL get_history_id;",  'get', conn)
-            print("NewIDresponse:", NewIDresponse)
-            NewID = NewIDresponse['result'][0]['new_id']
-            print("new_id:", NewID)
+
+            # BECAUSE THIS IS THE CRON JOB IT EXPECTS TO STORE A SNAPSHOT AND REST ALL GRATIS            
+
+            # WHEN SHOULD THE CRON JOB RUN - EVERY HOUR AT 5 MIN AFTER
+            # WHEN THE CRON JOB RUNS WHICH USERS SHOULD HAVE THE SNAPSHOT STORED AND GRATIS RESET?
+                # IF IT IS AFTER MIDNIGHT BUT BEFORE 1AM IN THE USERS TIME ZONE
+                # OR IF THE DAY END HAS PASSED - FORGET THIS FOR NOW
+
+            # IF IT IS AFTER MIDNIGHT BUT BEFORE 1AM IN THE USERS TIME ZONE
+                # GET THE USERS TIME ZONE AND THE CURRENT TIME IN THEIR TIME ZONE
+                # IF IT IS AFTER MIDNIGHT BUT BEFORE 1AM PROCESS CHANGE HISTORY
+
+            # RUN THE CRON JOB EVERY HOUR AT 5 MINS PAST THE HOUR (IE 1:05, 2:05)
+            # IF THE USERS LOCAL TIME IS BETWEEN MIDNIGHT AND 1 AM THEN RUN changeHistory_annotated
+            # changeHistory_annotated WILL TAKE THE SNAPSHOT (TodayGoalsRoutines) AND RESET GRATIS
+
+
+            # DEFINITION OF FIRST HOUR IN A DAY
+            start = dt.time(0, 0, 0)
+            print("Day Start: ", start)
+            end = dt.time(0, 59, 59)
+            print("Day End: ", end)
+
+
+            # GET LIST OF UNIQUE USERS AND THEIR TIME ZONE
+            query = """
+                        SELECT user_unique_id, day_end, time_zone
+                        FROM users
+                        """
+            items = execute(query, 'get', conn)
+            # print(items)
+            print(len(items['result']))
+
+
+            # FOR EACH USER FIND THE CURRENT TIME IN THEIR TIME ZONE
+            for i in range(len(items['result'])):
+                print("\nCurrent Record: ", items['result'][i])
+
+                # FIND CURRENT TIME ZONE OR SET THE TIMEZONE
+                if len(items['result'][i]['time_zone']) > 0:
+                    time_zone = timezone(items['result'][i]['time_zone'])
+                else:
+                    time_zone = 'America/Los_Angeles'
+                # print(time_zone, type(time_zone))
+
+
+                # TIME MANIPULATION: TAKE CURRENT TIME IN LOCAL TIMEZONE AND ISOLATE THE DATE AND TIME
+                # GETS CURRENT DATETIME IN UTC
+                current = datetime.now(tz=pytz.utc)
+                # print("Current Date Time in GMT: ", current)
+
+                # CONVERTS UTC DATETIME INTO LOCAL DATETIME
+                current = current.astimezone(timezone(str(time_zone)))
+                print("Current Date Time in LOCAL TIME          : ", current, type(current))
+
+
+                # GETS CURRENT TIME FROM DATETIME IN STR FORMAT
+                current_time = current.strftime("%H:%M:%S")
+                print("Current time: ", current_time, type(current_time))
+
+                # CONVERTS TIME FROM STR TO TIME FORMAT TO DO MATH
+                current_time = datetime.strptime(current_time, "%H:%M:%S").time()
+                print("Current time: ", current_time, type(current_time))
+
+
+                # IF BETWEEN MIDNIGHT AND 1AM
+                # IF CURRENT TIME IS BEYOND THE FIRST HOUR OF THE DAY THEN STORE HISTORY WITH TODAYS DAY
+                if current_time > start and current_time > end:
+                    date_affected = current.date()
+                    print("Date affected: ", date_affected)
+
+                # IF CURRENT TIME IS WITHIN THE FIRST HOUR OF THE DAY THEN STORE HISTORY WITH YESTERDAYS DAY
+                else:
+                    # print("\nIn else", current_date, type(current_date))
+                    # date_affected = current_date + timedelta(days=-1)
+                    # print("\nIn else", current, type(current))
+                    date_affected = current + timedelta(days=-1)
+                    # print(date_affected)
+                    date_affected = date_affected.date()
+                    print("Date affected: ", date_affected)
+
+                    # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
+                    print("\nbefore Function call")
+                    TodayGoalsRoutines.post(self, items['result'][i]['user_unique_id'])
+                    print("after Function call")
+
+
+                    # RESET ALL CURRENT GRATIS
+                    currentDate = (dt.datetime.now().date())
+                    print("Current Date: ", currentDate)
+                    current_week_day = currentDate.strftime('%A').lower()
+                    print("Current Weekday: ", current_week_day)
+
+                    # GET GOALS
+                    goals = execute(
+                        """SELECT * FROM goals_routines WHERE user_id = \'""" + items['result'][i]['user_unique_id'] + """\';""", 'get', conn)
+
+                    print("Before For Loop")
+                    for goal in goals['result']:
+                        print("\nGoal/Routine is: ", goal)
+                        is_displayed_today = 'False'
+                        print("Reset is_displayed_today to false: ", is_displayed_today)
+                        datetime_str = goal['gr_start_day_and_time']
+                        print(datetime_str)
+                        datetime_str = datetime_str.replace(",", "")
+                        print(datetime_str,type(datetime_str))
+                        
+                        start_date = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+                        print(start_date)
+                        repeat_week_days = json.loads(goal['repeat_week_days'])
+                        print(repeat_week_days)
+                        repeat_ends_on = (datetime.min).date()
+                        print(repeat_ends_on)
+
+                        week_days_unsorted = []
+                        occurence_dates = []
+                        print(1)
+
+                        for key in repeat_week_days.keys():
+                            print(key)
+                            if repeat_week_days[key].lower() == 'true':
+                                if key.lower() == "monday":
+                                    week_days_unsorted.append(1)
+                                if key.lower() == "tuesday":
+                                    week_days_unsorted.append(2)
+                                if key.lower() == "wednesday":
+                                    week_days_unsorted.append(3)
+                                if key.lower() == "thursday":
+                                    week_days_unsorted.append(4)
+                                if key.lower() == "friday":
+                                    week_days_unsorted.append(5)
+                                if key.lower() == "saturday":
+                                    week_days_unsorted.append(6)
+                                if key.lower() == "sunday":
+                                    week_days_unsorted.append(7)
+                        week_days = sorted(week_days_unsorted)
+                        print("Repeat Days: ", week_days)
+                        
+
+                        print(current_week_day)
+                        if current_week_day == "monday":
+                            current_week_day = 1
+                        if current_week_day == "tuesday":
+                            current_week_day = 2
+                        if current_week_day == "wednesday":
+                            current_week_day = 3
+                        if current_week_day == "thursday":
+                            current_week_day = 4
+                        if current_week_day == "friday":
+                            current_week_day = 5
+                        if current_week_day == "saturday":
+                            current_week_day = 6
+                        if current_week_day == "sunday":
+                            current_week_day = 7
+                        print(current_week_day)
+                        print(3)
+
+                        # IF NO REPEAT
+                        if goal['repeat'].lower() == 'false':
+                            epoch = dt.datetime.utcfromtimestamp(0).date()
+                            current_time = (
+                                currentDate - epoch).total_seconds() * 1000.0
+                            start_time = (start_date - epoch).total_seconds() * 1000.0
+                            is_displayed_today = (current_time - start_time) == 0
+                            print(goal['gr_title'], is_displayed_today)
+
+                        # IF REPEAT
+                        else:
+                            print(4)
+                            print(currentDate)
+                            print(start_date)
+                            # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
+                            if currentDate >= start_date:
+                                print("In if")
+                                print("In if repeat type", goal['repeat_type'])
+                                print("In if repeat frequency", goal['repeat_frequency'])
+
+                                # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
+                                # if goal['repeat_type'].lower() == 'after':
+                                if goal['repeat_type'].lower() == 'occur':
+                                    print("In if after")
+                                    if goal['repeat_frequency'].lower() == 'day':
+                                        print("In if if if")
+                                        print("day")
+                                        repeat_occurences = goal['repeat_occurences'] - 1
+                                        repeat_every = goal['repeat_every']
+                                        number_days = int(
+                                            repeat_occurences) * int(repeat_every)
+                                        repeat_ends_on = start_date + \
+                                            timedelta(days=number_days)
+                                        print(repeat_ends_on)
+
+                                    elif goal['repeat_frequency'].lower() == 'week':
+                                        print("in if if elif")
+                                        numberOfWeek = 0
+
+                                        init_date = start_date
+                                        start_day = init_date.isoweekday()
+                                        print("Weekly")
+                                        result = []
+                                        for x in week_days:
+                                            if x < start_day:
+                                                result.append(x)
+                                        new_week = []
+                                        if len(result) > 0:
+                                            new_week = week_days[len(result):]
+                                            for day in result:
+                                                new_week.append(day)
+                                            week_days = new_week
+
+                                        for i in range(goal['repeat_occurences']):
+                                            if i < len(week_days):
+                                                dow = week_days[i]
+                                            if i >= len(week_days):
+                                                numberOfWeek = math.floor(
+                                                    i / len(week_days))
+                                                dow = week_days[i % len(week_days)]
+
+                                            new_date = init_date
+                                            today = new_date.isoweekday()
+                                            day_i_need = dow
+                                            if today <= day_i_need:
+                                                days = day_i_need - today
+                                                nextDayOfTheWeek = new_date + \
+                                                    timedelta(days=days)
+                                            else:
+                                                new_date = new_date + \
+                                                    relativedelta(weeks=1)
+                                                days = day_i_need - today
+                                                nextDayOfTheWeek = new_date + \
+                                                    timedelta(days=-days)
+                                            add_weeks = numberOfWeek * \
+                                                int(goal['repeat_every'])
+                                            date = nextDayOfTheWeek + \
+                                                relativedelta(weeks=add_weeks)
+                                            occurence_dates.append(date)
+                                        print("current", currentDate)
+                                        print(occurence_dates)
+                                        if currentDate in occurence_dates:
+                                            is_displayed_today = True
+                                        print(goal['gr_title'], is_displayed_today)
+                                        print("P")
+                                        # execute("""UPDATE goals_routines
+                                        # SET is_in_progress = \'""" +'False'+"""\'
+                                        # , is_complete = \'""" +'False'+"""\'
+                                        # , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+                                        # WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                                        # execute("""UPDATE actions_tasks
+                                        # SET is_in_progress = \'""" +'False'+"""\'
+                                        # , is_complete = \'""" +'False'+"""\'
+                                        # WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                                        # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+                                        # if len(actions_task_response['result']) > 0:
+                                        #     for i in rangelen(actions_task_response['result']):
+                                        #         execute("""UPDATE instructions_steps
+                                        #                     SET is_in_progress = \'""" +'False'+"""\'
+                                        #                     , is_complete = \'""" +'False'+"""\'
+                                        #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+
+                                    elif goal['repeat_frequency'].lower() == 'month':
+                                        print("in if elif month")
+                                        print("month")
+                                        repeat_occurences = goal['repeat_occurences'] - 1
+                                        repeat_every = goal['repeat_every']
+                                        end_month = int(
+                                            repeat_occurences) * int(repeat_every)
+                                        repeat_ends_on = start_date + \
+                                            relativedelta(months=end_month)
+                                        print(repeat_ends_on)
+
+                                    elif goal['repeat_frequency'].lower() == 'year':
+                                        print("year")
+                                        repeat_occurences = goal['repeat_occurences']
+                                        repeat_every = goal['repeat_every']
+                                        end_year = int(repeat_occurences) * \
+                                            int(repeat_every)
+                                        repeat_ends_on = start_date + \
+                                            relativedelta(years=end_year)
+                                        print(repeat_ends_on)
+
+                                # IF REPEAT NEVER ENDS
+                                elif goal['repeat_type'].lower() == 'never':
+                                    print("In if never ")
+                                    print("never")
+                                    repeat_ends_on = currentDate
+                                    print(goal['gr_title'], repeat_ends_on)
+
+                                # IF REPEAT ENDS ON A SPECIFIC DAY
+                                elif goal['repeat_type'].lower() == 'on':
+                                    print("In if on ")
+                                    print("in goal repeat ends on", goal['repeat_ends_on'])
+                                    repeat_ends = goal['repeat_ends_on']
+                                    print(repeat_ends)
+                                    repeat_ends_on = repeat_ends[:24]
+                                    print(repeat_ends_on)
+                                    #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+                                    repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
+
+                            print("\nRepeat End on: ", repeat_ends_on)
+
+                            # CHECK TO MAKE SURE CURRENT DATE IS BEFORE REPEAT END ON DATE
+                            if currentDate <= repeat_ends_on:
+                                repeat_every = int(goal['repeat_every'])
+                                print("\nRepeat Every: ", repeat_every)
+                                print("Repeat Frequency: ", goal['repeat_frequency'])
+                                if goal['repeat_frequency'].lower() == 'day':
+                                    epoch = dt.datetime.utcfromtimestamp(0).date()
+                                    current_time = (
+                                        currentDate - epoch).total_seconds() * 1000.0
+                                    print("Current time: ", current_time)
+                                    start_time = (
+                                        start_date - epoch).total_seconds() * 1000.0
+                                    print("Start time: ", start_time)
+                                    # THIS STATEMENT DETERMINES IF IS_DISPLAYED IS TRUE OR FALSE
+                                    is_displayed_today = (math.floor(
+                                        (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
+                                    print("is_displayed_today: ", is_displayed_today)
+
+                                    # execute("""UPDATE goals_routines
+                                    #     SET is_in_progress = \'""" +'False'+"""\'
+                                    #     , is_complete = \'""" +'False'+"""\'
+                                    #     , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+                                    #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                                    # execute("""UPDATE actions_tasks
+                                    #     SET is_in_progress = \'""" +'False'+"""\'
+                                    #     , is_complete = \'""" +'False'+"""\'
+                                    #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                                    # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+                                    # if len(actions_task_response['result']) > 0:
+                                    #     for i in rangelen(actions_task_response['result']):
+                                    #         execute("""UPDATE instructions_steps
+                                    #                     SET is_in_progress = \'""" +'False'+"""\'
+                                    #                     , is_complete = \'""" +'False'+"""\'
+                                    #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+
+                                    print(goal['gr_title'], is_displayed_today)
+
+                                if goal['repeat_frequency'].lower() == 'week':
+                                    if current_week_day in week_days:
+                                        epoch = dt.datetime.utcfromtimestamp(0).date()
+                                        current_time = (
+                                            currentDate - epoch).total_seconds() * 1000.0
+                                        start_time = (
+                                            start_date - epoch).total_seconds() * 1000.0
+                                        is_displayed_today = (math.floor(
+                                            (current_time - start_time)/(7*24*3600*1000)) % repeat_every) == 0
+                                    # execute("""UPDATE goals_routines
+                                    #             SET is_in_progress = \'""" +'False'+"""\'
+                                    #             , is_complete = \'""" +'False'+"""\'
+                                    #             , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+                                    #             WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                                    # execute("""UPDATE actions_tasks
+                                    #     SET is_in_progress = \'""" +'False'+"""\'
+                                    #     , is_complete = \'""" +'False'+"""\'
+                                    #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+                                    # print(goal['gr_title'] , is_displayed_today)
+                                    # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+                                    # if len(actions_task_response['result']) > 0:
+                                    #     for i in rangelen(actions_task_response['result']):
+                                    #         execute("""UPDATE instructions_steps
+                                    #                     SET is_in_progress = \'""" +'False'+"""\'
+                                    #                     , is_complete = \'""" +'False'+"""\'
+                                    #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+
+                                if goal['repeat_frequency'].lower() == 'month':
+                                    is_displayed_today = currentDate.day == start_date.day and (
+                                        (currentDate.year - start_date.year) * 12 + currentDate.month - start_date.month) % repeat_every == 0
+                                    # execute("""UPDATE goals_routines
+                                    #     SET is_in_progress = \'""" +'False'+"""\'
+                                    #     , is_complete = \'""" +'False'+"""\'
+                                    #     , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+                                    #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                                    # execute("""UPDATE actions_tasks
+                                    #     SET is_in_progress = \'""" +'False'+"""\'
+                                    #     , is_complete = \'""" +'False'+"""\'
+                                    #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+                                    print(goal['gr_title'], is_displayed_today)
+
+                                if goal['repeat_frequency'].lower() == 'year':
+                                    is_displayed_today = currentDate.day == start_date.day and currentDate.month == start_date.month and (
+                                        currentDate.year - start_date.year) % repeat_every == 0
+                                    # execute("""UPDATE goals_routines
+                                    #     SET is_in_progress = \'""" +'False'+"""\'
+                                    #     , is_complete = \'""" +'False'+"""\'
+                                    #     , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+                                    #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                                    # execute("""UPDATE actions_tasks
+                                    #     SET is_in_progress = \'""" +'False'+"""\'
+                                    #     , is_complete = \'""" +'False'+"""\'
+                                    #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+                                    print(goal['gr_title'], is_displayed_today)
+
+                            # if currentDate > repeat_ends_on:
+                            #     execute("""UPDATE goals_routines
+                            #             SET is_in_progress = \'""" +'False'+"""\'
+                            #             , is_complete = \'""" +'False'+"""\'
+                            #             , is_displayed_today = \'""" +'False'+"""\'
+                            #             WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+                            #     execute("""UPDATE actions_tasks
+                            #             SET is_in_progress = \'""" +'False'+"""\'
+                            #             , is_complete = \'""" +'False'+"""\'
+                            #             WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+                        print("Pragya")
+                        
+                        # TEMPORARILY COMMENT OUT TO SEE WHAT THE REST OF THE FUNCTION DOES
+
+                        print("\nThe Bottom Line: ")
+                        print(goal['gr_unique_id'])
+                        print(goal['gr_title'])
+                        print("Is Displayed Today: ", is_displayed_today)
+                        print("************")
+                        print(str(is_displayed_today).title())
+
+                        # UPDATE GOALS AND ROUTINES
+                        execute("""
+                            UPDATE goals_routines
+                            SET is_in_progress = \'""" + 'False'+"""\'
+                            , is_complete = \'""" + 'False'+"""\'
+                            , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
+                            WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                        # UPDATE ACTIONS AND TASKS
+                        execute("""
+                            UPDATE actions_tasks
+                            SET is_in_progress = \'""" + 'False'+"""\'
+                            , is_complete = \'""" + 'False'+"""\'
+                            WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+
+                        # UPDATE INSTRUCTIONS AND STEPS
+                        actions_task_response = execute(
+                            """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+
+                        print("AT length: ", len(actions_task_response['result']))
+                        if len(actions_task_response['result']) > 0:
+                            for i in range(len(actions_task_response['result'])):
+                                execute("""
+                                UPDATE instructions_steps
+                                SET is_in_progress = \'""" + 'False'+"""\'
+                                , is_complete = \'""" + 'False'+"""\'
+                                WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+     
+            return 200
+
 
             # items = execute(
             #     """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
-
-            # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
-
-
-            # query = """
-            #             INSERT INTO manifest.pm_history
-            #             SET id = '800-000027',
-            #                 user_id = '800-000027',
-            #                 date = '800-000027',
-            #                 details = \'""" + '[]' + """\',
-            #                 date_affected = '800-000027',;
-            #         """
-
-            # THIS QUERY WORKS
-            # query = """
-            #             INSERT INTO manifest.pm_history
-            #             SET 
-            #             id = '100-000001',
-            #             user_id = '100-000001',
-            #             date = '100-000001',
-            #             date_affected = '100-000001';
-            #             """
+            # print(items)
 
             query = """
-                        INSERT INTO manifest.pm_history
-                        SET 
-                        id = \'"""+ NewID +"""\',
-                        user_id = '100-000001',
-                        date = '100-000001',
-                        date_affected = '100-000001';
+                        SELECT user_unique_id, day_end, time_zone
+                        FROM users
+                        WHERE day_end <> 'null'
                         """
-
-            items = execute(query, 'post', conn)
+            items = execute(query, 'get', conn)
             print(items)
 
-            # response['message'] = 'successful'
-            # response['result'] = items['result']
-            # return response, 200
+
+            set1 = set()
+
+            post_url = 'https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/changeHistory/'
+
+            for d in items['result']:
+                print("\n d items: ", d)
+                day_end_hour =int(d['day_end'].split(':',1)[0])
+                day_end_min =int(d['day_end'].split(':',1)[1])
+                print(day_end_hour, day_end_min)
+
+                zone = d['time_zone']
+                hr = day_end_hour
+                mm = day_end_min
+
+
+
+                # def get_dayend_utctime(zone,hr,mm):
+                print("\nstarting: ", zone, hr, mm)
+
+                # CURRENT LOCAL TIME
+                temp1=datetime.now(pytz.timezone(zone))
+                print("1", temp1)
+                # CURRENT TIME MINUS 1 HR
+                temp2 = temp1 - timedelta(seconds=3600)
+                print("2", temp2)
+                #print(x.strftime('%Y%m%d_%H:%M:%S - '))
+                # REPLACE DAY END INFO INTO TEMP
+                temp3 = temp2.replace(hour =hr, minute = mm)
+                print("3", temp3)
+                #print(temp.strftime('%Y%m%d_%H:%M:%S - '))
+                # CONVERT DAY END TIME INTO UTC
+                utc_temp = temp3.astimezone(pytz.utc)
+                print("4", utc_temp)
+                # return utc_temp
+
+
+
+                # dayend_utc_time = get_dayend_utctime(d['time_zone'], day_end_hour, day_end_min)
+                dayend_utc_time = utc_temp
+
+                print("\ndayend_utc_time: ", dayend_utc_time)
+                print("temp1: ", temp1)
+
+                # print(dayend_utc_time.strftime('%Y%m%d_%H:%M:%S - '), utc_time.strftime('%Y%m%d_%H:%M:%S - '))
+                # time_diff = dayend_utc_time-utc_time
+                print(dayend_utc_time.strftime('%Y%m%d_%H:%M:%S - '), temp1.strftime('%Y%m%d_%H:%M:%S - '))
+                time_diff = dayend_utc_time-temp1
+                print(time_diff)    
+                
+                
+                # print(d['user_unique_id'],d['time_zone'], day_end_hour, day_end_min, utc_time.hour,utc_time.minute)
+                # print(dayend_utc_time)
+                # print(utc_time)
+                print("Time Diff: ", time_diff.total_seconds())
+                # IF TIME DIFFERENCE IS WITHIN 1 HR
+                if(time_diff.total_seconds()>=-3540 and time_diff.total_seconds()<=10):
+                        set1.add(d['user_unique_id'])
+                        print(set1)
+                    # print(d['user_unique_id'],d['day_end'])
+                for i in set1:
+                        print("User UID: ", i)
+                        new_url =post_url+ i
+                        # new_url =post_url+ '100-000027'
+                        print(new_url)
+                        
+                        # COMMENTING OUT BELOW FOR TESTING PURPOSES
+                        try:
+                            r = requests.post(new_url)
+                            print(r)
+                            r.raise_for_status()
+                        except requests.ConnectionError as e:
+                            err = 'requests.post(): Connection Error!'
+                        except requests.exceptions.HTTPError as e:
+                            err = 'requests.post(): HTTP Error!'
+                        else:
+                            err = ''
+
+
+                        #f.write(err)
+                        #f.write(i)
+                        #f.write('\n')
+                        #f.write('------------------------------------------------------------------\n')
+                set1.clear()
+
+
             return 200
 
         except:
@@ -5911,7 +6383,195 @@ def PMChangeHistory():
         finally:
             disconnect(conn)
 
+            
+
+class PMChangeHistory2(Resource):
+#   SOMEHOW THIS SEEMS TO WORK
+#     def __call__(self):
+#         print("In Call")
+
+    def get(self):
+        
+        try:
+            conn = connect()
+            response = {}
+
+            def get_dayend_utctime(zone,hr,mm):
+                print("\nstarting: ", zone, hr, mm)
+                # CURRENT LOCAL TIME
+                temp=datetime.now(pytz.timezone(zone))
+                print("1", temp)
+                # CURRENT TIME MINUS 1 HR
+                temp = temp - timedelta(seconds=3600)
+                print("2", temp)
+                #print(x.strftime('%Y%m%d_%H:%M:%S - '))
+                # REPLACE DAY END INFO INTO TEMP
+                temp = temp.replace(hour =hr, minute = mm)
+                print("3", temp)
+                #print(temp.strftime('%Y%m%d_%H:%M:%S - '))
+                # CONVERT DAY END TIME INTO UTC
+                utc_temp = temp.astimezone(pytz.utc)
+                print("4", utc_temp)
+                return utc_temp
+
+            print("In PMChangeHistory")
+
+            # items = execute(
+            #     """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
+            # print(items)
+
+            query = """
+                        SELECT user_unique_id, day_end, time_zone
+                        FROM users
+                        WHERE day_end <> 'null'
+                        """
+            items = execute(query, 'get', conn)
+            print(items)
+
+
+            set1 = set()
+
+            post_url = 'https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/changeHistory/'
+
+            print(getToday())
+            print(getNow())
+            print(datetime.strftime(datetime.now(),"%Y-%m-%d %H:%M:%S"))
+            print(datetime.strftime(datetime.now(utc),"%Y-%m-%d %H:%M:%S"))
+            # utc_time = datetime.now(utc)
+            # utc_time = datetime.strftime(datetime.now(utc),"%Y-%m-%d %H:%M:%S")
+            utc_time = datetime.strftime(datetime.now(),"%Y%m%d_%H:%M:%S - ")
+            print("3. Curent Time In UTC: ", utc_time)
+
+            utc_time = datetime.now()
+            print("\n1. Curent Time: ", utc_time)
+            utc_timezone = pytz.timezone('UTC')
+            print("2. Time Zone: ", utc_timezone)
+            utc_time = utc_timezone.localize(utc_time)
+            print("3. Curent Time In UTC: ", utc_time)
+            #utc_time = utc_time.astimezone(utc_timezone)
+            print("4. Truncated: ", utc_time.strftime('%Y%m%d_%H:%M:%S - '))
+            # stime = datetime.now().strftime('%Y%m%d_%H:%M:%S - ')
+            # print("5. Not sure this is used: ", stime)
+
+            print("\nItems: ", items)
+            for d in items['result']:
+                print("\n d items: ", d)
+                day_end_hour =int(d['day_end'].split(':',1)[0])
+                day_end_min =int(d['day_end'].split(':',1)[1])
+                print(day_end_hour, day_end_min)
+
+                dayend_utc_time = get_dayend_utctime(d['time_zone'], day_end_hour, day_end_min)
+
+                print("\ndayend_utc_time: ", dayend_utc_time)
+                print("utc_time: ", utc_time)
+
+
+
+                print(dayend_utc_time.strftime('%Y%m%d_%H:%M:%S - '), utc_time.strftime('%Y%m%d_%H:%M:%S - '))
+                time_diff = dayend_utc_time-utc_time
+                print(time_diff)
+                
+                
+                # print(d['user_unique_id'],d['time_zone'], day_end_hour, day_end_min, utc_time.hour,utc_time.minute)
+                # print(dayend_utc_time)
+                # print(utc_time)
+                print("Time Diff: ", time_diff.total_seconds())
+                # IF TIME DIFFERENCE IS WITHIN 1 HR
+                if(time_diff.total_seconds()>=-3540 and time_diff.total_seconds()<=10):
+                        set1.add(d['user_unique_id'])
+                        print(set1)
+                    # print(d['user_unique_id'],d['day_end'])
+                for i in set1:
+                        print("User UID: ", i)
+                        new_url =post_url+ i
+                        # new_url =post_url+ '100-000027'
+                        print(new_url)
+                        
+                        # COMMENTING OUT BELOW FOR TESTING PURPOSES
+                        try:
+                            r = requests.post(new_url)
+                            print(r)
+                            r.raise_for_status()
+                        except requests.ConnectionError as e:
+                            err = 'requests.post(): Connection Error!'
+                        except requests.exceptions.HTTPError as e:
+                            err = 'requests.post(): HTTP Error!'
+                        else:
+                            err = ''
+
+
+                        #f.write(err)
+                        #f.write(i)
+                        #f.write('\n')
+                        #f.write('------------------------------------------------------------------\n')
+                set1.clear()
+
+
+            return 200
+
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+# def  PMChangeHistory(Resource):
+#             # GETS NEW HISTORY TABLE UID
+#             NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+#             print("NewIDresponse:", NewIDresponse)
+#             NewID = NewIDresponse['result'][0]['new_id']
+#             print("new_id:", NewID)
+
+#             # items = execute(
+#             #     """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
+
+#             # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
+
+
+#             # query = """
+#             #             INSERT INTO manifest.pm_history
+#             #             SET id = '800-000027',
+#             #                 user_id = '800-000027',
+#             #                 date = '800-000027',
+#             #                 details = \'""" + '[]' + """\',
+#             #                 date_affected = '800-000027',;
+#             #         """
+
+#             # THIS QUERY WORKS
+#             # query = """
+#             #             INSERT INTO manifest.pm_history
+#             #             SET 
+#             #             id = '100-000001',
+#             #             user_id = '100-000001',
+#             #             date = '100-000001',
+#             #             date_affected = '100-000001';
+#             #             """
+
+#             query = """
+#                         INSERT INTO manifest.pm_history
+#                         SET 
+#                         id = \'"""+ NewID +"""\',
+#                         user_id = '100-000001',
+#                         date = '100-000001',
+#                         date_affected = '100-000001';
+#                         """
+
+#             items = execute(query, 'post', conn)
+#             print(items)
+
+#             # response['message'] = 'successful'
+#             # response['result'] = items['result']
+#             # return response, 200
+#             return 200
+
+#         except:
+#             raise BadRequest('Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
+
 class ChangeHistory_annotated(Resource):
+    def __call__(self):
+        print("In ChangeHistory Call")
+
     def post(self, user_id):
 
         print("in Change History")
@@ -5928,9 +6588,14 @@ class ChangeHistory_annotated(Resource):
             # NewID = NewIDresponse['result'][0]['new_id']
             date_format = '%m/%d/%Y %H:%M:%S'
             current = datetime.now(tz=pytz.utc)
-            print("\nUTC Time is: ", current)
+            print("\nUTC Time is: ", current, type (current))
             current = current.astimezone(timezone('US/Pacific'))
-            print("PST Time is: ", current)
+            print("PST Time is: ", current, type (current))
+
+
+
+
+
 
             date = current.strftime(date_format)
             print("\nDate Time Stamp: ", date)
@@ -5953,6 +6618,9 @@ class ChangeHistory_annotated(Resource):
                 date_affected = current.date()
             # IF CURRENT TIME IS AFTER START AND BEFORE END THEN IT IS YESTERDAY
             else:
+                print("\nin else")
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                print("Current date: ", current, type(current))
                 date_affected = current + timedelta(days=-1)
                 date_affected = date_affected.date()
             print("Date Affected: ", date_affected)
@@ -6863,11 +7531,15 @@ class ChangeHistory(Resource):
                                 SET is_in_progress = \'""" + 'False'+"""\'
                                 , is_complete = \'""" + 'False'+"""\'
                                 , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
+                                , gr_datetime_started = ""
+                                , gr_datetime_completed = ""
                                 WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
                 execute("""UPDATE actions_tasks
                             SET is_in_progress = \'""" + 'False'+"""\'
                             , is_complete = \'""" + 'False'+"""\'
+                            , at_datetime_started = ""
+                            , at_datetime_completed = ""
                             WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
                 actions_task_response = execute(
@@ -7405,8 +8077,9 @@ api.add_resource(UpdateAboutMe2, '/api/v2/update')
 api.add_resource(UploadIcons, '/api/v2/uploadIcons')
 api.add_resource(UpdatePeople, '/api/v2/updatePeople')
 api.add_resource(ChangeHistory, '/api/v2/changeHistory/<string:user_id>')
-# api.add_resource(PMChangeHistory, '/api/v2/PMChangeHistory')
-api.add_resource(ChangeHistory_annotated, '/api/v2/ChangeHistory_annotated/<string:user_id>')
+api.add_resource(PMChangeHistory, '/api/v2/PMChangeHistory')
+api.add_resource(PMChangeHistory2, '/api/v2/PMChangeHistory2')
+api.add_resource(ChangeHistory_annotated, '/api/v2/changeHistory_annotated/<string:user_id>')
 api.add_resource(ExistingUser, '/api/v2/existingUser')
 api.add_resource(ResetGR, '/api/v2/resetGR/<string:gr_id>')
 api.add_resource(update_guid_notification,
