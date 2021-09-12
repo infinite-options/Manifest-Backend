@@ -5832,9 +5832,9 @@ def ManifestGRATIS_CRON():
 
         # DEFINITION OF FIRST HOUR IN A DAY
         start = dt.time(0, 0, 0)
-        print("Day Start: ", start)
+        # print("Day Start: ", start)
         end = dt.time(0, 59, 59)
-        print("Day End: ", end)
+        # print("Day End: ", end)
 
 
         # GET LIST OF UNIQUE USERS AND THEIR TIME ZONE
@@ -5866,23 +5866,23 @@ def ManifestGRATIS_CRON():
 
             # CONVERTS UTC DATETIME INTO LOCAL DATETIME
             current = current.astimezone(timezone(str(time_zone)))
-            print("Current Date Time in LOCAL TIME          : ", current, type(current))
+            # print("Current Date Time in LOCAL TIME          : ", current, type(current))
 
 
             # GETS CURRENT TIME FROM DATETIME IN STR FORMAT
             current_time = current.strftime("%H:%M:%S")
-            print("Current time: ", current_time, type(current_time))
+            # print("Current time: ", current_time, type(current_time))
 
             # CONVERTS TIME FROM STR TO TIME FORMAT TO DO MATH
             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
-            print("Current time: ", current_time, type(current_time))
+            # print("Current time: ", current_time, type(current_time))
 
 
             # IF BETWEEN MIDNIGHT AND 1AM
             # IF CURRENT TIME IS BEYOND THE FIRST HOUR OF THE DAY THEN STORE HISTORY WITH TODAYS DAY
             if current_time > start and current_time > end:
                 date_affected = current.date()
-                print("Date affected: ", date_affected)
+                # print("Date affected: ", date_affected)
 
             # IF CURRENT TIME IS WITHIN THE FIRST HOUR OF THE DAY THEN STORE HISTORY WITH YESTERDAYS DAY
             else:
@@ -5892,10 +5892,10 @@ def ManifestGRATIS_CRON():
                 date_affected = current + timedelta(days=-1)
                 # print(date_affected)
                 date_affected = date_affected.date()
-                print("Date affected: ", date_affected)
+                # print("Date affected: ", date_affected)
 
                 # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
-                print("\nbefore Function call")
+                # print("\nbefore Function call")
                 user_id = items['result'][i]['user_unique_id']
 
                 # HERE IS WHERE YOU WOULD CALL TodayGoalsRoutines
@@ -5908,7 +5908,7 @@ def ManifestGRATIS_CRON():
                 # BELOW IS THE COPIED TodayGoalsRoutines
 
                 NewIDresponse = execute("CALL get_history_id;",  'get', conn)
-                print("NewIDresponse:", NewIDresponse)
+                # print("NewIDresponse:", NewIDresponse)
                 NewID = NewIDresponse['result'][0]['new_id']
                 print("New History id:", NewID)
 
@@ -5919,19 +5919,19 @@ def ManifestGRATIS_CRON():
 
                 # CREATES INITIAL ARRAY FOR INCLUSION INTO HISTORY
                 user_history = [{} for sub in range(len(goals['result']))]
-                print("user_history: ", user_history)
+                # print("user_history: ", user_history)
 
-                print("Before Routines")
+                # print("Before Routines")
 
                 if len(goals['result']) > 0:
-                    print("Goals/Routines Exist.  Start For Loop")
+                    # print("Goals/Routines Exist.  Start For Loop")
                     for i in range(len(goals['result'])):
-                        print("\nBefore If", i)
-                        print("user_history: ", user_history)
-                        print("\ncurrent goal: ", goals['result'][i])
+                        # print("\nBefore If", i)
+                        # print("user_history: ", user_history)
+                        # print("\ncurrent goal: ", goals['result'][i])
                         # IF GR IS_DISPLAYED TODAY THEN PROCESS IT OTHERWISE SKIP
                         if goals['result'][i]['is_displayed_today'].lower() == 'true':
-                            print("\nCurrent goal is active. Proceed", goals['result'][i]['is_displayed_today'])
+                            # print("\nCurrent goal is active. Proceed", goals['result'][i]['is_displayed_today'])
                             # print("\nGR Photo: ", goals['result'][i]['gr_photo'])
                             # IF IS_PERSISTENT IS FALSE THEN IT IS A GOAL OTHERWISE IT IS A ROUTINE
                             if goals['result'][i]['is_persistent'].lower() == 'false':
@@ -5971,31 +5971,31 @@ def ManifestGRATIS_CRON():
 
 
                             # PROCESS ANY ACTIONS RELATED TO THE CURRENT GOAL
-                            print("Before Actions FOR GOAL: ", title, goals['result'][i]['gr_unique_id'])
+                            # print("Before Actions FOR GOAL: ", title, goals['result'][i]['gr_unique_id'])
                             actions = execute("""SELECT * FROM actions_tasks 
                                                 WHERE goal_routine_id = \'""" + goals['result'][i]['gr_unique_id'] + """\';""", 'get', conn)
-                            print(actions)
+                            # print(actions)
                             
                             if len(actions['result']) > 0:
-                                print("Actions Exist.  Start For Loop")
+                                # print("Actions Exist.  Start For Loop")
                                 action_history = [{}
                                                 for sub in range(len(actions['result']))]
 
                                 # print(actions['result'])
 
-                                print("Before Action For Loop")
+                                # print("Before Action For Loop")
 
                                 for j in range(len(actions['result'])):
-                                    print(actions['result'][j]['at_unique_id'])
+                                    # print(actions['result'][j]['at_unique_id'])
                                     action_history[j]['action'] = actions['result'][j]['at_unique_id']
-                                    print(actions['result'][j]['at_photo'])
+                                    # print(actions['result'][j]['at_photo'])
                                     action_history[j]['photo'] = actions['result'][j]['at_photo']
-                                    print(actions['result'][j]['is_sublist_available'])
+                                    # print(actions['result'][j]['is_sublist_available'])
                                     action_history[j]['is_sublist_available'] = actions['result'][j]['is_sublist_available']
-                                    print(actions['result'][j]['is_available'])
+                                    # print(actions['result'][j]['is_available'])
                                     action_history[j]['is_available'] = actions['result'][j]['is_available']
                                     title = actions['result'][j]['at_title']
-                                    print(actions['result'][j]['at_title'])
+                                    # print(actions['result'][j]['at_title'])
 
                                     # PROCESS TITLE
                                     if "'" in title:
@@ -6015,15 +6015,15 @@ def ManifestGRATIS_CRON():
                                         action_history[j]['status'] = 'not started'
 
                                     # PROCESS ANY INSTRUCTIONS OR STEPS RELATED TO THE CURRENT GOAL/ACTION
-                                    print("\nBefore Instruction query")
+                                    # print("\nBefore Instruction query")
 
                                     instructions = execute("""SELECT * FROM instructions_steps 
                                                 WHERE at_id = \'""" + actions['result'][j]['at_unique_id'] + """\';""", 'get', conn)
-                                    print(instructions)
+                                    # print(instructions)
 
-                                    print("Before Steps")
+                                    # print("Before Steps")
                                     if len(instructions['result']) > 0:
-                                        print("Steps Exist.  Start For Loop")
+                                        # print("Steps Exist.  Start For Loop")
                                         instruction_history = [
                                             {} for sub in range(len(instructions['result']))]
                                         for k in range(len(instructions['result'])):
@@ -6052,7 +6052,7 @@ def ManifestGRATIS_CRON():
 
                                 user_history[i]['actions'] = action_history
 
-                        print("\nBefore Reset Notifications Update")
+                        # print("\nBefore Reset Notifications Update")
 
                         execute("""UPDATE notifications
                             SET before_is_set = \'""" + 'False'+"""\'
@@ -6060,10 +6060,12 @@ def ManifestGRATIS_CRON():
                             , after_is_set = \'""" + 'False'+"""\' 
                             WHERE gr_at_id = \'""" + goals['result'][i]['gr_unique_id']+"""\'""", 'post', conn)
 
-                print("\nBefore Print")
+                # print("\nBefore Print")
+                # print("Complete building User History Array")
 
                 # DETERMINE IF DATE ALREADY EXISTING THE HISTORY TABLE
-                print(user_id, date_affected)
+                print("User Id: ", user_id, date_affected)
+                print("User History: ", user_history)
                 currentGR = execute(""" SELECT * FROM manifest.history where user_id = \'""" + user_id +
                                     """\' AND date_affected = \'""" + str(date_affected) + """\';""", 'get', conn)
                 # print(currentGR)
@@ -6081,8 +6083,9 @@ def ManifestGRATIS_CRON():
                             date_affected = \'""" + str(date_affected) + """\';
                     """
 
+                    print("Before Insert execution")
                     items = execute(query, 'post', conn)
-                    print(items)
+                    # print(items)
 
                 # IF IT DOES EXIST THEN UPDATE HISTORY TABLE
                 else:
@@ -6091,12 +6094,15 @@ def ManifestGRATIS_CRON():
                     query = """
                         UPDATE manifest.history
                         SET id = \'""" + currentGR['result'][0]['id'] + """\',
-                            user_id = \'""" + user_id + """\'
+                            user_id = \'""" + user_id + """\',
+                            date = \'""" + str(date) + """\',
+                            details = \'""" + str(json.dumps(user_history)) + """\',
+                            date_affected = \'""" + str(date_affected) + """\';
                         WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                     """
-                    print("Before query execution")
+                    print("Before Update execution")
                     items = execute(query, 'post', conn)
-                    print(items)
+                    # print(items)
 
                     # response['message'] = 'successful'
 
@@ -6127,34 +6133,34 @@ def ManifestGRATIS_CRON():
                 # RESET ALL CURRENT GRATIS
                 print("Reset all Current Gratis")
                 currentDate = (dt.datetime.now().date())
-                print("Current Date: ", currentDate)
+                # print("Current Date: ", currentDate)
                 current_week_day = currentDate.strftime('%A').lower()
-                print("Current Weekday: ", current_week_day)
+                # print("Current Weekday: ", current_week_day)
 
                 # GET GOALS
                 goals = execute(
                     """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
                 # """SELECT * FROM goals_routines WHERE user_id = \'""" + items['result'][i]['user_unique_id'] + """\';""", 'get', conn)        
-                print("Before For Loop")
+                # print("Before For Loop")
                 for goal in goals['result']:
-                    print("\nGoal/Routine is: ", goal)
+                    # print("\nGoal/Routine is: ", goal)
                     is_displayed_today = 'False'
-                    print("Reset is_displayed_today to false: ", is_displayed_today)
+                    # print("Reset is_displayed_today to false: ", is_displayed_today)
                     datetime_str = goal['gr_start_day_and_time']
-                    print(datetime_str,type(datetime_str))
+                    # print(datetime_str,type(datetime_str))
                     datetime_str = datetime_str.replace(",", "")
-                    print(datetime_str,type(datetime_str))
+                    # print(datetime_str,type(datetime_str))
                     
                     start_date = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                    print(start_date,type(start_date))
+                    # print(start_date,type(start_date))
                     repeat_week_days = json.loads(goal['repeat_week_days'])
-                    print(repeat_week_days)
+                    # print(repeat_week_days)
                     repeat_ends_on = (datetime.min).date()
-                    print(repeat_ends_on)
+                    # print(repeat_ends_on)
 
                     week_days_unsorted = []
                     occurence_dates = []
-                    print(1)
+                    # print(1)
 
                     for key in repeat_week_days.keys():
                         print("Key = ", key)
@@ -6193,7 +6199,7 @@ def ManifestGRATIS_CRON():
                     if current_week_day == "sunday":
                         current_week_day = 7
                     print(current_week_day)
-                    print(3)
+                    # print(3)
 
                     # IF NO REPEAT
                     if goal['repeat'].lower() == 'false':
@@ -6202,41 +6208,41 @@ def ManifestGRATIS_CRON():
                             currentDate - epoch).total_seconds() * 1000.0
                         start_time = (start_date - epoch).total_seconds() * 1000.0
                         is_displayed_today = (current_time - start_time) == 0
-                        print(goal['gr_title'], is_displayed_today)
+                        # print(goal['gr_title'], is_displayed_today)
 
                     # IF REPEAT
                     else:
-                        print(4)
-                        print(currentDate)
-                        print(start_date)
+                        # print(4)
+                        # print(currentDate)
+                        # print(start_date)
                         # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
                         if currentDate >= start_date:
-                            print("In if")
-                            print("In if repeat type", goal['repeat_type'])
-                            print("In if repeat frequency", goal['repeat_frequency'])
+                            # print("In if")
+                            # print("In if repeat type", goal['repeat_type'])
+                            # print("In if repeat frequency", goal['repeat_frequency'])
 
                             # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
                             # if goal['repeat_type'].lower() == 'after':
                             if goal['repeat_type'].lower() == 'occur':
                                 print("In if after")
                                 if goal['repeat_frequency'].lower() == 'day':
-                                    print("In if if if")
-                                    print("day")
+                                    # print("In if if if")
+                                    # print("day")
                                     repeat_occurences = goal['repeat_occurences'] - 1
                                     repeat_every = goal['repeat_every']
                                     number_days = int(
                                         repeat_occurences) * int(repeat_every)
                                     repeat_ends_on = start_date + \
                                         timedelta(days=number_days)
-                                    print(repeat_ends_on)
+                                    # print(repeat_ends_on)
 
                                 elif goal['repeat_frequency'].lower() == 'week':
-                                    print("in if if elif")
+                                    # print("in if if elif")
                                     numberOfWeek = 0
 
                                     init_date = start_date
                                     start_day = init_date.isoweekday()
-                                    print("Weekly")
+                                    # print("Weekly")
                                     result = []
                                     for x in week_days:
                                         if x < start_day:
@@ -6274,73 +6280,73 @@ def ManifestGRATIS_CRON():
                                         date = nextDayOfTheWeek + \
                                             relativedelta(weeks=add_weeks)
                                         occurence_dates.append(date)
-                                    print("current", currentDate)
-                                    print(occurence_dates)
+                                    # print("current", currentDate)
+                                    # print(occurence_dates)
                                     if currentDate in occurence_dates:
                                         is_displayed_today = True
-                                    print(goal['gr_title'], is_displayed_today)
-                                    print("P")
+                                    # print(goal['gr_title'], is_displayed_today)
+                                    # print("P")
                                     
                                 elif goal['repeat_frequency'].lower() == 'month':
-                                    print("in if elif month")
-                                    print("month")
+                                    # print("in if elif month")
+                                    # print("month")
                                     repeat_occurences = goal['repeat_occurences'] - 1
                                     repeat_every = goal['repeat_every']
                                     end_month = int(
                                         repeat_occurences) * int(repeat_every)
                                     repeat_ends_on = start_date + \
                                         relativedelta(months=end_month)
-                                    print(repeat_ends_on)
+                                    # print(repeat_ends_on)
 
                                 elif goal['repeat_frequency'].lower() == 'year':
-                                    print("year")
+                                    # print("year")
                                     repeat_occurences = goal['repeat_occurences']
                                     repeat_every = goal['repeat_every']
                                     end_year = int(repeat_occurences) * \
                                         int(repeat_every)
                                     repeat_ends_on = start_date + \
                                         relativedelta(years=end_year)
-                                    print(repeat_ends_on)
+                                    # print(repeat_ends_on)
 
                             # IF REPEAT NEVER ENDS
                             elif goal['repeat_type'].lower() == 'never':
-                                print("In if never ")
-                                print("never")
+                                # print("In if never ")
+                                # print("never")
                                 repeat_ends_on = currentDate
-                                print(goal['gr_title'], repeat_ends_on)
+                                # print(goal['gr_title'], repeat_ends_on)
 
                             # IF REPEAT ENDS ON A SPECIFIC DAY
                             elif goal['repeat_type'].lower() == 'on':
-                                print("In if on ")
-                                print("in goal repeat ends on", goal['repeat_ends_on'])
+                                # print("In if on ")
+                                # print("in goal repeat ends on", goal['repeat_ends_on'])
                                 repeat_ends = goal['repeat_ends_on']
-                                print(repeat_ends)
+                                # print(repeat_ends)
                                 repeat_ends_on = repeat_ends[:24]
-                                print(repeat_ends_on)
+                                # print(repeat_ends_on)
                                 #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
                                 repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
 
-                        print("\nRepeat End on: ", repeat_ends_on)
+                        # print("\nRepeat End on: ", repeat_ends_on)
 
                         # CHECK TO MAKE SURE CURRENT DATE IS BEFORE REPEAT END ON DATE
                         if currentDate <= repeat_ends_on:
                             repeat_every = int(goal['repeat_every'])
-                            print("\nRepeat Every: ", repeat_every)
-                            print("Repeat Frequency: ", goal['repeat_frequency'])
+                            # print("\nRepeat Every: ", repeat_every)
+                            # print("Repeat Frequency: ", goal['repeat_frequency'])
                             if goal['repeat_frequency'].lower() == 'day':
                                 epoch = dt.datetime.utcfromtimestamp(0).date()
                                 current_time = (
                                     currentDate - epoch).total_seconds() * 1000.0
-                                print("Current time: ", current_time)
+                                # print("Current time: ", current_time)
                                 start_time = (
                                     start_date - epoch).total_seconds() * 1000.0
-                                print("Start time: ", start_time)
+                                # print("Start time: ", start_time)
                                 # THIS STATEMENT DETERMINES IF IS_DISPLAYED IS TRUE OR FALSE
                                 is_displayed_today = (math.floor(
                                     (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
-                                print("is_displayed_today: ", is_displayed_today)
+                                # print("is_displayed_today: ", is_displayed_today)
 
-                                print(goal['gr_title'], is_displayed_today)
+                                # print(goal['gr_title'], is_displayed_today)
 
                             if goal['repeat_frequency'].lower() == 'week':
                                 if current_week_day in week_days:
@@ -6356,27 +6362,28 @@ def ManifestGRATIS_CRON():
                                 is_displayed_today = currentDate.day == start_date.day and (
                                     (currentDate.year - start_date.year) * 12 + currentDate.month - start_date.month) % repeat_every == 0
                                 
-                                print(goal['gr_title'], is_displayed_today)
+                                # print(goal['gr_title'], is_displayed_today)
 
                             if goal['repeat_frequency'].lower() == 'year':
                                 is_displayed_today = currentDate.day == start_date.day and currentDate.month == start_date.month and (
                                     currentDate.year - start_date.year) % repeat_every == 0
                                 
-                                print(goal['gr_title'], is_displayed_today)
+                                # print(goal['gr_title'], is_displayed_today)
 
                         
-                    print("Pragya")
+                    # print("Pragya")
                     
                     # TEMPORARILY COMMENT OUT TO SEE WHAT THE REST OF THE FUNCTION DOES
 
-                    print("\nThe Bottom Line: ")
-                    print(goal['gr_unique_id'])
-                    print(goal['gr_title'])
-                    print("Is Displayed Today: ", is_displayed_today)
-                    print("************")
-                    print(str(is_displayed_today).title())
+                    # print("\nThe Bottom Line: ")
+                    # print(goal['gr_unique_id'])
+                    # print(goal['gr_title'])
+                    # print("Is Displayed Today: ", is_displayed_today)
+                    # print("************")
+                    # print(str(is_displayed_today).title())
 
                     # UPDATE GOALS AND ROUTINES
+                    print("Update GR")
                     execute("""
                         UPDATE goals_routines
                         SET is_in_progress = \'""" + 'False'+"""\'
@@ -6385,6 +6392,7 @@ def ManifestGRATIS_CRON():
                         WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
                     # UPDATE ACTIONS AND TASKS
+                    print("Update AT")
                     execute("""
                         UPDATE actions_tasks
                         SET is_in_progress = \'""" + 'False'+"""\'
@@ -6392,10 +6400,11 @@ def ManifestGRATIS_CRON():
                         WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
                     # UPDATE INSTRUCTIONS AND STEPS
+                    print("Update IS")
                     actions_task_response = execute(
                         """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
 
-                    print("AT length: ", len(actions_task_response['result']))
+                    # print("AT length: ", len(actions_task_response['result']))
                     if len(actions_task_response['result']) > 0:
                         for i in range(len(actions_task_response['result'])):
                             execute("""
