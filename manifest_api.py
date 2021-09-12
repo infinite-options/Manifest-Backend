@@ -5899,6 +5899,11 @@ def ManifestGRATIS_CRON():
 
                 # BELOW IS THE COPIED TodayGoalsRoutines
 
+                NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+                print("NewIDresponse:", NewIDresponse)
+                NewID = NewIDresponse['result'][0]['new_id']
+                print("New History id:", NewID)
+
                 # GETS CURRENT GOALS AND ROUTINES
                 goals = execute(
                     """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
@@ -6080,35 +6085,17 @@ def ManifestGRATIS_CRON():
                         SET id = \'""" + currentGR['result'][0]['id'] + """\',
                             user_id = \'""" + user_id + """\',
                             date = \'""" + str(date) + """\',
-                            details = \'""" + str(json.dumps(user_history)) + """\',
+                            -- details = \'""" + str(json.dumps(user_history)) + """\',
                             date_affected = \'""" + str(date_affected) + """\'
                         WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                     """
-
+                    print("Before query execution")
                     items = execute(query, 'post', conn)
                     print(items)
 
-                response['message'] = 'successful'
+                    # response['message'] = 'successful'
 
-                # ABOVE IS THE COPIED TodayGoalsRoutines
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    # ABOVE IS THE COPIED TodayGoalsRoutines
 
 
 
