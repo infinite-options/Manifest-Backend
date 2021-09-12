@@ -5825,7 +5825,7 @@ def ManifestGRATIS_CRON():
         # DEFINITION OF FIRST HOUR IN A DAY
         start = dt.time(0, 0, 0)
         print("Day Start: ", start)
-        end = dt.time(0, 59, 59)
+        end = dt.time(23, 59, 59)
         print("Day End: ", end)
 
 
