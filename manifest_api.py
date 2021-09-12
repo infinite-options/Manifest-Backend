@@ -5818,8 +5818,41 @@ def ManifestCRON():
     try:
         conn = connect()
         print("\nStarting CRON Job")
+        # GETS NEW HISTORY TABLE UID
+        NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+        print("NewIDresponse:", NewIDresponse)
+        NewID = NewIDresponse['result'][0]['new_id']
+        print("new_id:", NewID)
+
+        items = execute(
+            """SELECT user_unique_id, day_end, time_zone FROM users WHERE day_end <> 'null';""", 'get', conn)
+
+        # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
+
+        # THIS QUERY WORKS
+        # query = """
+        #             INSERT INTO manifest.pm_history
+        #             SET 
+        #             id = '100-000001',
+        #             user_id = '100-000001',
+        #             date = '100-000001',
+        #             date_affected = '100-000001';
+        #             """
+
+        query = """
+                    INSERT INTO manifest.pm_history
+                    SET 
+                    id = \'"""+ NewID +"""\',
+                    user_id = '100-000001',
+                    date = '100-000001',
+                    date_affected = '100-000001';
+                    """
+        items = execute(query, 'post', conn)
+        print(items)
+
         PMChangeHistory.get(self)
         print("after Function call")
+        
     except:
         raise BadRequest('CRON JOB Request failed, please try again later.')
     finally:
