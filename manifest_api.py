@@ -5833,7 +5833,7 @@ def ManifestGRATIS_CRON():
         # DEFINITION OF FIRST HOUR IN A DAY
         start = dt.time(0, 0, 0)
         print("Day Start: ", start)
-        end = dt.time(23, 59, 59)
+        end = dt.time(0, 59, 59)
         print("Day End: ", end)
 
 
@@ -6125,6 +6125,7 @@ def ManifestGRATIS_CRON():
 
 
                 # RESET ALL CURRENT GRATIS
+                print("Reset all Current Gratis")
                 currentDate = (dt.datetime.now().date())
                 print("Current Date: ", currentDate)
                 current_week_day = currentDate.strftime('%A').lower()
@@ -6140,12 +6141,12 @@ def ManifestGRATIS_CRON():
                     is_displayed_today = 'False'
                     print("Reset is_displayed_today to false: ", is_displayed_today)
                     datetime_str = goal['gr_start_day_and_time']
-                    print(datetime_str)
+                    print(datetime_str,type(datetime_str))
                     datetime_str = datetime_str.replace(",", "")
                     print(datetime_str,type(datetime_str))
                     
                     start_date = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                    print(start_date)
+                    print(start_date,type(start_date))
                     repeat_week_days = json.loads(goal['repeat_week_days'])
                     print(repeat_week_days)
                     repeat_ends_on = (datetime.min).date()
@@ -6156,7 +6157,7 @@ def ManifestGRATIS_CRON():
                     print(1)
 
                     for key in repeat_week_days.keys():
-                        print(key)
+                        print("Key = ", key)
                         if repeat_week_days[key].lower() == 'true':
                             if key.lower() == "monday":
                                 week_days_unsorted.append(1)
