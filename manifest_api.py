@@ -6083,10 +6083,7 @@ def ManifestGRATIS_CRON():
                     query = """
                         UPDATE manifest.history
                         SET id = \'""" + currentGR['result'][0]['id'] + """\',
-                            user_id = \'""" + user_id + """\',
-                            date = \'""" + str(date) + """\',
-                            -- details = \'""" + str(json.dumps(user_history)) + """\',
-                            date_affected = \'""" + str(date_affected) + """\'
+                            user_id = \'""" + user_id + """\'
                         WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                     """
                     print("Before query execution")
@@ -6098,7 +6095,15 @@ def ManifestGRATIS_CRON():
                     # ABOVE IS THE COPIED TodayGoalsRoutines
 
 
-
+                    # query = """
+                    #     UPDATE manifest.history
+                    #     SET id = \'""" + currentGR['result'][0]['id'] + """\',
+                    #         user_id = \'""" + user_id + """\',
+                    #         date = \'""" + str(date) + """\',
+                    #         -- details = \'""" + str(json.dumps(user_history)) + """\',
+                    #         date_affected = \'""" + str(date_affected) + """\'
+                    #     WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
+                    # """
 
 
 
@@ -6119,8 +6124,8 @@ def ManifestGRATIS_CRON():
 
                 # GET GOALS
                 goals = execute(
-                    """SELECT * FROM goals_routines WHERE user_id = \'""" + items['result'][i]['user_unique_id'] + """\';""", 'get', conn)
-
+                    """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
+                # """SELECT * FROM goals_routines WHERE user_id = \'""" + items['result'][i]['user_unique_id'] + """\';""", 'get', conn)        
                 print("Before For Loop")
                 for goal in goals['result']:
                     print("\nGoal/Routine is: ", goal)
