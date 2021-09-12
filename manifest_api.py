@@ -5812,10 +5812,23 @@ class Notifications(Resource):
 
 
 # CRON JOB
+
+def ManifestCRON():
+
+    try:
+        conn = connect()
+        print("\nbefore Function call")
+        PMChangeHistory.get()
+        print("after Function call")
+    except:
+        raise BadRequest('Request failed, please try again later.')
+    finally:
+        disconnect(conn)
+
 class PMChangeHistory(Resource):
 
-#     def __call__(self):
-#         print("In Call")
+    def __call__(self):
+        print("In Call")
 
     def get(self):
 
