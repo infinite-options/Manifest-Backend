@@ -6409,6 +6409,7 @@ def ManifestGRATIS_CRON():
                     # print(str(is_displayed_today).title())
 
                     # UPDATE GOALS AND ROUTINES
+                    print("******************************************************************************")
                     print("Update GR")
 
                     print(str(is_displayed_today).title(), type(str(is_displayed_today).title()))
@@ -6422,7 +6423,7 @@ def ManifestGRATIS_CRON():
                         WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';
                     """
 
-                    print(updateGRquery)
+                    # print(updateGRquery)
                     updateGR = execute(updateGRquery, 'post', conn)
                     print(updateGR)
 
@@ -6445,7 +6446,7 @@ def ManifestGRATIS_CRON():
                         WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
                     """
 
-                    print(updateATquery)
+                    # print(updateATquery)
                     updateAT = execute(updateATquery, 'post', conn)
                     print(updateAT)
 
@@ -6466,11 +6467,12 @@ def ManifestGRATIS_CRON():
                     print(actions_task_response, type(actions_task_response))
 
 
-
+                    print(actions_task_response['result'], type(actions_task_response['result']))
                     # print("AT length: ", len(actions_task_response['result']))
                     if len(actions_task_response['result']) > 0:
                         for i in range(len(actions_task_response['result'])):
-
+                            print(i)
+                            print(actions_task_response['result'][i]['at_unique_id'], type (actions_task_response['result'][i]['at_unique_id']))
                             updateISquery = """
                                 UPDATE instructions_steps
                                 SET is_in_progress = \'""" + 'False'+"""\'
@@ -6478,7 +6480,7 @@ def ManifestGRATIS_CRON():
                                 WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';
                             """
 
-                            print(updateISquery)
+                            # print(updateISquery)
                             updateIS = execute(updateISquery, 'post', conn)
                             print(updateIS)
 
