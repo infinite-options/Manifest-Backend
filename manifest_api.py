@@ -6079,7 +6079,7 @@ def ManifestGRATIS_CRON():
                     SET id = \'""" + NewID + """\',
                         user_id = \'""" + user_id + """\',
                         date = \'""" + str(date) + """\',
-                        details = \'""" + str(json.dumps(user_history)) + """\',
+                        -- details = \'""" + str(json.dumps(user_history)) + """\',
                         date_affected = \'""" + str(date_affected) + """\';
                 """
 
@@ -6096,7 +6096,7 @@ def ManifestGRATIS_CRON():
                     SET id = \'""" + currentGR['result'][0]['id'] + """\',
                         user_id = \'""" + user_id + """\',
                         date = \'""" + str(date) + """\',
-                        details = \'""" + json.dumps(user_history) + """\',
+                        -- details = \'""" + json.dumps(user_history) + """\',
                         date_affected = \'""" + str(date_affected) + """\'
                     WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                 """
