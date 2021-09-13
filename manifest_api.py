@@ -6080,7 +6080,7 @@ def ManifestGRATIS_CRON():
                         user_id = \'""" + user_id + """\',
                         date = \'""" + str(date) + """\',
                         -- details = \'""" + str(json.dumps(user_history)) + """\',
-                        date_affected = \'""" + str(date_affected) + """\';
+                        -- date_affected = \'""" + str(date_affected) + """\';
                 """
 
                 print("Before Insert execution")
