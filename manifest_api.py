@@ -6122,7 +6122,7 @@ def ManifestGRATIS_CRON():
                     SET id = \'""" + currentGR['result'][0]['id'] + """\',
                         user_id = \'""" + user_id + """\',
                         date = \'""" + str(date) + """\',
-                        -- details = \'""" + json.dumps(user_history) + """\',
+                        details = \'""" + json.dumps(user_history) + """\',
                         date_affected = \'""" + str(date_affected) + """\'
                     WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                 """
@@ -6410,34 +6410,83 @@ def ManifestGRATIS_CRON():
 
                     # UPDATE GOALS AND ROUTINES
                     print("Update GR")
-                    execute("""
+
+                    print(str(is_displayed_today).title(), type(str(is_displayed_today).title()))
+                    print(goal['gr_unique_id'], type(goal['gr_unique_id']))
+
+                    updateGRquery = """
                         UPDATE goals_routines
                         SET is_in_progress = \'""" + 'False'+"""\'
                         , is_complete = \'""" + 'False'+"""\'
                         , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
-                        WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+                        WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';
+                    """
+
+                    print(updateGRquery)
+                    updateGR = execute(updateGRquery, 'post', conn)
+                    print(updateGR)
+
+                    # execute("""
+                    #     UPDATE goals_routines
+                    #     SET is_in_progress = \'""" + 'False'+"""\'
+                    #     , is_complete = \'""" + 'False'+"""\'
+                    #     , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
+                    #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
                     # UPDATE ACTIONS AND TASKS
                     print("Update AT")
-                    execute("""
+
+                    print(goal['gr_unique_id'], type(goal['gr_unique_id']))
+
+                    updateATquery = """
                         UPDATE actions_tasks
                         SET is_in_progress = \'""" + 'False'+"""\'
                         , is_complete = \'""" + 'False'+"""\'
-                        WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+                        WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
+                    """
+
+                    print(updateATquery)
+                    updateAT = execute(updateATquery, 'post', conn)
+                    print(updateAT)
+
+                    # execute("""
+                    #     UPDATE actions_tasks
+                    #     SET is_in_progress = \'""" + 'False'+"""\'
+                    #     , is_complete = \'""" + 'False'+"""\'
+                    #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
                     # UPDATE INSTRUCTIONS AND STEPS
                     print("Update IS")
+
+                    print(goal['gr_unique_id'], type(goal['gr_unique_id']))
+
                     actions_task_response = execute(
                         """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+                    
+                    print(actions_task_response, type(actions_task_response))
+
+
 
                     # print("AT length: ", len(actions_task_response['result']))
                     if len(actions_task_response['result']) > 0:
                         for i in range(len(actions_task_response['result'])):
-                            execute("""
-                            UPDATE instructions_steps
-                            SET is_in_progress = \'""" + 'False'+"""\'
-                            , is_complete = \'""" + 'False'+"""\'
-                            WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+
+                            updateISquery = """
+                                UPDATE instructions_steps
+                                SET is_in_progress = \'""" + 'False'+"""\'
+                                , is_complete = \'""" + 'False'+"""\'
+                                WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';
+                            """
+
+                            print(updateISquery)
+                            updateIS = execute(updateISquery, 'post', conn)
+                            print(updateIS)
+
+                            # execute("""
+                            # UPDATE instructions_steps
+                            # SET is_in_progress = \'""" + 'False'+"""\'
+                            # , is_complete = \'""" + 'False'+"""\'
+                            # WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
     
         return 200
 
