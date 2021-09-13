@@ -5875,20 +5875,24 @@ def ManifestGRATIS_CRON():
             # TIME MANIPULATION: TAKE CURRENT TIME IN LOCAL TIMEZONE AND ISOLATE THE DATE AND TIME
             # GETS CURRENT DATETIME IN UTC
             current = datetime.now(tz=pytz.utc)
-            # print("Current Date Time in GMT: ", current)
+            print("Current Date Time in GMT: ", current)
 
             # CONVERTS UTC DATETIME INTO LOCAL DATETIME
             current = current.astimezone(timezone(str(time_zone)))
-            # print("Current Date Time in LOCAL TIME          : ", current, type(current))
+            print("Current Date Time in LOCAL TIME          : ", current, type(current))
 
+            # DEFINE DATE TIME FORMAT
+            date_format = '%m/%d/%Y %H:%M:%S'
+            date = current.strftime(date_format)
+            print("Current Date Time in PST Formatted: ", date)
 
             # GETS CURRENT TIME FROM DATETIME IN STR FORMAT
             current_time = current.strftime("%H:%M:%S")
-            # print("Current time: ", current_time, type(current_time))
+            print("Current time: ", current_time, type(current_time))
 
             # CONVERTS TIME FROM STR TO TIME FORMAT TO DO MATH
             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
-            # print("Current time: ", current_time, type(current_time))
+            print("Current time: ", current_time, type(current_time))
 
 
             # IF BETWEEN MIDNIGHT AND 1AM
