@@ -2675,6 +2675,12 @@ class TodayGoalsRoutines(Resource):
             if len(currentGR['result']) == 0:
                 print("no info")
 
+                print(NewID, type(NewID))
+                print(user_id, type(user_id))
+                print(str(date), type(str(date)))
+                print(str(json.dumps(user_history)), type(str(json.dumps(user_history))))
+                print(str(date_affected), type(str(date_affected)))
+
                 query = """
                     INSERT INTO manifest.history
                     SET id = \'""" + NewID + """\',
@@ -2683,7 +2689,7 @@ class TodayGoalsRoutines(Resource):
                         details = \'""" + str(json.dumps(user_history)) + """\',
                         date_affected = \'""" + str(date_affected) + """\';
                 """
-
+                print(query)
                 items = execute(query, 'post', conn)
                 print(items)
 
@@ -2691,6 +2697,13 @@ class TodayGoalsRoutines(Resource):
             else:
                 print("info exists")
                 print("Existing id: ", currentGR['result'][0]['id'])
+
+                print(NewID, type(NewID))
+                print(user_id, type(user_id))
+                print(str(date), type(str(date)))
+                print(str(json.dumps(user_history)), type(str(json.dumps(user_history))))
+                print(str(date_affected), type(str(date_affected)))
+
                 query = """
                     UPDATE manifest.history
                     SET id = \'""" + currentGR['result'][0]['id'] + """\',
@@ -2700,7 +2713,7 @@ class TodayGoalsRoutines(Resource):
                         date_affected = \'""" + str(date_affected) + """\'
                     WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                 """
-
+                print(query)
                 items = execute(query, 'post', conn)
                 print(items)
 
@@ -6074,15 +6087,23 @@ def ManifestGRATIS_CRON():
             if len(currentGR['result']) == 0:
                 print("no info")
 
+                print(NewID, type(NewID))
+                print(user_id, type(user_id))
+                print(str(date), type(str(date)))
+                # print(str(json.dumps(user_history)), type(str(json.dumps(user_history))))
+                print(type(str(json.dumps(user_history))))
+                print(str(date_affected), type(str(date_affected)))
+
                 query = """
                     INSERT INTO manifest.history
                     SET id = \'""" + NewID + """\',
-                        user_id = \'""" + user_id + """\',
-                        date = \'""" + str(date) + """\';
+                        user_id = \'""" + user_id + """\';
+                        -- date = \'""" + str(date) + """\';
                         -- details = \'""" + str(json.dumps(user_history)) + """\',
                         -- date_affected = \'""" + str(date_affected) + """\';
                 """
 
+                print(query)
                 print("Before Insert execution")
                 items = execute(query, 'post', conn)
                 # print(items)
