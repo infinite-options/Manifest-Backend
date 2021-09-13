@@ -6087,24 +6087,25 @@ def ManifestGRATIS_CRON():
                                 """\' AND date_affected = \'""" + str(date_affected) + """\';""", 'get', conn)
             # print(currentGR)
 
+
+            print(NewID, type(NewID))
+            print(user_id, type(user_id))
+            print(str(date), type(str(date)))
+            # print(str(json.dumps(user_history)), type(str(json.dumps(user_history))))
+            print(type(str(json.dumps(user_history))))
+            print(str(date_affected), type(str(date_affected)))
+
             # IF IT DOES NOT EXIST THEN INSERT INTO HISTORY TABLE
             if len(currentGR['result']) == 0:
                 print("no info")
 
-                print(NewID, type(NewID))
-                print(user_id, type(user_id))
-                print(str(date), type(str(date)))
-                # print(str(json.dumps(user_history)), type(str(json.dumps(user_history))))
-                print(type(str(json.dumps(user_history))))
-                print(str(date_affected), type(str(date_affected)))
-
                 query = """
                     INSERT INTO manifest.history
                     SET id = \'""" + NewID + """\',
-                        user_id = \'""" + user_id + """\';
-                        -- date = \'""" + str(date) + """\';
-                        -- details = \'""" + str(json.dumps(user_history)) + """\',
-                        -- date_affected = \'""" + str(date_affected) + """\';
+                        user_id = \'""" + user_id + """\',
+                        date = \'""" + str(date) + """\',
+                        details = \'""" + str(json.dumps(user_history)) + """\',
+                        date_affected = \'""" + str(date_affected) + """\';
                 """
 
                 print(query)
