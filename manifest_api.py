@@ -6078,7 +6078,7 @@ def ManifestGRATIS_CRON():
                     INSERT INTO manifest.history
                     SET id = \'""" + NewID + """\',
                         user_id = \'""" + user_id + """\',
-                        date = \'""" + str(date) + """\',
+                        -- date = \'""" + str(date) + """\',
                         -- details = \'""" + str(json.dumps(user_history)) + """\',
                         -- date_affected = \'""" + str(date_affected) + """\';
                 """
