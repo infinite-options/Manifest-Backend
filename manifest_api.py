@@ -2696,7 +2696,7 @@ class TodayGoalsRoutines(Resource):
                     SET id = \'""" + currentGR['result'][0]['id'] + """\',
                         user_id = \'""" + user_id + """\',
                         date = \'""" + str(date) + """\',
-                        details = \'""" + str(json.dumps(user_history)) + """\',
+                        details = \'""" + json.dumps(user_history) + """\',
                         date_affected = \'""" + str(date_affected) + """\'
                     WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                 """
@@ -5833,7 +5833,7 @@ def ManifestGRATIS_CRON():
         # DEFINITION OF FIRST HOUR IN A DAY
         start = dt.time(0, 0, 0)
         # print("Day Start: ", start)
-        end = dt.time(0, 59, 59)
+        end = dt.time(23, 59, 59)
         # print("Day End: ", end)
 
 
@@ -6089,14 +6089,14 @@ def ManifestGRATIS_CRON():
 
             # IF IT DOES EXIST THEN UPDATE HISTORY TABLE
             else:
-                print("info exists")
+                print("info exists in CRON Job")
                 print("Existing id: ", currentGR['result'][0]['id'])
                 query = """
                     UPDATE manifest.history
                     SET id = \'""" + currentGR['result'][0]['id'] + """\',
                         user_id = \'""" + user_id + """\',
                         date = \'""" + str(date) + """\',
-                        details = \'""" + str(json.dumps(user_history)) + """\',
+                        details = \'""" + json.dumps(user_history) + """\',
                         date_affected = \'""" + str(date_affected) + """\'
                     WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                 """
