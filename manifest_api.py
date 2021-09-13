@@ -5850,7 +5850,7 @@ def ManifestGRATIS_CRON():
         # print("Day End: ", end)
 
 
-        # GET LIST OF UNIQUE USERS AND THEIR TIME ZONE
+        # STEP 0: GET LIST OF UNIQUE USERS AND THEIR TIME ZONE
         query = """
                     SELECT user_unique_id, day_end, time_zone
                     FROM users
@@ -5858,16 +5858,19 @@ def ManifestGRATIS_CRON():
         items = execute(query, 'get', conn)
         print(items)
         print(len(items['result']))
-        for i in range(len(items['result'])):
-            print(i, " ", items['result'][i]['user_unique_id'] )
-            print("\nCurrent Record: ", items['result'][i])
+
+        # TEST TO MAKE SURE USERS ARE COMING IN
+        # for i in range(len(items['result'])):
+        #     print(i, " ", items['result'][i]['user_unique_id'] )
+        #     print("\nCurrent Record: ", items['result'][i])
 
 
         # FOR EACH USER FIND THE CURRENT TIME IN THEIR TIME ZONE
-        
         for i in range(len(items['result'])):
             print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-            print(i)
+            print("GET CURRENT USER", i)
+
+            # CONSIDER CHANGING ITEMS TO USERS TO AVOID CONFUSION
             user_id = items['result'][i]['user_unique_id']
             print("\nCurrent Record: ", user_id, " ", items['result'][i])
 
@@ -5882,24 +5885,24 @@ def ManifestGRATIS_CRON():
             # TIME MANIPULATION: TAKE CURRENT TIME IN LOCAL TIMEZONE AND ISOLATE THE DATE AND TIME
             # GETS CURRENT DATETIME IN UTC
             current = datetime.now(tz=pytz.utc)
-            print("Current Date Time in GMT: ", current)
+            # print("Current Date Time in GMT: ", current)
 
             # CONVERTS UTC DATETIME INTO LOCAL DATETIME
             current = current.astimezone(timezone(str(time_zone)))
-            print("Current Date Time in LOCAL TIME          : ", current, type(current))
+            # print("Current Date Time in LOCAL TIME          : ", current, type(current))
 
             # DEFINE DATE TIME FORMAT
             date_format = '%m/%d/%Y %H:%M:%S'
             date = current.strftime(date_format)
-            print("Current Date Time in PST Formatted: ", date)
+            # print("Current Date Time in PST Formatted: ", date)
 
             # GETS CURRENT TIME FROM DATETIME IN STR FORMAT
             current_time = current.strftime("%H:%M:%S")
-            print("Current time: ", current_time, type(current_time))
+            # print("Current time: ", current_time, type(current_time))
 
             # CONVERTS TIME FROM STR TO TIME FORMAT TO DO MATH
             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
-            print("Current time: ", current_time, type(current_time))
+            # print("Current time: ", current_time, type(current_time))
 
 
             # IF BETWEEN MIDNIGHT AND 1AM
@@ -5917,6 +5920,7 @@ def ManifestGRATIS_CRON():
                 # print(date_affected)
                 date_affected = date_affected.date()
                 # print("Date affected: ", date_affected)
+            print("Date affected: ", date_affected)
 
                 # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
                 # print("\nbefore Function call")
@@ -5931,10 +5935,12 @@ def ManifestGRATIS_CRON():
             # STEP 1 CAPTURE A SNAPSHOT OF THE CURRENT USERS HISTORY
             # BELOW IS THE COPIED TodayGoalsRoutines
 
-            NewIDresponse = execute("CALL get_history_id;",  'get', conn)
-            # print("NewIDresponse:", NewIDresponse)
-            NewID = NewIDresponse['result'][0]['new_id']
-            print("New History id:", NewID)
+
+            # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+            # # print("NewIDresponse:", NewIDresponse)
+            # NewID = NewIDresponse['result'][0]['new_id']
+            # print("New History id:", NewID)
+
 
             # GETS CURRENT GOALS AND ROUTINES
             print("---------------------------------------")
@@ -5949,6 +5955,8 @@ def ManifestGRATIS_CRON():
 
             # print("Before Routines")
 
+            # POPULATES ARRAY WITH CURRENT SNAPSHOT INFO
+            # PROCESS EACH GOAL AND ROUTINE
             if len(goals['result']) > 0:
                 # print("Goals/Routines Exist.  Start For Loop")
                 for i in range(len(goals['result'])):
@@ -6041,9 +6049,9 @@ def ManifestGRATIS_CRON():
                                 else:
                                     action_history[j]['status'] = 'not started'
 
+                                
                                 # PROCESS ANY INSTRUCTIONS OR STEPS RELATED TO THE CURRENT GOAL/ACTION
                                 # print("\nBefore Instruction query")
-
                                 instructions = execute("""SELECT * FROM instructions_steps 
                                             WHERE at_id = \'""" + actions['result'][j]['at_unique_id'] + """\';""", 'get', conn)
                                 # print(instructions)
@@ -6081,18 +6089,20 @@ def ManifestGRATIS_CRON():
 
                     # print("\nBefore Reset Notifications Update")
 
+                    # THIS IS WHERE WE UPDATE NOTIFICATIONS SET FOR THE GOAL OR ROUTINE - NOT SURE WHY IT IS DONE HERE
+                    # TEMPORARILY HIDE FOR NOW
+                    # print("Update Notifications for: ", goals['result'][i]['gr_unique_id'])
+                    # updateNotificationQuery = """
+                    #     UPDATE notifications
+                    #     SET before_is_set = \'""" + 'False'+"""\'
+                    #     , during_is_set = \'""" + 'False'+"""\'
+                    #     , after_is_set = \'""" + 'False'+"""\' 
+                    #     WHERE gr_at_id = \'""" + goals['result'][i]['gr_unique_id']+"""\';                    
+                    # """
+                    # updateNotification = execute(updateNotificationQuery, 'post', conn)
+                    # print("updateNotification Successful", updateNotification)
 
-                    print("Update Notifications for: ", goals['result'][i]['gr_unique_id'])
-                    updateNotificationQuery = """
-                        UPDATE notifications
-                        SET before_is_set = \'""" + 'False'+"""\'
-                        , during_is_set = \'""" + 'False'+"""\'
-                        , after_is_set = \'""" + 'False'+"""\' 
-                        WHERE gr_at_id = \'""" + goals['result'][i]['gr_unique_id']+"""\';                    
-                    """
-                    updateNotification = execute(updateNotificationQuery, 'post', conn)
-                    print("updateNotification Successful", updateNotification)
-
+                    # ORIGINAL QUERY
                     # execute("""UPDATE notifications
                     #     SET before_is_set = \'""" + 'False'+"""\'
                     #     , during_is_set = \'""" + 'False'+"""\'
@@ -6100,8 +6110,15 @@ def ManifestGRATIS_CRON():
                     #     WHERE gr_at_id = \'""" + goals['result'][i]['gr_unique_id']+"""\'""", 'post', conn)
 
             # print("\nBefore Print")
+
+            # TEST TO MAKE SURE ALL USER HISTORY INFO HAS BEEN COLLECTED
+            # print("Before USER HISTORY Summary")
+            # for i in range(len(user_history)):
+            #     print(i, " ", user_history[i])
             # print("Complete building User History Array")
 
+
+            # STEP 2 UPDATE THE HISTORY TABLE
             # DETERMINE IF DATE ALREADY EXISTING THE HISTORY TABLE
             print("===================")
             print("Preparing to Update History Table")
@@ -6112,6 +6129,13 @@ def ManifestGRATIS_CRON():
             # print(currentGR)
 
 
+            # DONT NEED TO GET NEWID IF DATE ALREADY EXISTS IN THE TABLE
+            NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+            # print("NewIDresponse:", NewIDresponse)
+            NewID = NewIDresponse['result'][0]['new_id']
+            print("New History id:", NewID)
+
+            
             print(NewID, type(NewID))
             print(user_id, type(user_id))
             print(str(date), type(str(date)))
@@ -6159,28 +6183,11 @@ def ManifestGRATIS_CRON():
                 # ABOVE IS THE COPIED TodayGoalsRoutines
 
 
-                # query = """
-                #     UPDATE manifest.history
-                #     SET id = \'""" + currentGR['result'][0]['id'] + """\',
-                #         user_id = \'""" + user_id + """\',
-                #         date = \'""" + str(date) + """\',
-                #         -- details = \'""" + str(json.dumps(user_history)) + """\',
-                #         date_affected = \'""" + str(date_affected) + """\'
-                #     WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
-                # """
-
-
-
-
-
-
-
-
 
                 print("after Function call")
 
 
-                # RESET ALL CURRENT GRATIS
+                # STEP 3: RESET ALL CURRENT GRATIS
                 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 print("Reset all Current Gratis")
                 currentDate = (dt.datetime.now().date())
@@ -6236,7 +6243,7 @@ def ManifestGRATIS_CRON():
                             if key.lower() == "sunday":
                                 week_days_unsorted.append(7)
                     week_days = sorted(week_days_unsorted)
-                    print("Repeat Days: ", week_days)
+                    # print("Repeat Days: ", week_days)
                     
 
                     print(current_week_day)
@@ -6521,6 +6528,15 @@ def ManifestGRATIS_CRON():
                             # SET is_in_progress = \'""" + 'False'+"""\'
                             # , is_complete = \'""" + 'False'+"""\'
                             # WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+    
+
+
+        # TEST TO MAKE SURE ALL USER HISTORY INFO HAS BEEN COLLECTED
+        print("Before USER HISTORY Summary")
+        for i in range(len(user_history)):
+            print(i, " ", user_history[i])
+        print("Complete building User History Array")
+
     
         return 200
 
