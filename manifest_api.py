@@ -180,7 +180,7 @@ def disconnect(conn):
 # OPTIONAL: Set skipSerialization to True to skip default JSON response serialization
 def execute(sql, cmd, conn, skipSerialization=False):
     response = {}
-    print("==> Execute Query: ", cmd,sql)
+    # print("==> Execute Query: ", cmd,sql)
     try:
         with conn.cursor() as cur:
             cur.execute(sql)
@@ -6218,7 +6218,7 @@ def ManifestGRATIS_CRON():
                     # print("Repeat Days: ", week_days)
                     
 
-                    print(current_week_day)
+                    # print(current_week_day)
                     if current_week_day == "monday":
                         current_week_day = 1
                     if current_week_day == "tuesday":
@@ -6233,7 +6233,7 @@ def ManifestGRATIS_CRON():
                         current_week_day = 6
                     if current_week_day == "sunday":
                         current_week_day = 7
-                    print(current_week_day)
+                    # print(current_week_day)
 
                     # IF NO REPEAT
                     if goal['repeat'].lower() == 'false':
@@ -6398,13 +6398,13 @@ def ManifestGRATIS_CRON():
                     # print("************")
                     # print(str(is_displayed_today).title())
 
-                    # UPDATE GOALS AND ROUTINES
+                    # UPDATE GRATIS
                     print("******************************************************************************")
-                    print("Update GR")
-
-                    print(str(is_displayed_today).title(), type(str(is_displayed_today).title()))
+                     # print(str(is_displayed_today).title(), type(str(is_displayed_today).title()))
                     print(goal['gr_unique_id'], type(goal['gr_unique_id']))
 
+                    # UPDATE GOALS AND ROUTINES
+                    print("Update GR")
                     updateGRquery = """
                         UPDATE goals_routines
                         SET is_in_progress = \'""" + 'False'+"""\'
@@ -6412,48 +6412,33 @@ def ManifestGRATIS_CRON():
                         , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
                         WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';
                     """
-
                     # print(updateGRquery)
                     updateGR = execute(updateGRquery, 'post', conn)
                     print(updateGR)
 
-                    # execute("""
-                    #     UPDATE goals_routines
-                    #     SET is_in_progress = \'""" + 'False'+"""\'
-                    #     , is_complete = \'""" + 'False'+"""\'
-                    #     , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
-                    #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
                     # UPDATE ACTIONS AND TASKS
                     print("Update AT")
-
-                    print(goal['gr_unique_id'], type(goal['gr_unique_id']))
-
                     updateATquery = """
                         UPDATE actions_tasks
                         SET is_in_progress = \'""" + 'False'+"""\'
                         , is_complete = \'""" + 'False'+"""\'
                         WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
                     """
-
                     # print(updateATquery)
                     updateAT = execute(updateATquery, 'post', conn)
                     print(updateAT)
 
-                    # execute("""
-                    #     UPDATE actions_tasks
-                    #     SET is_in_progress = \'""" + 'False'+"""\'
-                    #     , is_complete = \'""" + 'False'+"""\'
-                    #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
                     # UPDATE INSTRUCTIONS AND STEPS
                     print("Update IS")
-
-                    print(goal['gr_unique_id'], type(goal['gr_unique_id']))
-
-                    actions_task_response = execute(
-                        """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
-                    
+                    getATquery = """
+                        SELECT * 
+                        FROM actions_tasks 
+                        WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
+                    """
+                    # print(getATquery)
+                    actions_task_response = execute(getATquery, 'post', conn)
                     print(actions_task_response, type(actions_task_response))
 
 
@@ -6474,22 +6459,7 @@ def ManifestGRATIS_CRON():
                             # print(updateISquery)
                             updateIS = execute(updateISquery, 'post', conn)
                             print(updateIS)
-                            print("finished Reset for Goal: ", goal['gr_unique_id'] )
-
-                            # execute("""
-                            # UPDATE instructions_steps
-                            # SET is_in_progress = \'""" + 'False'+"""\'
-                            # , is_complete = \'""" + 'False'+"""\'
-                            # WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
-    
-
-        # # NOT SURE THIS WORKS SINCE THE user_history TABLE IS RECONSTRUCTED FOR EACH USER
-        # # TEST TO MAKE SURE ALL USER HISTORY INFO HAS BEEN COLLECTED
-        # print("Before USER HISTORY Summary")
-        # for i in range(len(user_history)):
-        #     print(i, " ", user_history[i])
-        # print("Complete building User History Array")
-
+                    print("finished Reset for Goal: ", goal['gr_unique_id'] )
     
         return 200
 
