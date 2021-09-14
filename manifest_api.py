@@ -5847,7 +5847,7 @@ def ManifestGRATIS_CRON():
         # DEFINITION OF FIRST HOUR IN A DAY
         start = dt.time(0, 0, 0)
         # print("Day Start: ", start)
-        end = dt.time(23, 59, 59)
+        end = dt.time(0, 59, 59)
         # print("Day End: ", end)
 
 
@@ -5861,9 +5861,9 @@ def ManifestGRATIS_CRON():
         print(len(users['result']))
 
         # TEST TO MAKE SURE USERS ARE COMING IN
-        for i in range(len(users['result'])):
-            print(i, " ", users['result'][i]['user_unique_id'] )
-            print("\nCurrent Record: ", users['result'][i])
+        # for i in range(len(users['result'])):
+        #     print(i, " ", users['result'][i]['user_unique_id'] )
+        #     print("\nCurrent Record: ", users['result'][i])
 
 
         # FOR EACH USER FIND THE CURRENT TIME IN THEIR TIME ZONE
@@ -6071,16 +6071,16 @@ def ManifestGRATIS_CRON():
 
                     # THIS IS WHERE WE UPDATE NOTIFICATIONS SET FOR THE GOAL OR ROUTINE - NOT SURE WHY IT IS DONE HERE
                     # TEMPORARILY HIDE FOR NOW
-                    # print("Update Notifications for: ", goals['result'][i]['gr_unique_id'])
-                    # updateNotificationQuery = """
-                    #     UPDATE notifications
-                    #     SET before_is_set = \'""" + 'False'+"""\'
-                    #     , during_is_set = \'""" + 'False'+"""\'
-                    #     , after_is_set = \'""" + 'False'+"""\' 
-                    #     WHERE gr_at_id = \'""" + goals['result'][i]['gr_unique_id']+"""\';                    
-                    # """
-                    # updateNotification = execute(updateNotificationQuery, 'post', conn)
-                    # print("updateNotification Successful", updateNotification)
+                    print("Update Notifications for: ", goals['result'][i]['gr_unique_id'])
+                    updateNotificationQuery = """
+                        UPDATE notifications
+                        SET before_is_set = \'""" + 'False'+"""\'
+                        , during_is_set = \'""" + 'False'+"""\'
+                        , after_is_set = \'""" + 'False'+"""\' 
+                        WHERE gr_at_id = \'""" + goals['result'][i]['gr_unique_id']+"""\';                    
+                    """
+                    updateNotification = execute(updateNotificationQuery, 'post', conn)
+                    print("updateNotification Successful", updateNotification)
 
                     # ORIGINAL QUERY
                     # execute("""UPDATE notifications
@@ -6166,13 +6166,7 @@ def ManifestGRATIS_CRON():
                 current_week_day = currentDate.strftime('%A').lower()
                 # print("Current Weekday: ", current_week_day)
 
-                # GET GOALS
-                # NOT SURE I NEED TO RERUN THE QUERY
-                # goals = execute(
-                #     """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
-                # """SELECT * FROM goals_routines WHERE user_id = \'""" + users['result'][i]['user_unique_id'] + """\';""", 'get', conn)        
-                # print("Before For Loop")
-
+                # GET GOALS FROM ABOVE
                 print("Number of Goals: ", len(goals['result']))
 
                 for goal in goals['result']:
@@ -6386,17 +6380,6 @@ def ManifestGRATIS_CRON():
                                 
                                 # print(goal['gr_title'], is_displayed_today)
 
-                        
-                    # print("Pragya")
-                    
-                    # TEMPORARILY COMMENT OUT TO SEE WHAT THE REST OF THE FUNCTION DOES
-
-                    # print("\nThe Bottom Line: ")
-                    # print(goal['gr_unique_id'])
-                    # print(goal['gr_title'])
-                    # print("Is Displayed Today: ", is_displayed_today)
-                    # print("************")
-                    # print(str(is_displayed_today).title())
 
                     # UPDATE GRATIS
                     print("******************************************************************************")
@@ -6459,7 +6442,7 @@ def ManifestGRATIS_CRON():
                             # print(updateISquery)
                             updateIS = execute(updateISquery, 'post', conn)
                             print(updateIS)
-                        print("finished Reset for Goal: ", goal['gr_unique_id'] )
+                    print("finished Reset for Goal: ", goal['gr_unique_id'] )
 
 
                         
