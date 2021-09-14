@@ -6438,7 +6438,7 @@ def ManifestGRATIS_CRON():
                         WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
                     """
                     # print(getATquery)
-                    actions_task_response = execute(getATquery, 'post', conn)
+                    actions_task_response = execute(getATquery, 'get', conn)
                     print(actions_task_response, type(actions_task_response))
 
 
@@ -6459,7 +6459,10 @@ def ManifestGRATIS_CRON():
                             # print(updateISquery)
                             updateIS = execute(updateISquery, 'post', conn)
                             print(updateIS)
-                    print("finished Reset for Goal: ", goal['gr_unique_id'] )
+                        print("finished Reset for Goal: ", goal['gr_unique_id'] )
+
+
+                        
     
         return 200
 
