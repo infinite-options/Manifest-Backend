@@ -5847,7 +5847,7 @@ def ManifestGRATIS_CRON():
         # DEFINITION OF FIRST HOUR IN A DAY
         start = dt.time(0, 0, 0)
         # print("Day Start: ", start)
-        end = dt.time(0, 59, 59)
+        end = dt.time(23, 59, 59)
         # print("Day End: ", end)
 
 
@@ -5999,7 +5999,6 @@ def ManifestGRATIS_CRON():
                             # print(actions['result'])
 
                             # print("Actions/Tasks Exist.  Start For Loop")
-
                             for j in range(len(actions['result'])):
                                 action_history[j]['action'] = actions['result'][j]['at_unique_id']
                                 action_history[j]['photo'] = actions['result'][j]['at_photo']
@@ -6012,7 +6011,6 @@ def ManifestGRATIS_CRON():
                                     for v, char in enumerate(title):
                                         if char == "'":
                                             title = title[:v+1] + "'" + title[v+1:]
-
                                 action_history[j]['title'] = title
 
                                 # PROCESS ACTION STATUS
@@ -6032,27 +6030,29 @@ def ManifestGRATIS_CRON():
                                     FROM instructions_steps 
                                     WHERE at_id = \'""" + actions['result'][j]['at_unique_id'] + """\';
                                     """
-                                instructions = execute(at_query, 'get', conn)
+                                instructions = execute(is_query, 'get', conn)
                                 # print(instructions)
 
                                 if len(instructions['result']) > 0:
                                     # print("Steps Exist.  Start For Loop")
                                     instruction_history = [{} for sub in range(len(instructions['result']))]
+                                    # print(instructions['result'])
+
+                                    # print("Instructions/Steps Exist.  Start For Loop")
                                     for k in range(len(instructions['result'])):
                                         instruction_history[k]['instruction'] = instructions['result'][k]['is_unique_id']
                                         instruction_history[k]['photo'] = instructions['result'][k]['is_photo']
                                         instruction_history[k]['is_available'] = instructions['result'][k]['is_available']
 
-                                        # PROCESS TITLE
+                                        # PROCESS INSTRUCTION TITLE
                                         title = instructions['result'][k]['is_title']
                                         if "'" in title:
                                             for v, char in enumerate(title):
                                                 if char == "'":
-                                                    title = title[:v+1] + \
-                                                        "'" + title[v+1:]
+                                                    title = title[:v+1] + "'" + title[v+1:]
                                         instruction_history[k]['title'] = title
 
-                                        # PROCESS STATUS
+                                        # PROCESS INSTRUCTION STATUS
                                         if instructions['result'][k]['is_in_progress'].lower() == 'true':
                                             instruction_history[k]['status'] = 'in_progress'
                                         elif instructions['result'][k]['is_complete'].lower() == 'true':
@@ -6060,8 +6060,11 @@ def ManifestGRATIS_CRON():
                                         else:
                                             instruction_history[k]['status'] = 'not started'
 
+
+                                    # LOAD INSTRUCTIONS INTO ACTION_HISTORY
                                     action_history[j]['instructions'] = instruction_history
 
+                            # LOAD ACTIONS INTO USER_HISTORY
                             user_history[i]['actions'] = action_history
 
                     # print("\nBefore Reset Notifications Update")
@@ -6088,32 +6091,24 @@ def ManifestGRATIS_CRON():
 
             # print("\nBefore Print")
 
-            # TEST TO MAKE SURE ALL USER HISTORY INFO HAS BEEN COLLECTED
-            # print("Before USER HISTORY Summary")
-            # for i in range(len(user_history)):
-            #     print(i, " ", user_history[i])
-            # print("Complete building User History Array")
-
-
             # STEP 2 UPDATE THE HISTORY TABLE
-            # DETERMINE IF DATE ALREADY EXISTING THE HISTORY TABLE
+            # DETERMINE IF DATE ALREADY EXISTS IN THE HISTORY TABLE
             print("===================")
             print("Preparing to Update History Table")
             print("User Id: ", user_id, date_affected)
             print("User History: ", user_history)
-            currentGR = execute(""" SELECT * FROM manifest.history where user_id = \'""" + user_id +
-                                """\' AND date_affected = \'""" + str(date_affected) + """\';""", 'get', conn)
+
+            history_query = """
+                SELECT * 
+                FROM manifest.history
+                WHERE user_id = \'""" + user_id + """\'
+                        AND date_affected = \'""" + str(date_affected) + """\';
+                """
+            currentGR = execute(history_query, 'get', conn)
             # print(currentGR)
+            # print(currentGR['result'][0]['id'])
 
-
-            # DONT NEED TO GET NEW ID IF DATE ALREADY EXISTS IN THE TABLE
-            NewIDresponse = execute("CALL get_history_id;",  'get', conn)
-            # print("NewIDresponse:", NewIDresponse)
-            NewID = NewIDresponse['result'][0]['new_id']
-            print("New History id:", NewID)
-
-            
-            print(NewID, type(NewID))
+            # INPUT PARAMETERS TO UPDATE HISTORY TABLE
             print(user_id, type(user_id))
             print(str(date), type(str(date)))
             # print(str(json.dumps(user_history)), type(str(json.dumps(user_history))))
@@ -6123,6 +6118,9 @@ def ManifestGRATIS_CRON():
             # IF IT DOES NOT EXIST THEN INSERT INTO HISTORY TABLE
             if len(currentGR['result']) == 0:
                 print("no info")
+                NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+                NewID = NewIDresponse['result'][0]['new_id']
+                print("New History id:", NewID)
 
                 query = """
                     INSERT INTO manifest.history
@@ -6133,7 +6131,7 @@ def ManifestGRATIS_CRON():
                         date_affected = \'""" + str(date_affected) + """\';
                 """
 
-                print(query)
+                # print(query)
                 print("Before Insert execution")
                 historyInsert = execute(query, 'post', conn)
                 # print(historyInsert)
@@ -6155,13 +6153,9 @@ def ManifestGRATIS_CRON():
                 historyUpdate = execute(query, 'post', conn)
                 # print(historyUpdate)
 
-                # response['message'] = 'successful'
-
                 # ABOVE IS THE COPIED TodayGoalsRoutines
 
-
-
-                print("after Function call")
+                print("after TodayGoalsRoutines")
 
 
                 # STEP 3: RESET ALL CURRENT GRATIS
@@ -6173,8 +6167,9 @@ def ManifestGRATIS_CRON():
                 # print("Current Weekday: ", current_week_day)
 
                 # GET GOALS
-                goals = execute(
-                    """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
+                # NOT SURE I NEED TO RERUN THE QUERY
+                # goals = execute(
+                #     """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
                 # """SELECT * FROM goals_routines WHERE user_id = \'""" + users['result'][i]['user_unique_id'] + """\';""", 'get', conn)        
                 # print("Before For Loop")
 
@@ -6239,7 +6234,6 @@ def ManifestGRATIS_CRON():
                     if current_week_day == "sunday":
                         current_week_day = 7
                     print(current_week_day)
-                    # print(3)
 
                     # IF NO REPEAT
                     if goal['repeat'].lower() == 'false':
@@ -6252,28 +6246,18 @@ def ManifestGRATIS_CRON():
 
                     # IF REPEAT
                     else:
-                        # print(4)
-                        # print(currentDate)
-                        # print(start_date)
                         # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
                         if currentDate >= start_date:
-                            # print("In if")
-                            # print("In if repeat type", goal['repeat_type'])
-                            # print("In if repeat frequency", goal['repeat_frequency'])
 
                             # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
-                            # if goal['repeat_type'].lower() == 'after':
                             if goal['repeat_type'].lower() == 'occur':
                                 print("In if after")
                                 if goal['repeat_frequency'].lower() == 'day':
-                                    # print("In if if if")
-                                    # print("day")
                                     repeat_occurences = goal['repeat_occurences'] - 1
                                     repeat_every = goal['repeat_every']
                                     number_days = int(
                                         repeat_occurences) * int(repeat_every)
-                                    repeat_ends_on = start_date + \
-                                        timedelta(days=number_days)
+                                    repeat_ends_on = start_date + timedelta(days=number_days)
                                     # print(repeat_ends_on)
 
                                 elif goal['repeat_frequency'].lower() == 'week':
@@ -6307,18 +6291,13 @@ def ManifestGRATIS_CRON():
                                         day_i_need = dow
                                         if today <= day_i_need:
                                             days = day_i_need - today
-                                            nextDayOfTheWeek = new_date + \
-                                                timedelta(days=days)
+                                            nextDayOfTheWeek = new_date + timedelta(days=days)
                                         else:
-                                            new_date = new_date + \
-                                                relativedelta(weeks=1)
+                                            new_date = new_date + relativedelta(weeks=1)
                                             days = day_i_need - today
-                                            nextDayOfTheWeek = new_date + \
-                                                timedelta(days=-days)
-                                        add_weeks = numberOfWeek * \
-                                            int(goal['repeat_every'])
-                                        date = nextDayOfTheWeek + \
-                                            relativedelta(weeks=add_weeks)
+                                            nextDayOfTheWeek = new_date + timedelta(days=-days)
+                                        add_weeks = numberOfWeek * int(goal['repeat_every'])
+                                        date = nextDayOfTheWeek + relativedelta(weeks=add_weeks)
                                         occurence_dates.append(date)
                                     # print("current", currentDate)
                                     # print(occurence_dates)
@@ -6334,18 +6313,15 @@ def ManifestGRATIS_CRON():
                                     repeat_every = goal['repeat_every']
                                     end_month = int(
                                         repeat_occurences) * int(repeat_every)
-                                    repeat_ends_on = start_date + \
-                                        relativedelta(months=end_month)
+                                    repeat_ends_on = start_date + relativedelta(months=end_month)
                                     # print(repeat_ends_on)
 
                                 elif goal['repeat_frequency'].lower() == 'year':
                                     # print("year")
                                     repeat_occurences = goal['repeat_occurences']
                                     repeat_every = goal['repeat_every']
-                                    end_year = int(repeat_occurences) * \
-                                        int(repeat_every)
-                                    repeat_ends_on = start_date + \
-                                        relativedelta(years=end_year)
+                                    end_year = int(repeat_occurences) * int(repeat_every)
+                                    repeat_ends_on = start_date + relativedelta(years=end_year)
                                     # print(repeat_ends_on)
 
                             # IF REPEAT NEVER ENDS
@@ -6526,7 +6502,7 @@ def ManifestGRATIS_CRON():
 
 
 
-def ManifestGRATIS_CRON():
+def ManifestGRATIS_CRON_WORKING():
     from pytz import timezone
 
     try:
@@ -9452,9 +9428,6 @@ api.add_resource(
 api.add_resource(InstructionsAndSteps,
                  '/api/v2/instructionsSteps/<string:action_task_id>')  # working
 
-api.add_resource(newManifestGRATIS_CRON, '/api/v2/newManifestGRATIS_CRON')
-
-
 
 api.add_resource(TodayGoalsRoutines,
                  '/api/v2/todaygoalsandroutines/<string:user_id>')
@@ -9463,28 +9436,23 @@ api.add_resource(TodayGoalsRoutines,
 
 
 api.add_resource(AboutMe, '/api/v2/aboutme/<string:user_id>')  # working
-api.add_resource(
-    TimeSettings, '/api/v2/timeSettings/<string:user_id>')  # working
+api.add_resource(TimeSettings, '/api/v2/timeSettings/<string:user_id>')  # working
 
 api.add_resource(ListAllTA, '/api/v2/listAllTA/<string:user_id>')  # working
 api.add_resource(ListAllTAForCopy, '/api/v2/listAllTAForCopy')  # working
 api.add_resource(ListAllUsersForCopy, '/api/v2/listAllUsersForCopy')  # working
 
-api.add_resource(
-    ListAllPeople, '/api/v2/listPeople/<string:user_id>')  # working
+api.add_resource(ListAllPeople, '/api/v2/listPeople/<string:user_id>')  # working
 
 
 
 api.add_resource(AllUsers, '/api/v2/usersOfTA/<string:email_id>')  # working
-api.add_resource(
-    TALogin, '/api/v2/loginTA/<string:email_id>/<string:password>')  # working
-api.add_resource(
-    TASocialLogin, '/api/v2/loginSocialTA/<string:email_id>')  # working
+api.add_resource(TALogin, '/api/v2/loginTA/<string:email_id>/<string:password>')  # working
+api.add_resource(TASocialLogin, '/api/v2/loginSocialTA/<string:email_id>')  # working
 api.add_resource(Usertoken, '/api/v2/usersToken/<string:user_id>')  # working
 api.add_resource(UserLogin, '/api/v2/userLogin/<string:email_id>')  # working
 api.add_resource(GetEmailId, '/api/v2/getEmailId/<string:user_id>')  # working
-api.add_resource(
-    CurrentStatus, '/api/v2/currentStatus/<string:user_id>')  # working
+api.add_resource(CurrentStatus, '/api/v2/currentStatus/<string:user_id>')  # working
 api.add_resource(GoogleCalenderEvents, '/api/v2/calenderEvents')
 api.add_resource(GetIconsHygiene, '/api/v2/getIconsHygiene')
 api.add_resource(GetIconsClothing, '/api/v2/getIconsClothing')
@@ -9494,14 +9462,11 @@ api.add_resource(GetIconsOther, '/api/v2/getIconsOther')
 api.add_resource(GetImages, '/api/v2/getImages/<string:user_id>')
 api.add_resource(GetPeopleImages, '/api/v2/getPeopleImages/<string:ta_id>')
 api.add_resource(GetHistory, '/api/v2/getHistory/<string:user_id>')
-api.add_resource(
-    GetHistoryDate, '/api/v2/getHistoryDate/<string:user_id>,<string:date_affected>')
+api.add_resource(GetHistoryDate, '/api/v2/getHistoryDate/<string:user_id>,<string:date_affected>')
 api.add_resource(GoalHistory, '/api/v2/goalHistory/<string:user_id>')
-api.add_resource(ParticularGoalHistory,
-                 '/api/v2/particularGoalHistory/<string:user_id>')
+api.add_resource(ParticularGoalHistory, '/api/v2/particularGoalHistory/<string:user_id>')
 api.add_resource(RoutineHistory, '/api/v2/routineHistory/<string:user_id>')
-api.add_resource(GoalRoutineHistory,
-                 '/api/v2/goalRoutineHistory/<string:user_id>')
+api.add_resource(GoalRoutineHistory, '/api/v2/goalRoutineHistory/<string:user_id>')
 api.add_resource(GetUserAndTime, '/api/v2/getUserAndTime')
 api.add_resource(Notifications, '/api/v2/notifications')
 api.add_resource(TodayGR, '/api/v2/todayGR')
@@ -9552,8 +9517,7 @@ api.add_resource(PMChangeHistory2, '/api/v2/PMChangeHistory2')
 api.add_resource(ChangeHistory_annotated, '/api/v2/changeHistory_annotated/<string:user_id>')
 api.add_resource(ExistingUser, '/api/v2/existingUser')
 api.add_resource(ResetGR, '/api/v2/resetGR/<string:gr_id>')
-api.add_resource(update_guid_notification,
-                 '/api/v2/updateGuid/<string:action>')
+api.add_resource(update_guid_notification, '/api/v2/updateGuid/<string:action>')
 api.add_resource(AboutHistory, '/api/v2/changeAboutMeHistory')
 api.add_resource(UpdateMotivation, '/api/v2/updateMotivation')
 api.add_resource(UpdateFeelings, '/api/v2/updateFeelings')
