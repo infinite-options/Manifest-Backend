@@ -2730,14 +2730,14 @@ class TodayGoalsRoutines(Resource):
 #  -- NOTIFICATION RELATED FUNCTIONS     -----------------------------------------
 # Returns Notifications
 
-# TEMPORARY REDEFINITION WHILE DEBUGGING THE HISTORY CRON JOB
-class GetNotifications(Resource):
-    def get(self):
-        print("GetNotifications Endpoint called")
-        return 200
+# # TEMPORARY REDEFINITION WHILE DEBUGGING THE HISTORY CRON JOB
+# class GetNotifications(Resource):
+#     def get(self):
+#         print("GetNotifications Endpoint called")
+#         return 200
 
-# RENAME TO GetNotifications WHEN DEBUG HISTORY CRON JOB IS COMPLETE
-class GetNotifications2(Resource):
+# # RENAME TO GetNotifications WHEN DEBUG HISTORY CRON JOB IS COMPLETE
+class GetNotifications(Resource):
     def get(self):
         response = {}
         items = {}
