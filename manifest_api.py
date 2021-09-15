@@ -5836,6 +5836,117 @@ class Notifications(Resource):
 # CRON JOB
 
 # OPTIMIZED CRON JOB
+def ManifestNotification_CRON():
+    try:
+        response = {}
+        items = {}
+        conn = connect()
+        print("In Notification CRON Function")
+
+        # # COMMENTING OUT THE ORIGINAL ENDPOINT CALL
+        # print("Before Endpoint Call")
+        # url = 'https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/getNotifications'
+        # #    post_url = 'https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/changeHistory/'
+        # json_url = urllib.urlopen(url)
+        # data=json.loads(json_url.read())
+        # #print(data)
+
+        users = []
+        ta = []
+        # get all goals and routines
+        GRquery = """
+            SELECT * 
+            FROM goals_routines
+            WHERE is_displayed_today = 'True'
+                    and is_available = 'True'
+                    and is_complete = 'False';
+            """
+        GRs = execute(GRquery, 'get', conn)
+        goal_routine_response = GRs['result']
+        print("GR Response: ", goal_routine_response)
+
+
+        users_query = """
+            SELECT user_unique_id, time_zone
+            FROM users;
+            """
+        all_users = execute(users_query, 'get', conn)
+        # all_users = execute(
+        #     """Select user_unique_id, time_zone from users;""", 'get', conn)
+        print("All Users: ", all_users)
+
+
+        tas_query = """
+                SELECT ta_unique_id, ta_time_zone
+                FROM ta_people;
+            """
+        all_ta = execute(tas_query, 'get', conn)
+        # all_ta = execute(
+        #     """Select ta_unique_id from ta_people;""", 'get', conn)
+        print("All TAs: ", all_ta)
+
+        for i in range(len(all_users['result'])):
+            users.append(all_users['result'][i]['user_unique_id'])
+            print(users)
+
+        for i in range(len(all_ta['result'])):
+            ta.append(all_ta['result'][i]['ta_unique_id'])
+            print(ta)
+
+        # print("Incomplete, Active GRs: ", len(goal_routine_response))
+        # for i in range(len(goal_routine_response)):
+        #     gr_id = goal_routine_response[i]['gr_unique_id']
+        #     print(i, gr_id)
+        #     # Get all notifications of each goal and routine
+        #     res = execute(
+        #         """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
+        #     print(res)
+        #     # Get TA info if first notification is of TA
+        #     print(len(res['result']))
+        #     if len(res['result']) > 0:
+        #         for j in range(len(res['result'])):
+        #             print("\nJ counter: ", j)
+        #             print(res['result'][j]['user_ta_id'][0])
+        #             if res['result'][j]['user_ta_id'][0] == '2' and res['result'][j]['user_ta_id'] in ta:
+        #                 query1 = """SELECT ta_guid_device_id_notification FROM ta_people where ta_unique_id = \'""" + \
+        #                     res['result'][j]['user_ta_id'] + """\';"""
+        #                 items1 = execute(query1, 'get', conn)
+        #                 print(items1)
+        #                 if len(items1['result']) > 0:
+        #                     guid_response = items1['result']
+        #                     items['result'][i]['notifications'] = list(
+        #                         res['result'])
+        #                     items['result'][i]['notifications'][j]['guid'] = guid_response[0]['ta_guid_device_id_notification']
+
+        #             # Get User Info if first notification is of user
+        #             elif res['result'][j]['user_ta_id'][0] == '1' and res['result'][j]['user_ta_id'] in users:
+        #                 query1 = """SELECT user_unique_id, cust_guid_device_id_notification FROM users where user_unique_id = \'""" + \
+        #                     res['result'][j]['user_ta_id'] + """\';"""
+        #                 items1 = execute(query1, 'get', conn)
+        #                 if len(items1['result']) > 0:
+        #                     guid_response = items1['result']
+        #                     items['result'][i]['notifications'] = list(
+        #                         res['result'])
+        #                     items['result'][i]['notifications'][j]['guid'] = guid_response[0]['cust_guid_device_id_notification']
+
+        #                     for j in range(len(all_users['result'])):
+        #                         if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
+        #                             items['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
+
+        response['message'] = 'successful'
+        # response['result'] = items['result']
+
+        return response, 200
+
+
+
+    except:
+        raise BadRequest('ManifestNotification_CRON Request failed, please try again later.')
+    finally:
+        disconnect(conn)
+
+
+
 def ManifestGRATIS_CRON():
     from pytz import timezone
 
