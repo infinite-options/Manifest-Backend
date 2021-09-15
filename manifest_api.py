@@ -5921,6 +5921,7 @@ def getnotificationtime(op,t,obj):
         print('Unrecognized opcode!!!')
 
     tz = timezone('America/Los_Angeles')
+    print(tz, type(tz))
     # result_time = tz.localize(result_time)
 
     result_time = result_time.astimezone(timezone('America/Los_Angeles'))
@@ -6002,9 +6003,11 @@ def ManifestNotification_CRON():
         print("Incomplete, Active GRs: ", len(goal_routine_response))
         for i in range(len(goal_routine_response)):
             gr_id = goal_routine_response[i]['gr_unique_id']
-            # print(i, gr_id)
-            # Get all notifications of each goal and routine
+            print("\nNow Processing:")
+            print(i, gr_id)
 
+
+            # Get all notifications of each goal and routine
             notifications_query = """
                     SELECT * 
                     FROM notifications 
@@ -6013,8 +6016,9 @@ def ManifestNotification_CRON():
             res = execute(notifications_query, 'get', conn)
             # res = execute(
             #     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
-            # print(res)
+            print(res)
 
+            # STEP 2: INSERT TA AND USER GU INTO THID E GR TABLE
             # Get TA info if first notification is of TA
             # print(len(res['result']))
             if len(res['result']) > 0:
@@ -6048,11 +6052,21 @@ def ManifestNotification_CRON():
                                 if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
                                     GRs['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
 
-        print(GRs['result'], type(GRs['result']))
-        print("Test 1")
+        # print("\n")
+        # print(GRs['result'], type(GRs['result']))
+        
 
+        # # DEBUG PRINT STATEMENT TO SHOW GR ID WITH RESPECTIVE GUIDS
+        # print("Incomplete, Active GRs With GUIDs: ", len(goal_routine_response))
+        # for i in range(len(goal_routine_response)):
+        #     gr_id = goal_routine_response[i]['gr_unique_id']
+        #     print("\nNow With GUIDs:")
+        #     print(i, gr_id)
+        #     print(GRs['result'][i])
+
+        print("\nTest 1")
         for d in GRs['result']:
-            print("Test 3", d)
+            # print("Test 3\n", d)
             if('notifications' in d):
                 print("Test 4")
                 print(d['gr_start_day_and_time'], type(d['gr_start_day_and_time']))
@@ -6074,18 +6088,19 @@ def ManifestNotification_CRON():
                 # start_day_and_time_obj = d['gr_start_day_and_time']
                 # end_day_and_time_obj = d['gr_end_day_and_time']
 
+                print("\nStarting for loop")
                 for n in d['notifications']:
                     print(d['gr_unique_id'], n['before_is_enable'], n['during_is_enable'], n['after_is_enable'] )
                     if(n['before_is_enable'] == 'True'):
+                        print('\nbefore_notification_time')
                         before_not_time = getnotificationtime('before', n['before_time'], start_day_and_time_obj)
-                        print('before_notification_time')
+                        print('\nbefore changedate')
                         before_not_time = changedate(before_not_time)
                         print(before_not_time)
                         print("UTC Time")
                         print(utc_time)
                         time_diff= utc_time - before_not_time
-                        print('time_diff')
-                        print(time_diff)
+                        print('time_diff:', time_diff)
                         #notify(n['before_message']+n['before_time'])
                         if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
                             for id in getGUID(n):
@@ -6117,9 +6132,13 @@ def ManifestNotification_CRON():
                         print(time_diff.total_seconds())
                         print('\n')
                     if(n['during_is_enable'] == 'True'):
+                        print('\nduring_notification_time')
                         during_not_time = getnotificationtime('during', n['during_time'], start_day_and_time_obj)
+                        print('\nduring changedate')
                         during_not_time = changedate(during_not_time)
+                        print(during_not_time)
                         time_diff= utc_time - during_not_time
+                        print('time_diff:', time_diff)
                         #notify(n['during_message']+n['during_time'])
                         if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
                             for id in getGUID(n):
@@ -6150,9 +6169,13 @@ def ManifestNotification_CRON():
                         print(time_diff.total_seconds())
                         print('\n')
                     if(n['after_is_enable'] == 'True'):
+                        print('\nafter_notification_time')
                         after_not_time = getnotificationtime('after', n['after_time'], end_day_and_time_obj)
+                        print('\nafter changedate')
                         after_not_time = changedate(after_not_time)
+                        print(after_not_time)
                         time_diff= utc_time - after_not_time
+                        print('time_diff:', time_diff)
                         #notify(n['after_message']+n['after_time'])
                         if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
                             for id in getGUID(n):
@@ -6257,9 +6280,11 @@ class ManifestNotification(Resource):
             print("Incomplete, Active GRs: ", len(goal_routine_response))
             for i in range(len(goal_routine_response)):
                 gr_id = goal_routine_response[i]['gr_unique_id']
-                # print(i, gr_id)
-                # Get all notifications of each goal and routine
+                print("\nNow Processing:")
+                print(i, gr_id)
 
+
+                # Get all notifications of each goal and routine
                 notifications_query = """
                         SELECT * 
                         FROM notifications 
@@ -6268,8 +6293,9 @@ class ManifestNotification(Resource):
                 res = execute(notifications_query, 'get', conn)
                 # res = execute(
                 #     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
-                # print(res)
+                print(res)
 
+                # STEP 2: INSERT TA AND USER GU INTO THID E GR TABLE
                 # Get TA info if first notification is of TA
                 # print(len(res['result']))
                 if len(res['result']) > 0:
@@ -6303,11 +6329,21 @@ class ManifestNotification(Resource):
                                     if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
                                         GRs['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
 
-            print(GRs['result'], type(GRs['result']))
-            print("Test 1")
+            # print("\n")
+            # print(GRs['result'], type(GRs['result']))
+            
 
+            # # DEBUG PRINT STATEMENT TO SHOW GR ID WITH RESPECTIVE GUIDS
+            # print("Incomplete, Active GRs With GUIDs: ", len(goal_routine_response))
+            # for i in range(len(goal_routine_response)):
+            #     gr_id = goal_routine_response[i]['gr_unique_id']
+            #     print("\nNow With GUIDs:")
+            #     print(i, gr_id)
+            #     print(GRs['result'][i])
+
+            print("\nTest 1")
             for d in GRs['result']:
-                print("Test 3", d)
+                print("Test 3\n", d)
                 if('notifications' in d):
                     print("Test 4")
                     print(d['gr_start_day_and_time'], type(d['gr_start_day_and_time']))
@@ -6329,18 +6365,19 @@ class ManifestNotification(Resource):
                     # start_day_and_time_obj = d['gr_start_day_and_time']
                     # end_day_and_time_obj = d['gr_end_day_and_time']
 
+                    print("\nStarting for loop")
                     for n in d['notifications']:
                         print(d['gr_unique_id'], n['before_is_enable'], n['during_is_enable'], n['after_is_enable'] )
                         if(n['before_is_enable'] == 'True'):
+                            print('\nbefore_notification_time')
                             before_not_time = getnotificationtime('before', n['before_time'], start_day_and_time_obj)
-                            print('before_notification_time')
+                            print('\nbefore changedate')
                             before_not_time = changedate(before_not_time)
                             print(before_not_time)
                             print("UTC Time")
                             print(utc_time)
                             time_diff= utc_time - before_not_time
-                            print('time_diff')
-                            print(time_diff)
+                            print('time_diff:', time_diff)
                             #notify(n['before_message']+n['before_time'])
                             if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
                                 for id in getGUID(n):
@@ -6372,9 +6409,13 @@ class ManifestNotification(Resource):
                             print(time_diff.total_seconds())
                             print('\n')
                         if(n['during_is_enable'] == 'True'):
+                            print('\nduring_notification_time')
                             during_not_time = getnotificationtime('during', n['during_time'], start_day_and_time_obj)
+                            print('\nduring changedate')
                             during_not_time = changedate(during_not_time)
+                            print(during_not_time)
                             time_diff= utc_time - during_not_time
+                            print('time_diff:', time_diff)
                             #notify(n['during_message']+n['during_time'])
                             if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
                                 for id in getGUID(n):
@@ -6405,9 +6446,13 @@ class ManifestNotification(Resource):
                             print(time_diff.total_seconds())
                             print('\n')
                         if(n['after_is_enable'] == 'True'):
+                            print('\nafter_notification_time')
                             after_not_time = getnotificationtime('after', n['after_time'], end_day_and_time_obj)
+                            print('\nafter changedate')
                             after_not_time = changedate(after_not_time)
+                            print(after_not_time)
                             time_diff= utc_time - after_not_time
+                            print('time_diff:', time_diff)
                             #notify(n['after_message']+n['after_time'])
                             if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
                                 for id in getGUID(n):
