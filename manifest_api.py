@@ -6066,7 +6066,7 @@ def ManifestNotification_CRON():
 
         print("\nTest 1")
         for d in GRs['result']:
-            # print("Test 3\n", d)
+            print("Test 3\n", d)
             if('notifications' in d):
                 print("Test 4")
                 print(d['gr_start_day_and_time'], type(d['gr_start_day_and_time']))
@@ -6100,9 +6100,11 @@ def ManifestNotification_CRON():
                         print("UTC Time")
                         print(utc_time)
                         time_diff= utc_time - before_not_time
-                        print('time_diff:', time_diff)
+                        print('time_diff:', time_diff, type(time_diff))
                         #notify(n['before_message']+n['before_time'])
-                        if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                        print(time_diff.total_seconds(), type(time_diff.total_seconds()))
+                        # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                        if(time_diff.total_seconds() < 55 and time_diff.total_seconds() > -55):
                             for id in getGUID(n):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6140,7 +6142,8 @@ def ManifestNotification_CRON():
                         time_diff= utc_time - during_not_time
                         print('time_diff:', time_diff)
                         #notify(n['during_message']+n['during_time'])
-                        if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                        # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                        if(time_diff.total_seconds() < 55 and time_diff.total_seconds() > -55):
                             for id in getGUID(n):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6149,7 +6152,7 @@ def ManifestNotification_CRON():
 
                                     setNotification_query = """
                                             UPDATE notifications 
-                                            SET before_is_set = 'True' 
+                                            SET during_is_set = 'True' 
                                             WHERE notification_id = \'""" + str(n['notification_id']) + """\';
                                         """
                                     sql = execute(setNotification_query, 'get', conn)
@@ -6177,14 +6180,25 @@ def ManifestNotification_CRON():
                         time_diff= utc_time - after_not_time
                         print('time_diff:', time_diff)
                         #notify(n['after_message']+n['after_time'])
-                        if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                        # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                        if(time_diff.total_seconds() < 55 and time_diff.total_seconds() > -55):
                             for id in getGUID(n):
                             #id = getGUID(n)
                                 if (id != ''):
                                     notify(n['after_message'],id)
-                                    mycursor = mydb.cursor()
-                                    sql = "UPDATE notifications SET after_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-                                    mycursor.execute(sql)
+                                    # mycursor = mydb.cursor()
+
+                                    setNotification_query = """
+                                            UPDATE notifications 
+                                            SET after_is_set = 'True' 
+                                            WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                        """
+                                    sql = execute(setNotification_query, 'get', conn)
+
+
+                                    # sql = "UPDATE notifications SET after_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
+
+                                    # mycursor.execute(sql)
                                     # mydb.commit()
                                     # f.write(n['after_message']+ ' ')
                                     # f.write(id+' ')
@@ -6377,9 +6391,11 @@ class ManifestNotification(Resource):
                             print("UTC Time")
                             print(utc_time)
                             time_diff= utc_time - before_not_time
-                            print('time_diff:', time_diff)
+                            print('time_diff:', time_diff, type(time_diff))
                             #notify(n['before_message']+n['before_time'])
-                            if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                            print(time_diff.total_seconds(), type(time_diff.total_seconds()))
+                            # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                            if(time_diff.total_seconds() < 600 and time_diff.total_seconds() > -600):
                                 for id in getGUID(n):
                                 #id = getGUID(n)
                                     if (id != ''):
@@ -6417,7 +6433,8 @@ class ManifestNotification(Resource):
                             time_diff= utc_time - during_not_time
                             print('time_diff:', time_diff)
                             #notify(n['during_message']+n['during_time'])
-                            if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                            # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                            if(time_diff.total_seconds() < 600 and time_diff.total_seconds() > -600):
                                 for id in getGUID(n):
                                 #id = getGUID(n)
                                     if (id != ''):
@@ -6426,7 +6443,7 @@ class ManifestNotification(Resource):
 
                                         setNotification_query = """
                                                 UPDATE notifications 
-                                                SET before_is_set = 'True' 
+                                                SET during_is_set = 'True' 
                                                 WHERE notification_id = \'""" + str(n['notification_id']) + """\';
                                             """
                                         sql = execute(setNotification_query, 'get', conn)
@@ -6454,14 +6471,25 @@ class ManifestNotification(Resource):
                             time_diff= utc_time - after_not_time
                             print('time_diff:', time_diff)
                             #notify(n['after_message']+n['after_time'])
-                            if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                            # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
+                            if(time_diff.total_seconds() < 600 and time_diff.total_seconds() > -600):
                                 for id in getGUID(n):
                                 #id = getGUID(n)
                                     if (id != ''):
                                         notify(n['after_message'],id)
-                                        mycursor = mydb.cursor()
-                                        sql = "UPDATE notifications SET after_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-                                        mycursor.execute(sql)
+                                        # mycursor = mydb.cursor()
+
+                                        setNotification_query = """
+                                                UPDATE notifications 
+                                                SET after_is_set = 'True' 
+                                                WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                            """
+                                        sql = execute(setNotification_query, 'get', conn)
+
+
+                                        # sql = "UPDATE notifications SET after_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
+
+                                        # mycursor.execute(sql)
                                         # mydb.commit()
                                         # f.write(n['after_message']+ ' ')
                                         # f.write(id+' ')
