@@ -2741,6 +2741,7 @@ class GetNotifications(Resource):
     def get(self):
         response = {}
         items = {}
+        print("Notification Endpoint called")
         try:
 
             conn = connect()
@@ -2769,10 +2770,10 @@ class GetNotifications(Resource):
                 ta.append(all_ta['result'][i]['ta_unique_id'])
                 # print(ta)
 
-            print(len(goal_routine_response))
+            print("Incomplete, Active GRs: ", len(goal_routine_response))
             for i in range(len(goal_routine_response)):
                 gr_id = goal_routine_response[i]['gr_unique_id']
-                print(gr_id)
+                print(i, gr_id)
                 # Get all notifications of each goal and routine
                 res = execute(
                     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
