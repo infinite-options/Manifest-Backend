@@ -3096,6 +3096,7 @@ class ListAllPeople(Resource):
                             , CONCAT(user_first_name, SPACE(1), user_last_name) as user_name
                             , ta_people_id
                             , ta_email_id as email
+                            , ta_time_zone as time_zone
                             , ta_have_pic as have_pic
                             , important as important
                             , employer as employer
