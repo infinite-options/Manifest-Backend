@@ -5893,48 +5893,56 @@ def ManifestNotification_CRON():
             ta.append(all_ta['result'][i]['ta_unique_id'])
             print(ta)
 
-        # print("Incomplete, Active GRs: ", len(goal_routine_response))
-        # for i in range(len(goal_routine_response)):
-        #     gr_id = goal_routine_response[i]['gr_unique_id']
-        #     print(i, gr_id)
-        #     # Get all notifications of each goal and routine
-        #     res = execute(
-        #         """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
-        #     print(res)
-        #     # Get TA info if first notification is of TA
-        #     print(len(res['result']))
-        #     if len(res['result']) > 0:
-        #         for j in range(len(res['result'])):
-        #             print("\nJ counter: ", j)
-        #             print(res['result'][j]['user_ta_id'][0])
-        #             if res['result'][j]['user_ta_id'][0] == '2' and res['result'][j]['user_ta_id'] in ta:
-        #                 query1 = """SELECT ta_guid_device_id_notification FROM ta_people where ta_unique_id = \'""" + \
-        #                     res['result'][j]['user_ta_id'] + """\';"""
-        #                 items1 = execute(query1, 'get', conn)
-        #                 print(items1)
-        #                 if len(items1['result']) > 0:
-        #                     guid_response = items1['result']
-        #                     items['result'][i]['notifications'] = list(
-        #                         res['result'])
-        #                     items['result'][i]['notifications'][j]['guid'] = guid_response[0]['ta_guid_device_id_notification']
+        print("Incomplete, Active GRs: ", len(goal_routine_response))
+        for i in range(len(goal_routine_response)):
+            gr_id = goal_routine_response[i]['gr_unique_id']
+            print(i, gr_id)
+            # Get all notifications of each goal and routine
 
-        #             # Get User Info if first notification is of user
-        #             elif res['result'][j]['user_ta_id'][0] == '1' and res['result'][j]['user_ta_id'] in users:
-        #                 query1 = """SELECT user_unique_id, cust_guid_device_id_notification FROM users where user_unique_id = \'""" + \
-        #                     res['result'][j]['user_ta_id'] + """\';"""
-        #                 items1 = execute(query1, 'get', conn)
-        #                 if len(items1['result']) > 0:
-        #                     guid_response = items1['result']
-        #                     items['result'][i]['notifications'] = list(
-        #                         res['result'])
-        #                     items['result'][i]['notifications'][j]['guid'] = guid_response[0]['cust_guid_device_id_notification']
+            notifications_query = """
+                    SELECT * 
+                    FROM notifications 
+                    WHERE gr_at_id = \'""" + gr_id + """\';
+                """
+            res = execute(notifications_query, 'get', conn)
+            # res = execute(
+            #     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
+            print(res)
 
-        #                     for j in range(len(all_users['result'])):
-        #                         if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
-        #                             items['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
+            # Get TA info if first notification is of TA
+            print(len(res['result']))
+            if len(res['result']) > 0:
+                for j in range(len(res['result'])):
+                    print("\nJ counter: ", j)
+                    print(res['result'][j]['user_ta_id'][0])
+                    if res['result'][j]['user_ta_id'][0] == '2' and res['result'][j]['user_ta_id'] in ta:
+                        query1 = """SELECT ta_guid_device_id_notification FROM ta_people where ta_unique_id = \'""" + \
+                            res['result'][j]['user_ta_id'] + """\';"""
+                        items1 = execute(query1, 'get', conn)
+                        print(items1)
+                        if len(items1['result']) > 0:
+                            guid_response = items1['result']
+                            GRs['result'][i]['notifications'] = list(
+                                res['result'])
+                            GRs['result'][i]['notifications'][j]['guid'] = guid_response[0]['ta_guid_device_id_notification']
+
+                    # Get User Info if first notification is of user
+                    elif res['result'][j]['user_ta_id'][0] == '1' and res['result'][j]['user_ta_id'] in users:
+                        query1 = """SELECT user_unique_id, cust_guid_device_id_notification FROM users where user_unique_id = \'""" + \
+                            res['result'][j]['user_ta_id'] + """\';"""
+                        items1 = execute(query1, 'get', conn)
+                        if len(items1['result']) > 0:
+                            guid_response = items1['result']
+                            GRs['result'][i]['notifications'] = list(
+                                res['result'])
+                            GRs['result'][i]['notifications'][j]['guid'] = guid_response[0]['cust_guid_device_id_notification']
+
+                            for j in range(len(all_users['result'])):
+                                if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
+                                    items['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
 
         response['message'] = 'successful'
-        # response['result'] = items['result']
+        response['result'] = GRs['result']
 
         return response, 200
 
