@@ -5838,26 +5838,26 @@ class Notifications(Resource):
 # OPTIMIZED CRON JOB
 
 def notify(msg,tag):
-	print(msg,tag)
-	#return
-	isDebug = True
+    print(msg,tag)
+    #return
+    isDebug = True
 	#hub = AzureNotificationHub("Endpoint=sb://serving-fresh-notification-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Yy/PhzWba6vmrM8geyHmKTVQPocwrDVcVlqAiokvHe4=", "Serving-Fresh-Notification-Hub", isDebug)
-        hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7o7LFe8Oz6FZUQQ/gaNgqSfdN4Ckp6FCVCm3xuVg=", "Manifest-Notification-Hub", isDebug)
+    hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7o7LFe8Oz6FZUQQ/gaNgqSfdN4Ckp6FCVCm3xuVg=", "Manifest-Notification-Hub", isDebug)
 
 
 
 	#wns_payload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"}}"
-	wns_payload = {
+    wns_payload = {
 	    'aps':
 	        {
 	            'alert': msg
 	        }
 	}
-	hub.send_apple_notification(0, wns_payload,tag)
+    hub.send_apple_notification(0, wns_payload,tag)
 
 	#wns_payload ="""{\n\"notification\":{\n\"title\":\"Notification Hub Test Notification\",\n\"body\":\"This is a sample notification delivered by Azure Notification Hubs.\"\n},\n\"data\":{\n\"property1\":\"value1\",\n\"property2\":42\n}\n}"""
-
-	wns_payload = {
+    
+    wns_payload = {
 		"notification":{
 			"title":"Hi",
 			"body": msg
@@ -5867,22 +5867,17 @@ def notify(msg,tag):
 			"property2":42
 		}
 	}
-	hub.send_google_notification(0, wns_payload,tag)
-
-utc_time =datetime.datetime.now(pytz.utc)
-#utc_time = utc_time + datetime.timedelta(seconds=170)
-
-#utc_timezone = pytz.timezone('UTC')
-#utc_time = utc_timezone.localize(utc_time)
-#utc_time = utc_time.astimezone(utc_timezone)
+    hub.send_google_notification(0, wns_payload,tag)
+    
+    
 
 def getGUID(n):
-	s = ''
-	print('inside getGUID')
-	if 'guid' in n:
-		guid = str(n['guid'])
-		guid_list =guid.split(' ')
-        l =[]
+    s = ''
+    print('inside getGUID')
+    if 'guid' in n:
+        guid = str(n['guid'])
+        guid_list =guid.split(' ')
+        l = []
         print("guid_list_len")
         if(len(guid_list)> 1):
             for i in range(len(guid_list)):
@@ -5893,7 +5888,7 @@ def getGUID(n):
                     l.append(s)
                     s=''
                     print(l)
-	return l
+    return l
 
 
 def changedate(obj):
@@ -5915,7 +5910,7 @@ def getnotificationtime(op,t,obj):
         result_time = obj +  datetime.timedelta(seconds=total_seconds)
     else:
         print('Unrecognized opcode!!!')
-	tz = timezone('America/Los_Angeles')
+    tz = timezone('America/Los_Angeles')
     result_time = tz.localize(result_time)
 	#result_time= result_time.replace(tzinfo=tz)
     print(result_time)
@@ -5935,6 +5930,7 @@ def ManifestNotification_CRON():
         GRs = {}
         conn = connect()
         print("In Notification CRON Function")
+        utc_time =datetime.datetime.now(pytz.utc)
 
         # # COMMENTING OUT THE ORIGINAL ENDPOINT CALL
         # print("Before Endpoint Call")
