@@ -5934,10 +5934,11 @@ def ManifestNotification_CRON():
         GRs = {}
         conn = connect()
         print("In Notification CRON Function")
-        utc_time =datetime.datetime.now(pytz.utc)
-
+        
         print("Before Notification")
         notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
+
+        utc_time =datetime.now(tz=pytz.utc)
 
         # # COMMENTING OUT THE ORIGINAL ENDPOINT CALL
         # print("Before Endpoint Call")
