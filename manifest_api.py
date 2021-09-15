@@ -5936,6 +5936,9 @@ def ManifestNotification_CRON():
         print("In Notification CRON Function")
         utc_time =datetime.datetime.now(pytz.utc)
 
+        print("Before Notification")
+        notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
+
         # # COMMENTING OUT THE ORIGINAL ENDPOINT CALL
         # print("Before Endpoint Call")
         # url = 'https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/getNotifications'
