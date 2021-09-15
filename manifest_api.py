@@ -5839,7 +5839,7 @@ class Notifications(Resource):
 def ManifestNotification_CRON():
     try:
         response = {}
-        items = {}
+        GRs = {}
         conn = connect()
         print("In Notification CRON Function")
 
@@ -5931,6 +5931,7 @@ def ManifestNotification_CRON():
                         query1 = """SELECT user_unique_id, cust_guid_device_id_notification FROM users where user_unique_id = \'""" + \
                             res['result'][j]['user_ta_id'] + """\';"""
                         items1 = execute(query1, 'get', conn)
+                        print(items1)
                         if len(items1['result']) > 0:
                             guid_response = items1['result']
                             GRs['result'][i]['notifications'] = list(
@@ -5939,7 +5940,7 @@ def ManifestNotification_CRON():
 
                             for j in range(len(all_users['result'])):
                                 if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
-                                    items['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
+                                    GRs['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
 
         response['message'] = 'successful'
         response['result'] = GRs['result']
