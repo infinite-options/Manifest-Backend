@@ -6039,21 +6039,20 @@ def ManifestNotification_CRON():
                                 if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
                                     GRs['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
 
-        print(GRs['result'])
+        print(GRs['result'], type(GRs['result']))
+        print("Test 1")
 
-        data = GRs['result']
-
-
-        for d in data['result']:
-        #if(d['gr_unique_id']=='300-000458'):
+        for d in GRs['result']:
+            print("Test 3", d)
             if('notifications' in d):
+                print("Test 4")
                 print(d['gr_start_day_and_time'])
                 print(d['gr_end_day_and_time'])
             if(d['is_displayed_today'] == 'True' and d['is_complete'] == 'False'):
-                start_day_and_time_obj = datetime.datetime.strptime(d['gr_start_day_and_time'], '%m/%d/%Y, %I:%M:%S %p')
+                start_day_and_time_obj = datetime.strptime(d['gr_start_day_and_time'], '%m/%d/%Y, %I:%M:%S %p')
                 print('start_time')
                 start_day_and_time_obj =changedate(start_day_and_time_obj)
-                end_day_and_time_obj = datetime.datetime.strptime(d['gr_end_day_and_time'], '%m/%d/%Y, %I:%M:%S %p')
+                end_day_and_time_obj = datetime.strptime(d['gr_end_day_and_time'], '%m/%d/%Y, %I:%M:%S %p')
                 print('end_time')
                 end_day_and_time_obj = changedate(end_day_and_time_obj)
                 start_day_and_time_obj = start_day_and_time_obj.replace(second = 0)
@@ -6076,9 +6075,19 @@ def ManifestNotification_CRON():
                             #id = getGUID(n)
                                 if (id != ''):
                                     notify(n['before_message'],id)
-                                    mycursor = mydb.cursor()
-                                    sql = "UPDATE notifications SET before_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-                                    mycursor.execute(sql)
+                                    # mycursor = mydb.cursor()
+
+                                    setNotification_query = """
+                                            UPDATE notifications 
+                                            SET before_is_set = 'True' 
+                                            WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                        """
+                                    sql = execute(setNotification_query, 'get', conn)
+                                    
+                                    # sql = "UPDATE notifications SET before_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
+                                    
+                                    
+                                    # mycursor.execute(sql)
                                     # mydb.commit()
                                     # f.write(n['before_message']+ ' ')
                                     # f.write(id+' ')
@@ -6100,9 +6109,19 @@ def ManifestNotification_CRON():
                             #id = getGUID(n)
                                 if (id != ''):
                                     notify(n['during_message'],id)
-                                    mycursor = mydb.cursor()
-                                    sql = "UPDATE notifications SET during_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-                                    mycursor.execute(sql)
+                                    # mycursor = mydb.cursor()
+
+                                    setNotification_query = """
+                                            UPDATE notifications 
+                                            SET before_is_set = 'True' 
+                                            WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                        """
+                                    sql = execute(setNotification_query, 'get', conn)
+
+
+                                    # sql = "UPDATE notifications SET during_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
+
+                                    # mycursor.execute(sql)
                                     # mydb.commit()
                                     # f.write(n['during_message']+ ' ')
                                     # f.write(id+ ' ')
