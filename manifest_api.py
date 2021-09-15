@@ -5863,7 +5863,7 @@ def ManifestNotification_CRON():
             """
         GRs = execute(GRquery, 'get', conn)
         goal_routine_response = GRs['result']
-        print("GR Response: ", goal_routine_response)
+        # print("GR Response: ", goal_routine_response)
 
 
         users_query = """
@@ -5873,7 +5873,7 @@ def ManifestNotification_CRON():
         all_users = execute(users_query, 'get', conn)
         # all_users = execute(
         #     """Select user_unique_id, time_zone from users;""", 'get', conn)
-        print("All Users: ", all_users)
+        # print("All Users: ", all_users)
 
 
         tas_query = """
@@ -5883,20 +5883,20 @@ def ManifestNotification_CRON():
         all_ta = execute(tas_query, 'get', conn)
         # all_ta = execute(
         #     """Select ta_unique_id from ta_people;""", 'get', conn)
-        print("All TAs: ", all_ta)
+        # print("All TAs: ", all_ta)
 
         for i in range(len(all_users['result'])):
             users.append(all_users['result'][i]['user_unique_id'])
-            print(users)
+            # print(users)
 
         for i in range(len(all_ta['result'])):
             ta.append(all_ta['result'][i]['ta_unique_id'])
-            print(ta)
+            # print(ta)
 
         print("Incomplete, Active GRs: ", len(goal_routine_response))
         for i in range(len(goal_routine_response)):
             gr_id = goal_routine_response[i]['gr_unique_id']
-            print(i, gr_id)
+            # print(i, gr_id)
             # Get all notifications of each goal and routine
 
             notifications_query = """
@@ -5907,19 +5907,19 @@ def ManifestNotification_CRON():
             res = execute(notifications_query, 'get', conn)
             # res = execute(
             #     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
-            print(res)
+            # print(res)
 
             # Get TA info if first notification is of TA
-            print(len(res['result']))
+            # print(len(res['result']))
             if len(res['result']) > 0:
                 for j in range(len(res['result'])):
-                    print("\nJ counter: ", j)
-                    print(res['result'][j]['user_ta_id'][0])
+                    # print("\nJ counter: ", j)
+                    # print(res['result'][j]['user_ta_id'][0])
                     if res['result'][j]['user_ta_id'][0] == '2' and res['result'][j]['user_ta_id'] in ta:
                         query1 = """SELECT ta_guid_device_id_notification FROM ta_people where ta_unique_id = \'""" + \
                             res['result'][j]['user_ta_id'] + """\';"""
                         items1 = execute(query1, 'get', conn)
-                        print(items1)
+                        # print(items1)
                         if len(items1['result']) > 0:
                             guid_response = items1['result']
                             GRs['result'][i]['notifications'] = list(
@@ -5931,7 +5931,7 @@ def ManifestNotification_CRON():
                         query1 = """SELECT user_unique_id, cust_guid_device_id_notification FROM users where user_unique_id = \'""" + \
                             res['result'][j]['user_ta_id'] + """\';"""
                         items1 = execute(query1, 'get', conn)
-                        print(items1)
+                        # print(items1)
                         if len(items1['result']) > 0:
                             guid_response = items1['result']
                             GRs['result'][i]['notifications'] = list(
@@ -5941,6 +5941,8 @@ def ManifestNotification_CRON():
                             for j in range(len(all_users['result'])):
                                 if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
                                     GRs['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
+
+        print(GRs['result'])
 
         response['message'] = 'successful'
         response['result'] = GRs['result']
