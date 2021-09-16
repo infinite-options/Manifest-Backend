@@ -2916,10 +2916,12 @@ class CreateNewPeople(Resource):
             important = request.form.get('important')
             photo_url = request.form.get("photo_url")
             ta_time_zone = request.form.get("ta_time_zone")
+            people_email = request.form.get("people_email")
+            people_employer = request.form.get("people_employer")
+            people_phone_number = request.form.get("people_phone_number")
             first_name_list = []
 
             if not picture:
-
                 have_pic = 'FALSE'
             else:
                 have_pic = 'TRUE'
@@ -3002,12 +3004,12 @@ class CreateNewPeople(Resource):
                 execute("""INSERT INTO ta_people
                            SET ta_unique_id = \'""" + NewPeopleID + """\',
                                ta_timestamp = \'""" + ts + """\',
-                               ta_email_id = \'""" + '' + """\',
+                               ta_email_id = \'""" + people_email + """\',
                                ta_first_name = \'""" + first_name + """\',
                                ta_last_name = \'""" + last_name + """\',
-                               employer = \'""" + '' + """\',
+                               employer = \'""" + people_employer + """\',
                                password_hashed = \'""" + '' + """\',
-                               ta_phone_number = \'""" + '' + """\',
+                               ta_phone_number = \'""" + people_phone_number + """\',
                                ta_time_zone = \'""" + ta_time_zone + """\';""", 'post', conn) 
 
                 execute("""INSERT INTO relationship 
