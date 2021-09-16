@@ -785,38 +785,22 @@ class AddNewGR(Resource):
             new_notfication_id = new_notification_id_response['result'][0]['new_id']
 
             # TA notfication
-            query.append("""Insert into notifications
-                                (notification_id
-                                    , user_ta_id
-                                    , gr_at_id
-                                    , before_is_enable
-                                    , before_is_set
-                                    , before_message
-                                    , before_time
-                                    , during_is_enable
-                                    , during_is_set
-                                    , during_message
-                                    , during_time
-                                    , after_is_enable
-                                    , after_is_set
-                                    , after_message
-                                    , after_time) 
-                                VALUES
-                                (     \'""" + new_notfication_id + """\'
-                                    , \'""" + ta_id + """\'
-                                    , \'""" + new_gr_id + """\'
-                                    , \'""" + str(ta_before_is_enable).title() + """\'
-                                    , \'""" + str(ta_before_is_set).title() + """\'
-                                    , \'""" + ta_before_message + """\'
-                                    , \'""" + ta_before_time + """\'
-                                    , \'""" + str(ta_during_is_enable).title() + """\'
-                                    , \'""" + str(ta_during_is_set).title() + """\'
-                                    , \'""" + ta_during_message + """\'
-                                    , \'""" + ta_during_time + """\'
-                                    , \'""" + str(ta_after_is_enable).title() + """\'
-                                    , \'""" + str(ta_after_is_set).title() + """\'
-                                    , \'""" + ta_after_message + """\'
-                                    , \'""" + ta_after_time + """\');""")
+            query.append("""INSERT into notifications
+                            SET notification_id = \'""" + new_notfication_id + """\', 
+                                user_ta_id = \'""" + ta_id + """\', 
+                                gr_at_id = \'""" + new_gr_id + """\', 
+                                before_is_enable = \'""" + str(ta_before_is_enable).title() + """\', 
+                                before_is_set =\'""" + str(ta_before_is_set).title() + """\', 
+                                before_message = \'""" + ta_before_message + """\', 
+                                before_time = \'""" + ta_before_time + """\', 
+                                during_is_enable = \'""" + str(ta_during_is_enable).title() + """\', 
+                                during_is_set = \'""" + str(ta_during_is_set).title() + """\', 
+                                during_message = \'""" + ta_during_message + """\', 
+                                during_time = \'""" + ta_during_time + """\', 
+                                after_is_enable = \'""" + str(ta_after_is_enable).title() + """\', 
+                                after_is_set = \'""" + str(ta_after_is_set).title() + """\', 
+                                after_message = \'""" + ta_after_message + """\', 
+                                after_time = \'""" + ta_after_time + """\';""")
             execute(query[2], 'post', conn)
 
             # New notification ID
@@ -825,38 +809,22 @@ class AddNewGR(Resource):
             UserNotificationID = UserNotificationIDresponse['result'][0]['new_id']
 
             # User notfication
-            query.append("""Insert into notifications
-                                (notification_id
-                                    , user_ta_id
-                                    , gr_at_id
-                                    , before_is_enable
-                                    , before_is_set
-                                    , before_message
-                                    , before_time
-                                    , during_is_enable
-                                    , during_is_set
-                                    , during_message
-                                    , during_time
-                                    , after_is_enable
-                                    , after_is_set
-                                    , after_message
-                                    , after_time) 
-                                VALUES
-                                (     \'""" + UserNotificationID + """\'
-                                    , \'""" + user_id + """\'
-                                    , \'""" + new_gr_id + """\'
-                                    , \'""" + str(user_before_is_enable).title() + """\'
-                                    , \'""" + str(user_before_is_set).title() + """\'
-                                    , \'""" + user_before_message + """\'
-                                    , \'""" + user_before_time + """\'
-                                    , \'""" + str(user_during_is_enable).title() + """\'
-                                    , \'""" + str(user_during_is_set).title() + """\'
-                                    , \'""" + user_during_message + """\'
-                                    , \'""" + user_during_time + """\'
-                                    , \'""" + str(user_after_is_enable).title() + """\'
-                                    , \'""" + str(user_after_is_set).title() + """\'
-                                    , \'""" + user_after_message + """\'
-                                    , \'""" + user_after_time + """\');""")
+            query.append("""INSERT into notifications
+                            SET notification_id = \'""" + UserNotificationID + """\',
+                                user_ta_id = \'""" + user_id + """\',
+                                gr_at_id = \'""" + new_gr_id + """\',
+                                before_is_enable = \'""" + str(user_before_is_enable).title() + """\',
+                                before_is_set = \'""" + str(user_before_is_set).title() + """\',
+                                before_message = \'""" + user_before_message + """\',
+                                before_time = \'""" + user_before_time + """\',
+                                during_is_enable = \'""" + str(user_during_is_enable).title() + """\',
+                                during_is_set = \'""" + str(user_during_is_set).title() + """\',
+                                during_message = \'""" + user_during_message + """\',
+                                during_time = \'""" + user_during_time + """\',
+                                after_is_enable = \'""" + str(user_after_is_enable).title() + """\',
+                                after_is_set = \'""" + str(user_after_is_set).title() + """\',
+                                after_message = \'""" + user_after_message + """\',
+                                after_time = \'""" + user_after_time + """\';""")
             items = execute(query[3], 'post', conn)
 
             response['message'] = 'successful'
@@ -989,7 +957,7 @@ class UpdateGR(Resource):
                 # Update G/R to database
                 query = """UPDATE goals_routines
                                 SET gr_title = \'""" + gr_title + """\'
-                                    , is_available = \'""" + str(is_available).title() + """\'
+                                    ,is_available = \'""" + str(is_available).title() + """\'
                                     ,is_complete = \'""" + str(is_complete).title() + """\'
                                     ,is_sublist_available = \'""" + str(is_sublist_available).title() + """\'
                                     ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
@@ -1015,30 +983,21 @@ class UpdateGR(Resource):
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO icons(
-                                uid
-                                , Description
-                                , url
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + description + """\'
-                                    , \'""" + gr_picture + """\');""", 'post', conn)
+                    execute("""INSERT INTO icons
+                               SET uid = \'""" + NewID + """\',
+                                   Description = \'""" + description + """\',
+                                   url = \'""" + gr_picture + """\';""", 'post', conn)
 
                 else:
 
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO icons(
-                                uid
-                                , url
-                                , Description
-                                , user_id
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + gr_picture + """\'
-                                    , \'""" + 'Image Uploaded' + """\'
-                                    , \'""" + user_id + """\');""", 'post', conn)
+                    execute("""INSERT INTO icons
+                               SET uid = \'""" + NewID + """\',
+                                   url = \'""" + gr_picture + """\',
+                                   Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\';""", 'post', conn)
 
             items = execute(query, 'post', conn)
 
@@ -1077,38 +1036,22 @@ class UpdateGR(Resource):
                 UserNotificationID = UserNotificationIDresponse['result'][0]['new_id']
 
                 # User notfication
-                execute("""Insert into notifications
-                                (notification_id
-                                    , user_ta_id
-                                    , gr_at_id
-                                    , before_is_enable
-                                    , before_is_set
-                                    , before_message
-                                    , before_time
-                                    , during_is_enable
-                                    , during_is_set
-                                    , during_message
-                                    , during_time
-                                    , after_is_enable
-                                    , after_is_set
-                                    , after_message
-                                    , after_time) 
-                                VALUES
-                                (     \'""" + UserNotificationID + """\'
-                                    , \'""" + ta_id + """\'
-                                    , \'""" + id + """\'
-                                    , \'""" + str(ta_before_is_enabled).title() + """\'
-                                    , \'""" + str(ta_before_is_set).title() + """\'
-                                    , \'""" + ta_before_message + """\'
-                                    , \'""" + ta_before_time + """\'
-                                    , \'""" + str(ta_during_is_enabled).title() + """\'
-                                    , \'""" + str(ta_during_is_set).title() + """\'
-                                    , \'""" + ta_during_message + """\'
-                                    , \'""" + ta_during_time + """\'
-                                    , \'""" + str(ta_after_is_enabled).title() + """\'
-                                    , \'""" + str(ta_after_is_set).title() + """\'
-                                    , \'""" + ta_after_message + """\'
-                                    , \'""" + ta_after_time + """\');""", 'post', conn)
+                execute("""INSERT into notifications
+                           SET notification_id = \'""" + UserNotificationID + """\',
+                                user_ta_id = \'""" + ta_id + """\',
+                                gr_at_id = \'""" + id + """\',
+                                before_is_enable = \'""" + str(ta_before_is_enabled).title() + """\',
+                                before_is_set = \'""" + str(ta_before_is_set).title() + """\',
+                                before_message = \'""" + ta_before_message + """\',
+                                before_time = \'""" + ta_before_time + """\',
+                                during_is_enable = \'""" + str(ta_during_is_enabled).title() + """\',
+                                during_is_set = \'""" + str(ta_during_is_set).title() + """\',
+                                during_message = \'""" + ta_during_message + """\',
+                                during_time = \'""" + ta_during_time + """\',
+                                after_is_enable = \'""" + str(ta_after_is_enabled).title() + """\',
+                                after_is_set = \'""" + str(ta_after_is_set).title() + """\',
+                                after_message = \'""" + ta_after_message + """\',
+                                after_time = \'""" + ta_after_time + """\';""", 'post', conn)
             else:
                 # TA notfication
                 execute("""UPDATE notifications
@@ -1166,6 +1109,7 @@ class AddNewAT(Resource):
             available_end_time = request.form.get('available_end_time')
             available_start_time = request.form.get('available_start_time')
             icon_type = request.form.get('type')
+            description = 'Other'
             print("Form Input Complete")
 
             for i, char in enumerate(at_title):
@@ -1180,39 +1124,23 @@ class AddNewAT(Resource):
             if not photo:
                 print("No Photo")
 
-                query.append("""INSERT INTO actions_tasks(at_unique_id
-                                , at_title
-                                , goal_routine_id
-                                , at_sequence
-                                , is_available
-                                , is_complete
-                                , is_in_progress
-                                , is_sublist_available
-                                , is_must_do
-                                , at_photo
-                                , is_timed
-                                , at_datetime_completed
-                                , at_datetime_started
-                                , at_expected_completion_time
-                                , at_available_start_time
-                                , at_available_end_time)
-                            VALUES 
-                            ( \'""" + NewATID + """\'
-                            , \'""" + at_title + """\'
-                            , \'""" + gr_id + """\'
-                            , \'""" + '1' + """\'
-                            , \'""" + str(is_available).title() + """\'
-                            , \'""" + str(is_complete).title() + """\'
-                            , \'""" + str(is_in_progress).title() + """\'
-                            , \'""" + 'False' + """\'
-                            , \'""" + str(is_must_do).title() + """\'
-                            , \'""" + photo_url + """\'
-                            , \'""" + str(is_timed).title() + """\'
-                            , \'""" + datetime_completed + """\'
-                            , \'""" + datetime_started + """\'
-                            , \'""" + expected_completion_time + """\'
-                            , \'""" + available_start_time + """\'
-                            , \'""" + available_end_time + """\' );""")
+                query.append("""INSERT INTO actions_tasks
+                                SET at_unique_id = \'""" + NewATID + """\',
+                                    at_title = \'""" + at_title + """\',
+                                    goal_routine_id = \'""" + gr_id + """\',
+                                    at_sequence = \'""" + '1' + """\',
+                                    is_available = \'""" + str(is_available).title() + """\',
+                                    is_complete = \'""" + str(is_complete).title() + """\',
+                                    is_in_progress = \'""" + str(is_in_progress).title() + """\',
+                                    is_sublist_available = \'""" + 'False' + """\',
+                                    is_must_do = \'""" + str(is_must_do).title() + """\',
+                                    at_photo = \'""" + photo_url + """\',
+                                    is_timed = \'""" + str(is_timed).title() + """\',
+                                    at_datetime_completed = \'""" + datetime_completed + """\',
+                                    at_datetime_started = \'""" + datetime_started + """\',
+                                    at_expected_completion_time = \'""" + expected_completion_time + """\',
+                                    at_available_start_time = \'""" + available_start_time + """\',
+                                    at_available_end_time = \'""" + available_end_time + """\';""")
 
                 # query.append("""INSERT INTO actions_tasks(at_unique_id
                 #                 , at_title
@@ -1252,69 +1180,47 @@ class AddNewAT(Resource):
                 print("photo")
                 at_picture = helper_upload_img(photo)
                 print(at_picture)
-                query.append("""INSERT INTO actions_tasks(at_unique_id
-                                , at_title
-                                , goal_routine_id
-                                , at_sequence
-                                , is_available
-                                , is_complete
-                                , is_in_progress
-                                , is_sublist_available
-                                , is_must_do
-                                , at_photo
-                                , is_timed
-                                , at_datetime_completed
-                                , at_datetime_started
-                                , at_expected_completion_time
-                                , at_available_start_time
-                                , at_available_end_time)
-                            VALUES 
-                            ( \'""" + NewATID + """\'
-                            , \'""" + at_title + """\'
-                            , \'""" + gr_id + """\'
-                            , \'""" + '2' + """\'
-                            , \'""" + str(is_available).title() + """\'
-                            , \'""" + str(is_complete).title() + """\'
-                            , \'""" + str(is_in_progress).title() + """\'
-                            , \'""" + str(is_sublist_available).title() + """\'
-                            , \'""" + str(is_must_do).title() + """\'
-                            , \'""" + at_picture + """\'
-                            , \'""" + str(is_timed).title() + """\'
-                            , \'""" + datetime_completed + """\'
-                            , \'""" + datetime_started + """\'
-                            , \'""" + expected_completion_time + """\'
-                            , \'""" + available_start_time + """\'
-                            , \'""" + available_end_time + """\' );""")
+                query.append("""INSERT INTO actions_tasks
+                                SET at_unique_id = \'""" + NewATID + """\',
+                                    at_title = \'""" + at_title + """\',
+                                    goal_routine_id = \'""" + gr_id + """\',
+                                    at_sequence = \'""" + '2' + """\',
+                                    is_available = \'""" + str(is_available).title() + """\',
+                                    is_complete = \'""" + str(is_complete).title() + """\',
+                                    is_in_progress = \'""" + str(is_in_progress).title() + """\',
+                                    is_sublist_available = \'""" + str(is_sublist_available).title() + """\',
+                                    is_must_do = \'""" + str(is_must_do).title() + """\',
+                                    at_photo = \'""" + at_picture + """\',
+                                    is_timed = \'""" + str(is_timed).title() + """\',
+                                    at_datetime_completed = \'""" + datetime_completed + """\',
+                                    at_datetime_started = \'""" + datetime_started + """\',
+                                    at_expected_completion_time = \'""" + expected_completion_time + """\',
+                                    at_available_start_time = \'""" + available_start_time + """\',
+                                    at_available_end_time = \'""" + available_end_time + """\';""")
 
                 if icon_type == 'icon':
                     print("In icon")
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO icons(
-                                uid
-                                , Description
-                                , url
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + description + """\'
-                                    , \'""" + at_picture + """\');""", 'post', conn)
+                    execute("""INSERT INTO icons 
+                               SET uid = \'""" + NewID + """\',
+                                   Description = \'""" + description + """\',
+                                   url = \'""" + at_picture + """\';""", 'post', conn)
 
                 else:
                     print("User Image")
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO icons(
-                                uid
-                                , url
-                                , Description
-                                , user_id
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + at_picture + """\'
-                                    , \'""" + 'Image Uploaded' + """\'
-                                    , \'""" + user_id + """\');""", 'post', conn)
+                    # Need to fix this
+                    user_id = '100-000027'
+
+                    execute("""INSERT INTO icons
+                               SET uid = \'""" + NewID + """\',
+                                   url = \'""" + at_picture + """\',
+                                   Description = \'""" + 'Image Uploaded' + """\'
+                                   user_id = \'""" + user_id + """\';""", 'post', conn)
 
             print("\nThis is query")
             print(query)
@@ -1382,53 +1288,33 @@ class AddNewIS(Resource):
             if not photo:
                 print("No Photo")
 
-                query.append("""INSERT INTO instructions_steps(is_unique_id
-                                , is_title
-                                , at_id
-                                , is_sequence
-                                , is_available
-                                , is_complete
-                                , is_in_progress
-                                , is_photo
-                                , is_timed
-                                , is_expected_completion_time)
-                            VALUES 
-                            ( \'""" + NewISID + """\'
-                            , \'""" + title + """\'
-                            , \'""" + at_id + """\'
-                            , \'""" + is_sequence + """\'
-                            , \'""" + str(is_available).title() + """\'
-                            , \'""" + str(is_complete).title() + """\'
-                            , \'""" + str(is_in_progress).title() + """\'
-                            , \'""" + photo_url + """\'
-                            , \'""" + str(is_timed).title() + """\'
-                            , \'""" + str(expected_completion_time) + """\');""")
+                query.append("""INSERT INTO instructions_steps
+                                SET is_unique_id = \'""" + NewISID + """\',
+                                    is_title = \'""" + title + """\',
+                                    at_id = \'""" + at_id + """\',
+                                    is_sequence = \'""" + is_sequence + """\',
+                                    is_available = \'""" + str(is_available).title() + """\',
+                                    is_complete = \'""" + str(is_complete).title() + """\',
+                                    is_in_progress = \'""" + str(is_in_progress).title() + """\',
+                                    is_photo = \'""" + photo_url + """\',
+                                    is_timed = \'""" + str(is_timed).title() + """\',
+                                    is_expected_completion_time =  \'""" + str(expected_completion_time) + """\';""")
 
             else:
                 print("Photo Exists")
                 is_picture = helper_upload_img(photo)
                 print(is_picture)
-                query.append("""INSERT INTO instructions_steps(is_unique_id
-                                , is_title
-                                , at_id
-                                , is_sequence
-                                , is_available
-                                , is_complete
-                                , is_in_progress
-                                , is_photo
-                                , is_timed
-                                , is_expected_completion_time)
-                            VALUES 
-                            ( \'""" + NewISID + """\'
-                            , \'""" + title + """\'
-                            , \'""" + at_id + """\'
-                            , \'""" + is_sequence + """\'
-                            , \'""" + str(is_available).title() + """\'
-                            , \'""" + str(is_complete).title() + """\'
-                            , \'""" + str(is_in_progress).title() + """\'
-                            , \'""" + is_picture + """\'
-                            , \'""" + str(is_timed).title() + """\'
-                            , \'""" + str(expected_completion_time) + """\');""")
+                query.append("""INSERT INTO instructions_steps 
+                                SET is_unique_id = \'""" + NewISID + """\',
+                                    is_title = \'""" + title + """\',
+                                    at_id = \'""" + at_id + """\', 
+                                    is_sequence = \'""" + is_sequence + """\',
+                                    is_available = \'""" + str(is_available).title() + """\',
+                                    is_complete = \'""" + str(is_complete).title() + """\',
+                                    is_in_progress = \'""" + str(is_in_progress).title() + """\',
+                                    is_photo = \'""" + is_picture + """\',
+                                    is_timed = \'""" + str(is_timed).title() + """\',
+                                    is_expected_completion_time = \'""" + str(expected_completion_time) + """\';""")
 
                 print("After query")
                 if icon_type == 'icon':
@@ -1438,14 +1324,10 @@ class AddNewIS(Resource):
 
                     description = "New Icon"
 
-                    execute("""INSERT INTO icons(
-                                uid
-                                , Description
-                                , url
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + description + """\'
-                                    , \'""" + is_picture + """\');""", 'post', conn)
+                    execute("""INSERT INTO icons
+                               SET uid = \'""" + NewID + """\',
+                                   Description = \'""" + description + """\',
+                                   url = \'""" + is_picture + """\';""", 'post', conn) 
 
                 else:
                     print("In else")
@@ -1454,17 +1336,11 @@ class AddNewIS(Resource):
 
                     user_id = "100-000040"
 
-                    execute("""INSERT INTO icons(
-                                uid
-                                , url
-                                , Description
-                                , user_id
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + is_picture + """\'
-                                    , \'""" + 'Image Uploaded' + """\'
-                                    , \'""" + user_id + """\');
-                                    """, 'post', conn)
+                    execute("""INSERT INTO icons
+                               SET uid = \'""" + NewID + """\',
+                                   url = \'""" + is_picture + """\',
+                                   Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             print(query[1])
             items = execute(query[1], 'post', conn)
@@ -1516,6 +1392,7 @@ class UpdateIS(Resource):
             expected_completion_time = request.form.get(
                 'expected_completion_time')
             icon_type = request.form.get('type')
+            description = 'Other'
 
             for i, char in enumerate(title):
                 if char == "'":
@@ -1552,27 +1429,19 @@ class UpdateIS(Resource):
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO icons(
-                                uid
-                                , Description
-                                , url
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + description + """\'
-                                    , \'""" + is_picture + """\');""", 'post', conn)
+                    execute("""INSERT INTO icons
+                               SET uid = \'""" + NewID + """\',
+                                   Description = \'""" + description + """\',
+                                   url = \'""" + is_picture + """\';""", 'post', conn) 
 
                 else:
                     NewIDresponse = execute("CALL get_image_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO image_upload(
-                                uid
-                                , url
-                                , user_id
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + is_picture + """\'
-                                    , \'""" + is_id + """\');""", 'post', conn)
+                    execute("""INSERT INTO image_upload
+                               SET uid = \'""" + NewID + """\',
+                                   url = \'""" + is_picture + """\',
+                                   user_id = \'""" + is_id + """\';""", 'post', conn)
 
             execute(query, 'post', conn)
             response['message'] = 'successful'
@@ -1610,6 +1479,7 @@ class UpdateAT(Resource):
             available_end_time = request.form.get('available_end_time')
             available_start_time = request.form.get('available_start_time')
             icon_type = request.form.get('type')
+            description = 'Other'
 
             for i, char in enumerate(at_title):
                 if char == "'":
@@ -1662,27 +1532,22 @@ class UpdateAT(Resource):
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO icons(
-                                uid
-                                , Description
-                                , url
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + description + """\'
-                                    , \'""" + at_picture + """\');""", 'post', conn)
+                    execute("""INSERT INTO icons
+                               SET uid = \'""" + NewID + """\',
+                                   Description = \'""" + description + """\',
+                                   url = \'""" + at_picture + """\';""", 'post', conn)
 
                 else:
                     NewIDresponse = execute("CALL get_image_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO image_upload(
-                                uid
-                                , url
-                                , user_id
-                                )VALUES(
-                                    \'""" + NewID + """\'
-                                    , \'""" + at_picture + """\'
-                                    , \'""" + user_id + """\');""", 'post', conn)
+                    # Need to fix this
+                    user_id = '100-000027'
+
+                    execute("""INSERT INTO image_upload 
+                               SET uid = \'""" + NewID + """\',
+                                   url = \'""" + at_picture + """\',
+                                   user_id = \'""" + user_id + """\';""", 'post', conn)
 
             execute(query, 'post', conn)
             response['message'] = 'successful'
@@ -2211,53 +2076,30 @@ class CopyGR(Resource):
             new_gr_id = new_gr_id_response['result'][0]['new_id']
             print(new_gr_id)
             print("Before insert")
-            execute("""INSERT INTO goals_routines(gr_unique_id
-                                , gr_title
-                                , user_id
-                                , is_available
-                                , is_complete
-                                , is_in_progress
-                                , is_displayed_today
-                                , is_persistent
-                                , is_sublist_available
-                                , is_timed
-                                , gr_photo
-                                , `repeat`
-                                , repeat_type
-                                , repeat_ends_on
-                                , repeat_every
-                                , repeat_frequency
-                                , repeat_occurences
-                                , gr_start_day_and_time
-                                , repeat_week_days
-                                , gr_datetime_completed
-                                , gr_datetime_started
-                                , gr_end_day_and_time
-                                , gr_expected_completion_time)
-                            VALUES 
-                            ( \'""" + new_gr_id + """\'
-                            , \'""" + goal_routine_response[0]['gr_title'] + """\'
-                            , \'""" + user_id + """\'
-                            , \'""" + goal_routine_response[0]['is_available'] + """\'
-                            , \'""" + 'False' + """\'
-                            , \'""" + 'False' + """\'
-                            , \'""" + goal_routine_response[0]['is_displayed_today'] + """\'
-                            , \'""" + goal_routine_response[0]['is_persistent'] + """\'
-                            , \'""" + goal_routine_response[0]['is_sublist_available'] + """\'
-                            , \'""" + 'False' + """\'
-                            , \'""" + goal_routine_response[0]['gr_photo'] + """\'
-                            , \'""" + goal_routine_response[0]['repeat'] + """\'
-                            , \'""" + goal_routine_response[0]['repeat_type'] + """\'
-                            , \'""" + goal_routine_response[0]['repeat_ends_on'] + """\'
-                            , \'""" + str(goal_routine_response[0]['repeat_every']) + """\'
-                            , \'""" + str(goal_routine_response[0]['repeat_frequency']) + """\'
-                            , \'""" + str(goal_routine_response[0]['repeat_occurences']) + """\'
-                            , \'""" + str(start_date_time) + """\'
-                            , \'""" + goal_routine_response[0]['repeat_week_days'] + """\'
-                            , \'""" + goal_routine_response[0]['gr_datetime_completed'] + """\'
-                            , \'""" + goal_routine_response[0]['gr_datetime_started'] + """\'
-                            , \'""" + str(end_date_time) + """\'
-                            , \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\');""", 'post', conn)
+            execute("""INSERT INTO goals_routines
+                       SET gr_unique_id = \'""" + new_gr_id + """\',
+                           gr_title = \'""" + goal_routine_response[0]['gr_title'] + """\' ,
+                           user_id = \'""" + user_id + """\',
+                           is_available = \'""" + goal_routine_response[0]['is_available'] + """\',
+                           is_complete = \'""" + 'False' + """\' ,
+                           is_in_progress = \'""" + 'False' + """\',
+                           is_displayed_today = \'""" + goal_routine_response[0]['is_displayed_today'] + """\',
+                           is_persistent = \'""" + goal_routine_response[0]['is_persistent'] + """\',
+                           is_sublist_available = \'""" + goal_routine_response[0]['is_sublist_available'] + """\',
+                           is_timed = \'""" + 'False' + """\',
+                           gr_photo = \'""" + goal_routine_response[0]['gr_photo'] + """\',
+                           `repeat` = \'""" + goal_routine_response[0]['repeat'] + """\',
+                           repeat_type = \'""" + goal_routine_response[0]['repeat_type'] + """\',
+                           repeat_ends_on = \'""" + goal_routine_response[0]['repeat_ends_on'] + """\',
+                           repeat_every = \'""" + str(goal_routine_response[0]['repeat_every']) + """\',
+                           repeat_frequency = \'""" + str(goal_routine_response[0]['repeat_frequency']) + """\',
+                           repeat_occurences = \'""" + str(goal_routine_response[0]['repeat_occurences']) + """\',
+                           gr_start_day_and_time = \'""" + str(start_date_time) + """\',
+                           repeat_week_days = \'""" + goal_routine_response[0]['repeat_week_days'] + """\',
+                           gr_datetime_completed = \'""" + goal_routine_response[0]['gr_datetime_completed'] + """\',
+                           gr_datetime_started = \'""" + goal_routine_response[0]['gr_datetime_started'] + """\',
+                           gr_end_day_and_time = \'""" + str(end_date_time) + """\',
+                           gr_expected_completion_time = \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\';""", 'post', conn) 
             print("After insert")
 
             # New Notification ID
@@ -2281,37 +2123,21 @@ class CopyGR(Resource):
             print("Before notifications insert")
 
             execute("""Insert into notifications
-                                (notification_id
-                                    , user_ta_id
-                                    , gr_at_id
-                                    , before_is_enable
-                                    , before_is_set
-                                    , before_message    
-                                    , before_time
-                                    , during_is_enable
-                                    , during_is_set
-                                    , during_message
-                                    , during_time
-                                    , after_is_enable
-                                    , after_is_set
-                                    , after_message
-                                    , after_time) 
-                                VALUES
-                                (     \'""" + new_notfication_id + """\'
-                                    , \'""" + person_id + """\'
-                                    , \'""" + new_gr_id + """\'
-                                    , \'""" + notifications[0]['before_is_enable'] + """\'
-                                    , \'""" + notifications[0]['before_is_set'] + """\'
-                                    , \'""" + notifications[0]['before_message'] + """\'
-                                    , \'""" + notifications[0]['before_time'] + """\'
-                                    , \'""" + notifications[0]['during_is_enable'] + """\'
-                                    , \'""" + notifications[0]['during_is_set'] + """\'
-                                    , \'""" + notifications[0]['during_message'] + """\'
-                                    , \'""" + notifications[0]['during_time'] + """\'
-                                    , \'""" + notifications[0]['after_is_enable'] + """\'
-                                    , \'""" + notifications[0]['after_is_set'] + """\'
-                                    , \'""" + notifications[0]['after_message'] + """\'
-                                    , \'""" + notifications[0]['after_time'] + """\');""", 'post', conn)
+                       SET notification_id = \'""" + new_notfication_id + """\',
+                           user_ta_id = \'""" + person_id + """\' ,
+                           gr_at_id = \'""" + new_gr_id + """\',
+                           before_is_enable = \'""" + notifications[0]['before_is_enable'] + """\',
+                           before_is_set = \'""" + notifications[0]['before_is_set'] + """\',
+                           before_message = \'""" + notifications[0]['before_message'] + """\',
+                           before_time = \'""" + notifications[0]['before_time'] + """\',
+                           during_is_enable = \'""" + notifications[0]['during_is_enable'] + """\',
+                           during_is_set = \'""" + notifications[0]['during_is_set'] + """\',
+                           during_message = \'""" + notifications[0]['during_message'] + """\',
+                           during_time = \'""" + notifications[0]['during_time'] + """\',
+                           after_is_enable = \'""" + notifications[0]['after_is_enable'] + """\',
+                           after_is_set = \'""" + notifications[0]['after_is_set'] + """\',
+                           after_message = \'""" + notifications[0]['after_message'] + """\',
+                           after_time = \'""" + notifications[0]['after_time'] + """\';""", 'post', conn) 
 
             # New Notification ID
             new_notification_id_response = execute(
@@ -2326,37 +2152,21 @@ class CopyGR(Resource):
                 print("TA id", person_id)
 
             execute("""Insert into notifications
-                                (notification_id
-                                    , user_ta_id
-                                    , gr_at_id
-                                    , before_is_enable
-                                    , before_is_set
-                                    , before_message
-                                    , before_time
-                                    , during_is_enable
-                                    , during_is_set
-                                    , during_message
-                                    , during_time
-                                    , after_is_enable
-                                    , after_is_set
-                                    , after_message
-                                    , after_time) 
-                                VALUES
-                                (     \'""" + new_notfication_id + """\'
-                                    , \'""" + person_id + """\'
-                                    , \'""" + new_gr_id + """\'
-                                    , \'""" + notifications[0]['before_is_enable'] + """\'
-                                    , \'""" + notifications[0]['before_is_set'] + """\'
-                                    , \'""" + notifications[0]['before_message'] + """\'
-                                    , \'""" + notifications[0]['before_time'] + """\'
-                                    , \'""" + notifications[0]['during_is_enable'] + """\'
-                                    , \'""" + notifications[0]['during_is_set'] + """\'
-                                    , \'""" + notifications[0]['during_message'] + """\'
-                                    , \'""" + notifications[0]['during_time'] + """\'
-                                    , \'""" + notifications[0]['after_is_enable'] + """\'
-                                    , \'""" + notifications[0]['after_is_set'] + """\'
-                                    , \'""" + notifications[0]['after_message'] + """\'
-                                    , \'""" + notifications[0]['after_time'] + """\');""", 'post', conn)
+                       SET notification_id = \'""" + new_notfication_id + """\',
+                           user_ta_id = \'""" + person_id + """\',
+                           gr_at_id = \'""" + new_gr_id + """\',
+                           before_is_enable = \'""" + notifications[0]['before_is_enable'] + """\',
+                           before_is_set = \'""" + notifications[0]['before_is_set'] + """\',
+                           before_message = \'""" + notifications[0]['before_message'] + """\',
+                           before_time = \'""" + notifications[0]['before_time'] + """\',
+                           during_is_enable = \'""" + notifications[0]['during_is_enable'] + """\',
+                           during_is_set = \'""" + notifications[0]['during_is_set'] + """\',
+                           during_message = \'""" + notifications[0]['during_message'] + """\',
+                           during_time = \'""" + notifications[0]['during_time'] + """\',
+                           after_is_enable = \'""" + notifications[0]['after_is_enable'] + """\',
+                           after_is_set = \'""" + notifications[0]['after_is_set'] + """\',
+                           after_message = \'""" + notifications[0]['after_message'] + """\',
+                           after_time = \'""" + notifications[0]['after_time'] + """\';""", 'post', conn)
 
             res_actions = execute(
                 """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + goal_routine_id + """\';""", 'get', conn)
@@ -2370,39 +2180,23 @@ class CopyGR(Resource):
                     NewATID = NewATIDresponse['result'][0]['new_id']
                     print(NewATID)
                     print("Before action insert")
-                    execute("""INSERT INTO actions_tasks(at_unique_id
-                            , at_title
-                            , goal_routine_id
-                            , at_sequence
-                            , is_available
-                            , is_complete
-                            , is_in_progress
-                            , is_sublist_available
-                            , is_must_do
-                            , at_photo
-                            , is_timed
-                            , at_datetime_completed
-                            , at_datetime_started
-                            , at_expected_completion_time
-                            , at_available_start_time
-                            , at_available_end_time)
-                        VALUES 
-                        ( \'""" + NewATID + """\'
-                        , \'""" + action_response[j]['at_title'] + """\'
-                        , \'""" + new_gr_id + """\'
-                        , \'""" + str(action_response[j]['at_sequence']) + """\'
-                        , \'""" + action_response[j]['is_available'] + """\'
-                        , \'""" + 'False' + """\'
-                        , \'""" + 'False' + """\'
-                        , \'""" + action_response[j]['is_sublist_available'] + """\'
-                        , \'""" + action_response[j]['is_must_do'] + """\'
-                        , \'""" + action_response[j]['at_photo'] + """\'
-                        , \'""" + action_response[j]['is_timed'] + """\'
-                        , \'""" + action_response[j]['at_datetime_completed'] + """\'
-                        , \'""" + action_response[j]['at_datetime_started'] + """\'
-                        , \'""" + action_response[j]['at_expected_completion_time'] + """\'
-                        , \'""" + action_response[j]['at_available_start_time'] + """\'
-                        , \'""" + action_response[j]['at_available_end_time'] + """\' );""", 'post', conn)
+                    execute("""INSERT INTO actions_tasks
+                               SET at_unique_id = \'""" + NewATID + """\',
+                                   at_title = \'""" + action_response[j]['at_title'] + """\',
+                                   goal_routine_id = \'""" + new_gr_id + """\',
+                                   at_sequence = \'""" + str(action_response[j]['at_sequence']) + """\',
+                                   is_available = \'""" + action_response[j]['is_available'] + """\',
+                                   is_complete = \'""" + 'False' + """\',
+                                   is_in_progress = \'""" + 'False' + """\',
+                                   is_sublist_available = \'""" + action_response[j]['is_sublist_available'] + """\',
+                                   is_must_do = \'""" + action_response[j]['is_must_do'] + """\',
+                                   at_photo = \'""" + action_response[j]['at_photo'] + """\',
+                                   is_timed = \'""" + action_response[j]['is_timed'] + """\',
+                                   at_datetime_completed = \'""" + action_response[j]['at_datetime_completed'] + """\',
+                                   at_datetime_started = \'""" + action_response[j]['at_datetime_started'] + """\',
+                                   at_expected_completion_time = \'""" + action_response[j]['at_expected_completion_time'] + """\',
+                                   at_available_start_time = \'""" + action_response[j]['at_available_start_time'] + """\',
+                                   at_available_end_time =  \'""" + action_response[j]['at_available_end_time'] + """\' ;""", 'post', conn)
 
                     print("After action insert")
                     res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
@@ -2419,27 +2213,17 @@ class CopyGR(Resource):
                             NewISID = NewISIDresponse['result'][0]['new_id']
                             print(NewISID)
                             print("Before instruction insert")
-                            execute("""INSERT INTO instructions_steps(is_unique_id
-                                            , is_title
-                                            , at_id
-                                            , is_sequence
-                                            , is_available
-                                            , is_complete
-                                            , is_in_progress
-                                            , is_photo
-                                            , is_timed
-                                            , is_expected_completion_time)
-                                        VALUES 
-                                        ( \'""" + NewISID + """\'
-                                        , \'""" + instructions[k]['is_title'] + """\'
-                                        , \'""" + NewATID + """\'
-                                        , \'""" + str(instructions[k]['is_sequence']) + """\'
-                                        , \'""" + instructions[k]['is_available'] + """\'
-                                        , \'""" + instructions[k]['is_complete'] + """\'
-                                        , \'""" + instructions[k]['is_in_progress'] + """\'
-                                        , \'""" + instructions[k]['is_photo'] + """\'
-                                        , \'""" + instructions[k]['is_timed'] + """\'
-                                        , \'""" + instructions[k]['is_expected_completion_time'] + """\');""", 'post', conn)
+                            execute("""INSERT INTO instructions_steps
+                                       SET is_unique_id = \'""" + NewISID + """\',
+                                           is_title = \'""" + instructions[k]['is_title'] + """\',
+                                           at_id = \'""" + NewATID + """\',
+                                           is_sequence = \'""" + str(instructions[k]['is_sequence']) + """\',
+                                           is_available = \'""" + instructions[k]['is_available'] + """\',
+                                           is_complete = \'""" + instructions[k]['is_complete'] + """\',
+                                           is_in_progress = \'""" + instructions[k]['is_in_progress'] + """\',
+                                           is_photo = \'""" + instructions[k]['is_photo'] + """\',
+                                           is_timed = \'""" + instructions[k]['is_timed'] + """\',
+                                           is_expected_completion_time = \'""" + instructions[k]['is_expected_completion_time'] + """\';""", 'post', conn) 
 
             response['message'] = 'successful'
 
@@ -2472,7 +2256,7 @@ class TodayGoalsRoutines(Resource):
             print("New History id:", NewID)
 
             # DEFINE DATE TIME FORMAT
-            date_format = '%m/%d/%Y %H:%M:%S'
+            date_format = '%Y-%m-%d %H:%M:%S'
 
             # GET CURRENT DATETIME
             current = datetime.now(tz=pytz.utc)
@@ -3052,25 +2836,15 @@ class AnotherTAAccess(Resource):
 
             # Add new relationship
             query.append("""INSERT INTO relationship
-                                        (id
-                                        , r_timestamp
-                                        , ta_people_id
-                                        , user_uid
-                                        , relation_type
-                                        , ta_have_pic
-                                        , ta_picture
-                                        , important
-                                        , advisor)
-                            VALUES 
-                                        ( \'""" + str(new_relation_id) + """\'
-                                        , \'""" + str(timestamp) + """\'
-                                        , \'""" + str(ta_id) + """\'
-                                        , \'""" + str(user_id) + """\'
-                                        , \'""" + 'advisor' + """\'
-                                        , \'""" + 'False' + """\'
-                                        , \'""" + '' + """\'
-                                        , \'""" + 'True' + """\'
-                                        , \'""" + str(1) + """\');""")
+                            SET id = \'""" + str(new_relation_id) + """\',
+                                r_timestamp = \'""" + str(timestamp) + """\',
+                                ta_people_id = \'""" + str(ta_id) + """\',
+                                user_uid = \'""" + str(user_id) + """\',
+                                relation_type = \'""" + 'advisor' + """\',
+                                ta_have_pic = \'""" + 'False' + """\',
+                                ta_picture = \'""" + '' + """\',
+                                important = \'""" + 'True' + """\',
+                                advisor = \'""" + str(1) + """\';""") 
 
             items = execute(query[1], 'post', conn)
 
@@ -3104,6 +2878,7 @@ class ListAllPeople(Resource):
                             , ta_phone_number as phone_number
                             , ta_picture as pic
                             , relation_type as relationship
+                            , ta_time_zone as time_zone
                         FROM relationship
                         JOIN
                         ta_people ta
@@ -3140,6 +2915,7 @@ class CreateNewPeople(Resource):
             picture = request.files.get('picture')
             important = request.form.get('important')
             photo_url = request.form.get("photo_url")
+            ta_time_zone = request.form.get("ta_time_zone")
             first_name_list = []
 
             if not picture:
@@ -3192,7 +2968,7 @@ class CreateNewPeople(Resource):
                                 , ta_picture = \'""" + people_picture_url + """\'
                                 , important = \'""" + str(important).title() + """\'
                                 WHERE user_uid = \'""" + user_id + """\' AND 
-                                ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\'""", 'post', conn)
+                                ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\';""", 'post', conn)
 
                 else:
                     if picture:
@@ -3201,26 +2977,16 @@ class CreateNewPeople(Resource):
                     else:
                         people_picture_url = photo_url
 
-                    execute("""INSERT INTO relationship(
-                        id
-                        , r_timestamp
-                        , ta_people_id
-                        , user_uid
-                        , relation_type
-                        , ta_have_pic
-                        , ta_picture
-                        , important
-                        , advisor)
-                        VALUES ( 
-                            \'""" + NewRelationID + """\'
-                            , \'""" + str(ts) + """\'
-                            , \'""" + typeResponse['result'][0]['ta_unique_id'] + """\'
-                            , \'""" + user_id + """\'
-                            , \'""" + relation_type + """\'
-                            , \'""" + str(have_pic).title() + """\'
-                            , \'""" + people_picture_url + """\'
-                            , \'""" + str(important).title() + """\'
-                            , \'""" + str(0) + """\')""", 'post', conn)
+                    execute("""INSERT INTO relationship
+                               SET id = \'""" + NewRelationID + """\',
+                                   r_timestamp = \'""" + str(ts) + """\',
+                                   ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\',
+                                   user_uid = \'""" + user_id + """\',
+                                   relation_type = \'""" + relation_type + """\',
+                                   ta_have_pic = \'""" + str(have_pic).title() + """\',
+                                   ta_picture = \'""" + people_picture_url + """\',
+                                   important = \'""" + str(important).title() + """\',
+                                   advisor = \'""" + str(0) + """\';""", 'post', conn) 
 
             else:
                 print('else')
@@ -3233,45 +2999,27 @@ class CreateNewPeople(Resource):
                 else:
                     people_picture_url = photo_url
 
-                execute("""INSERT INTO ta_people(
-                                        ta_unique_id
-                                        , ta_timestamp
-                                        , ta_email_id
-                                        , ta_first_name
-                                        , ta_last_name
-                                        , employer
-                                        , password_hashed
-                                        , ta_phone_number)
-                                        VALUES ( 
-                                            \'""" + NewPeopleID + """\'
-                                            , \'""" + ts + """\'
-                                            , \'""" + '' + """\'
-                                            , \'""" + first_name + """\'
-                                            , \'""" + last_name + """\'
-                                            , \'""" + '' + """\'
-                                            , \'""" + '' + """\'
-                                            , \'""" + '' + """\')""", 'post', conn)
+                execute("""INSERT INTO ta_people
+                           SET ta_unique_id = \'""" + NewPeopleID + """\',
+                               ta_timestamp = \'""" + ts + """\',
+                               ta_email_id = \'""" + '' + """\',
+                               ta_first_name = \'""" + first_name + """\',
+                               ta_last_name = \'""" + last_name + """\',
+                               employer = \'""" + '' + """\',
+                               password_hashed = \'""" + '' + """\',
+                               ta_phone_number = \'""" + '' + """\',
+                               ta_time_zone = \'""" + ta_time_zone + """\';""", 'post', conn) 
 
-                execute("""INSERT INTO relationship(
-                                        id
-                                        , r_timestamp
-                                        , ta_people_id
-                                        , user_uid
-                                        , relation_type
-                                        , ta_have_pic
-                                        , ta_picture
-                                        , important
-                                        , advisor)
-                                        VALUES ( 
-                                            \'""" + NewRelationID + """\'
-                                            , \'""" + str(ts) + """\'
-                                            , \'""" + NewPeopleID + """\'
-                                            , \'""" + user_id + """\'
-                                            , \'""" + relation_type + """\'
-                                            , \'""" + str(have_pic).title() + """\'
-                                            , \'""" + people_picture_url + """\'
-                                            , \'""" + str(important).title() + """\'
-                                            , \'""" + str(0) + """\')""", 'post', conn)
+                execute("""INSERT INTO relationship 
+                           SET id = \'""" + NewRelationID + """\',
+                               r_timestamp = \'""" + str(ts) + """\',
+                               ta_people_id = \'""" + NewPeopleID + """\',
+                               user_uid = \'""" + user_id + """\',
+                               relation_type = \'""" + relation_type + """\',
+                               ta_have_pic = \'""" + str(have_pic).title() + """\',
+                               ta_picture = \'""" + people_picture_url + """\',
+                               important = \'""" + str(important).title() + """\',
+                               advisor = \'""" + str(0) + """\';""", 'post', conn) 
 
             response['message'] = 'successful'
 
@@ -3296,7 +3044,7 @@ class UserTADetails(Resource):
             user_list = []
             res = []
             ta_response = execute(
-                """SELECT ta_unique_id, ta_email_id, ta_first_name, ta_last_name, ta_phone_number FROM ta_people;""", 'get', conn)
+                """SELECT ta_unique_id, ta_email_id, ta_first_name, ta_last_name, ta_phone_number, ta_time_zone FROM ta_people;""", 'get', conn)
             user_response = execute(
                 """SELECT user_email_id, user_first_name, user_last_name, user_picture FROM users;""", 'get', conn)
 
@@ -3321,6 +3069,7 @@ class UserTADetails(Resource):
                                 res['first_name'] = ta_response['result'][i]['ta_first_name']
                                 res['last_name'] = ta_response['result'][i]['ta_last_name']
                                 res['phone_number'] = ta_response['result'][i]['ta_phone_number']
+                                res['ta_time_zone'] = ta_response['result'][i]['ta_time_zone']
                                 res['picture'] = ''
                                 res['role'] = 'no role'
                                 items.append(res)
@@ -3333,6 +3082,7 @@ class UserTADetails(Resource):
                                     res['first_name'] = ta_response['result'][i]['ta_first_name']
                                     res['last_name'] = ta_response['result'][i]['ta_last_name']
                                     res['phone_number'] = ta_response['result'][i]['ta_phone_number']
+                                    res['ta_time_zone'] = ta_response['result'][i]['ta_time_zone']
                                     res['picture'] = relation_response['result'][k]['ta_picture']
                                     res['role'] = 'advisor'
                                     items.append(res)
@@ -3566,6 +3316,7 @@ class NewTA(Resource):
             last_name = data['last_name']
             phone_number = data['phone_number']
             employer = data['employer']
+            ta_time_zone = data['ta_time_zone']
 
             ta_id_response = execute("""SELECT ta_unique_id, password_hashed FROM ta_people
                                             WHERE ta_email_id = \'""" + email_id + """\';""", 'get', conn)
@@ -3595,26 +3346,18 @@ class NewTA(Resource):
                 if user_info:
                     guid = user_info[0]['cust_guid_device_id_notification']
 
-                execute("""INSERT INTO ta_people(
-                                            ta_unique_id
-                                            , ta_timestamp
-                                            , ta_email_id
-                                            , ta_first_name
-                                            , ta_last_name
-                                            , employer
-                                            , password_hashed
-                                            , ta_phone_number
-                                            , ta_guid_device_id_notification)                                        
-                                            VALUES ( 
-                                                \'""" + new_ta_id + """\'
-                                                , \'""" + ts + """\'
-                                                , \'""" + email_id + """\'
-                                                , \'""" + first_name + """\'
-                                                , \'""" + last_name + """\'
-                                                , \'""" + employer + """\'
-                                                , \'""" + key + """\'
-                                                , \'""" + phone_number + """\'
-                                                , \'""" + guid + """\')""", 'post', conn)
+                execute("""INSERT INTO ta_people
+                           SET ta_unique_id = \'""" + new_ta_id + """\',
+                               ta_timestamp = \'""" + ts + """\',
+                               ta_email_id  = \'""" + email_id + """\',
+                               ta_first_name = \'""" + first_name + """\',
+                               ta_last_name = \'""" + last_name + """\',
+                               employer = \'""" + employer + """\',
+                               password_hashed = \'""" + key + """\',
+                               ta_phone_number = \'""" + phone_number + """\',
+                               ta_time_zone = \'""" + ta_time_zone + """\',
+                               ta_guid_device_id_notification = \'""" + guid + """\';""", 'post', conn)
+
                 response['message'] = 'successful'
                 response['result'] = new_ta_id
 
@@ -3641,6 +3384,7 @@ class TASocialSignUP(Resource):
             last_name = data['last_name']
             phone_number = data['phone_number']
             employer = data['employer']
+            ta_time_zone = data['ta_time_zone']
 
             ta_id_response = execute("""SELECT ta_unique_id, password_hashed FROM ta_people
                                             WHERE ta_email_id = \'""" + email_id + """\';""", 'get', conn)
@@ -3653,22 +3397,15 @@ class TASocialSignUP(Resource):
                     "CALL get_ta_people_id;", 'get', conn)
                 new_ta_id = new_ta_id_response['result'][0]['new_id']
 
-                execute("""INSERT INTO ta_people(
-                                                ta_unique_id
-                                                , ta_timestamp
-                                                , ta_email_id
-                                                , ta_first_name
-                                                , ta_last_name
-                                                , employer
-                                                , ta_phone_number)
-                                            VALUES ( 
-                                                \'""" + new_ta_id + """\'
-                                                , \'""" + ts + """\'
-                                                , \'""" + email_id + """\'
-                                                , \'""" + first_name + """\'
-                                                , \'""" + last_name + """\'
-                                                , \'""" + employer + """\'
-                                                , \'""" + phone_number + """\')""", 'post', conn)
+                execute("""INSERT INTO ta_people
+                           SET ta_unique_id = \'""" + new_ta_id + """\',
+                               ta_timestamp = \'""" + ts + """\',
+                               ta_email_id = \'""" + email_id + """\',
+                               ta_first_name = \'""" + first_name + """\',
+                               ta_last_name = \'""" + last_name + """\',
+                               employer = \'""" + employer + """\',
+                               ta_time_zone = \'""" + ta_time_zone + """\',
+                               ta_phone_number = \'""" + phone_number + """\';""", 'post', conn)
                 response['message'] = 'successful'
                 response['result'] = new_ta_id
 
@@ -3795,58 +3532,34 @@ class CreateNewUser(Resource):
                 user_id_response = execute("CAll get_user_id;", 'get', conn)
                 new_user_id = user_id_response['result'][0]['new_id']
 
-                execute("""INSERT INTO users(
-                                user_unique_id
-                                , user_timestamp
-                                , user_email_id
-                                , user_first_name
-                                , user_last_name
-                                , google_auth_token
-                                , google_refresh_token
-                                , time_zone
-                                , user_have_pic
-                                , user_picture
-                                , user_social_media
-                                , new_account
-                                , cust_guid_device_id_notification)
-                            VALUES ( 
-                                \'""" + new_user_id + """\'
-                                , \'""" + timestamp + """\'
-                                , \'""" + email_id + """\'
-                                , \'""" + first_name + """\'
-                                , \'""" + last_name + """\'
-                                , \'""" + google_auth_token + """\'
-                                , \'""" + google_refresh_token + """\'
-                                , \'""" + time_zone + """\'
-                                , \'""" + 'False' + """\'
-                                , \'""" + '' + """\'
-                                , \'""" + 'GOOGLE' + """\'
-                                , \'""" + 'True' + """\'
-                                , \'""" + 'null' + """\')""", 'post', conn)
+                execute("""INSERT INTO users
+                           SET user_unique_id = \'""" + new_user_id + """\',
+                               user_timestamp = \'""" + timestamp + """\',
+                               user_email_id = \'""" + email_id + """\',
+                               user_first_name = \'""" + first_name + """\',
+                               user_last_name = \'""" + last_name + """\',
+                               google_auth_token = \'""" + google_auth_token + """\',
+                               google_refresh_token = \'""" + google_refresh_token + """\',
+                               time_zone = \'""" + time_zone + """\',
+                               user_have_pic = \'""" + 'False' + """\',
+                               user_picture = \'""" + '' + """\',
+                               user_social_media = \'""" + 'GOOGLE' + """\',
+                               new_account = \'""" + 'True' + """\',
+                               cust_guid_device_id_notification = \'""" + 'null' + """\';""", 'post', conn)
 
                 NewRelationIDresponse = execute(
                     "Call get_relation_id;", 'get', conn)
                 NewRelationID = NewRelationIDresponse['result'][0]['new_id']
                 execute("""INSERT INTO relationship
-                        (id
-                        , r_timestamp
-                        , ta_people_id
-                        , user_uid
-                        , relation_type
-                        , ta_have_pic
-                        , ta_picture
-                        , important
-                        , advisor)
-                        VALUES 
-                        ( \'""" + NewRelationID + """\'
-                        , \'""" + timestamp + """\'
-                        , \'""" + ta_people_id + """\'
-                        , \'""" + new_user_id + """\'
-                        , \'""" + 'advisor' + """\'
-                        , \'""" + 'False' + """\'
-                        , \'""" + '' + """\'
-                        , \'""" + 'True' + """\'
-                        , \'""" + str(1) + """\');""", 'post', conn)
+                           SET id = \'""" + NewRelationID + """\',
+                               r_timestamp = \'""" + timestamp + """\',
+                               ta_people_id = \'""" + ta_people_id + """\',
+                               user_uid = \'""" + new_user_id + """\',
+                               relation_type = \'""" + 'advisor' + """\',
+                               ta_have_pic = \'""" + 'False' + """\',
+                               ta_picture = \'""" + '' + """\',
+                               important = \'""" + 'True' + """\',
+                               advisor = \'""" + str(1) + """\';""", 'post', conn) 
 
                 response['message'] = 'successful'
                 response['result'] = new_user_id
@@ -3886,25 +3599,15 @@ class ExistingUser(Resource):
                             "Call get_relation_id;", 'get', conn)
                         NewRelationID = NewRelationIDresponse['result'][0]['new_id']
                         execute("""INSERT INTO relationship
-                                                (id
-                                                , ta_people_id
-                                                , user_uid
-                                                , r_timestamp
-                                                , relation_type
-                                                , ta_have_pic
-                                                , ta_picture
-                                                , important
-                                                , advisor)
-                                                VALUES 
-                                                ( \'""" + NewRelationID + """\'
-                                                , \'""" + ta_people_id + """\'
-                                                , \'""" + user_id_response['result'][0]['user_unique_id'] + """\'
-                                                , \'""" + timestamp + """\'
-                                                , \'""" + 'advisor' + """\'
-                                                , \'""" + 'False' + """\'
-                                                , \'""" + '' + """\'
-                                                , \'""" + 'True' + """\'
-                                                , \'""" + str(1) + """\');""", 'post', conn)
+                                   SET id = \'""" + NewRelationID + """\',
+                                   ta_people_id = \'""" + ta_people_id + """\',
+                                   user_uid = \'""" + user_id_response['result'][0]['user_unique_id'] + """\',
+                                   r_timestamp = \'""" + timestamp + """\',
+                                   relation_type = \'""" + 'advisor' + """\',
+                                   ta_have_pic = \'""" + 'False' + """\',
+                                   ta_picture = \'""" + '' + """\',
+                                   important = \'""" + 'True' + """\',
+                                   advisor = \'""" + str(1) + """\';""", 'post', conn) 
                         print("Added")
                 response['message'] = user_id_response['result'][0]['new_account']
 
@@ -3987,7 +3690,7 @@ class UpdateAboutMe(Resource):
                                     , user_phone_number = \'""" + phone_number + """\'
                                     , user_history = \'""" + history + """\'
                                     , user_major_events = \'""" + major_events + """\'
-                                WHERE user_unique_id = \'""" + user_id + """\' ;""", 'post', conn)
+                                WHERE user_unique_id = \'""" + user_id + """\';""", 'post', conn)
             else:
                 user_photo_url = helper_upload_img(picture)
                 execute("""UPDATE  users
@@ -4139,6 +3842,7 @@ class UpdatePeople(Resource):
             people_have_pic = request.form.get('people_have_pic')
             people_pic = request.files.get('people_pic')
             photo_url = request.form.get("photo_url")
+            ta_time_zone = request.form.get("ta_time_zone")
             print(user_id)
             print(ta_people_id)
             print(people_name)
@@ -4164,6 +3868,7 @@ class UpdatePeople(Resource):
                             , ta_phone_number =  \'""" + people_phone_number + """\'
                             , ta_email_id = \'""" + people_email + """\'
                             , employer = \'""" + people_employer + """\'
+                            , ta_time_zone = \'""" + ta_time_zone + """\'
                         WHERE ta_unique_id = \'""" + ta_people_id + """\' ;""", 'post', conn)
 
             relationResponse = execute("""SELECT id FROM relationship 
@@ -4194,25 +3899,15 @@ class UpdatePeople(Resource):
                     NewRelationID = NewRelationIDresponse['result'][0]['new_id']
 
                     execute("""INSERT INTO relationship
-                                        (id
-                                        , ta_people_id
-                                        , user_uid
-                                        , r_timestamp
-                                        , relation_type
-                                        , ta_have_pic
-                                        , ta_picture
-                                        , important
-                                        , advisor)
-                                        VALUES 
-                                        ( \'""" + NewRelationID + """\'
-                                        , \'""" + ta_people_id + """\'
-                                        , \'""" + user_id + """\'
-                                        , \'""" + timestamp + """\'
-                                        , \'""" + people_relationship + """\'
-                                        , \'""" + str(people_have_pic).title() + """\'
-                                        , \'""" + photo_url + """\'
-                                        , \'""" + str(people_important).title() + """\'
-                                        , \'""" + str(advisor).title() + """\');""", 'post', conn)
+                               SET id = \'""" + NewRelationID + """\',
+                               ta_people_id = \'""" + ta_people_id + """\',
+                               user_uid = \'""" + user_id + """\',
+                               r_timestamp = \'""" + timestamp + """\',
+                               relation_type = \'""" + people_relationship + """\',
+                               ta_have_pic = \'""" + str(people_have_pic).title() + """\',
+                               ta_picture = \'""" + photo_url + """\',
+                               important = \'""" + str(people_important).title() + """\',
+                               advisor = \'""" + str(advisor).title() + """\';""", 'post', conn) 
 
             else:
                 people_picture_url = helper_upload_img(people_pic)
@@ -4236,41 +3931,25 @@ class UpdatePeople(Resource):
                     NewRelationID = NewRelationIDresponse['result'][0]['new_id']
 
                     execute("""INSERT INTO relationship
-                                        (id
-                                        , ta_people_id
-                                        , user_uid
-                                        , r_timestamp
-                                        , relation_type
-                                        , ta_have_pic
-                                        , ta_picture
-                                        , important
-                                        , advisor)
-                                        VALUES 
-                                        ( \'""" + NewRelationID + """\'
-                                        , \'""" + ta_people_id + """\'
-                                        , \'""" + user_id + """\'
-                                        , \'""" + timestamp + """\'
-                                        , \'""" + people_relationship + """\'
-                                        , \'""" + str(people_have_pic).title() + """\'
-                                        , \'""" + people_picture_url + """\'
-                                        , \'""" + str(people_important).title() + """\'
-                                        , \'""" + str(advisor).title() + """\');""", 'post', conn)
+                               SET id = \'""" + NewRelationID + """\',
+                                   ta_people_id = \'""" + ta_people_id + """\',
+                                   user_uid = \'""" + user_id + """\',
+                                   r_timestamp = \'""" + timestamp + """\',
+                                   relation_type = \'""" + people_relationship + """\',
+                                   ta_have_pic = \'""" + str(people_have_pic).title() + """\',
+                                   ta_picture = \'""" + people_picture_url + """\',
+                                   important = \'""" + str(people_important).title() + """\',
+                                   advisor = \'""" + str(advisor).title() + """\';""", 'post', conn) 
 
                 NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                 NewID = NewIDresponse['result'][0]['new_id']
 
-                execute("""INSERT INTO icons(
-                            uid
-                            , url
-                            , Description
-                            , user_id
-                            , ta_id
-                            )VALUES(
-                                \'""" + NewID + """\'
-                                , \'""" + people_picture_url + """\'
-                                , \'""" + 'People Picture' + """\'
-                                , \'""" + user_id + """\'
-                                , \'""" + ta_id + """\');""", 'post', conn)
+                execute("""INSERT INTO icons
+                           SET uid = \'""" + NewID + """\',
+                               url = \'""" + people_picture_url + """\',
+                               Description = \'""" + 'People Picture' + """\',
+                               user_id = \'""" + user_id + """\',
+                               ta_id = \'""" + ta_id + """\';""", 'post', conn) 
 
             response['message'] = 'successful'
             response['result'] = 'Update to People successful'
@@ -4323,25 +4002,15 @@ class UpdateNameTimeZone(Resource):
             NewRelationID = NewRelationIDresponse['result'][0]['new_id']
 
             execute("""INSERT INTO relationship
-                        (id
-                        , r_timestamp
-                        , ta_people_id
-                        , user_uid
-                        , relation_type
-                        , ta_have_pic
-                        , ta_picture
-                        , important
-                        , advisor)
-                        VALUES 
-                        ( \'""" + NewRelationID + """\'
-                        , \'""" + timestamp + """\'
-                        , \'""" + ta_people_id + """\'
-                        , \'""" + user_unique_id + """\'
-                        , \'""" + 'advisor' + """\'
-                        , \'""" + 'False' + """\'
-                        , \'""" + '' + """\'
-                        , \'""" + 'True' + """\'
-                        , \'""" + str(1) + """\');""", 'post', conn)
+                       SET id = \'""" + NewRelationID + """\',
+                           r_timestamp = \'""" + timestamp + """\',
+                           ta_people_id = \'""" + ta_people_id + """\',
+                           user_uid = \'""" + user_unique_id + """\',
+                           relation_type = \'""" + 'advisor' + """\',
+                           ta_have_pic = \'""" + 'False' + """\' ,
+                           ta_picture = \'""" + '' + """\',
+                           important = \'""" + 'True' + """\',
+                           advisor = \'""" + str(1) + """\';""", 'post', conn) 
 
             response['message'] = 'successful'
             response['result'] = items
@@ -4500,7 +4169,7 @@ class Login(Resource):
                 if email == "":
                     execute("""UPDATE users SET mobile_refresh_token = \'""" + refresh_token + """\'
                                             , mobile_auth_token =  \'""" + access_token + """\'
-                            WHERE social_id =  \'""" + social_id + """\'""", 'post', conn)
+                            WHERE social_id =  \'""" + social_id + """\';""", 'post', conn)
                     query = "SELECT * from users WHERE social_id = \'" + social_id + "\';"
                     items = execute(query, 'get', conn)
                 else:
@@ -4509,9 +4178,7 @@ class Login(Resource):
                                             , mobile_auth_token =  \'""" + access_token + """\'
                                             , social_id =  \'""" + social_id + """\'
                                             , user_social_media =  \'""" + signup_platform + """\'
-
-
-                            WHERE user_email_id =  \'""" + email + """\'""", 'post', conn)
+                            WHERE user_email_id =  \'""" + email + """\';""", 'post', conn)
 
                     query = "SELECT * from users WHERE user_email_id = \'" + email + "\';"
                     items = execute(query, 'get', conn)
@@ -4538,7 +4205,7 @@ class AccessRefresh(Resource):
             print(user_id)
             execute("""UPDATE users SET mobile_refresh_token = \'""" + refresh_token + """\'
                                     , mobile_auth_token =  \'""" + access_token + """\'
-                    WHERE user_unique_id =  \'""" + user_id + """\'""", 'post', conn)
+                    WHERE user_unique_id =  \'""" + user_id + """\';""", 'post', conn)
 
             items['message'] = "Updated successfully."
             items['code'] = 200
@@ -4679,16 +4346,11 @@ class AddCoordinates(Resource):
             timestamp = data['timestamp']
 
             execute(""" INSERT INTO coordinates
-                        (     x
-                            , y
-                            , z
-                            , timestamp)
-                            VALUES (
-                                \'""" + str(x) + """\'
-                                ,\'""" + str(y) + """\'
-                                , \'""" + str(z) + """\'
-                                , \'""" + str(timestamp) + """\'
-                            );""", 'post', conn)
+                        SET x = \'""" + str(x) + """\',
+                            y = \'""" + str(y) + """\',
+                            z = \'""" + str(z) + """\',
+                            timestamp = \'""" + str(timestamp) + """\'
+                            ;""", 'post', conn)
 
             response['message'] = 'successful'
             response['result'] = "Added in database"
@@ -4986,14 +4648,10 @@ class UploadIcons(Resource):
 
             new_icon_url = helper_icon_img(photo_url)
             print(new_icon_url)
-            execute("""INSERT INTO icons(
-                        uid
-                        , Description
-                        , url
-                        )VALUES(
-                            \'""" + NewID + """\'
-                            , \'""" + description + """\'
-                            , \'""" + new_icon_url + """\');""", 'post', conn)
+            execute("""INSERT INTO icons
+                       SET uid = \'""" + NewID + """\',
+                           Description = \'""" + description + """\',
+                           url = \'""" + new_icon_url + """\';""", 'post', conn)
             response['message'] = "Uploaded"
             return response, 200
         except:
@@ -5513,6 +5171,7 @@ class AboutMe(Resource):
             # returns important people
             query = """ SELECT ta_people_id
                                 , ta_email_id
+                                , ta_time_zone
                                 , CONCAT(ta_first_name, SPACE(1), ta_last_name) as people_name
                                 , ta_have_pic
                                 , ta_picture
@@ -5798,20 +5457,12 @@ class AboutHistory(Resource):
             new_id = NewIDresponse['result'][0]['new_id']
 
             items = execute("""INSERT into about_me_history
-                                (   about_history_id
-                                    , category
-                                    , name
-                                    , datetime_gmt
-                                    , user_id
-                                )
-                                VALUES
-                                (
-                                    \'""" + new_id + """\'
-                                    , \'""" + category + """\'
-                                    , \'""" + name + """\'
-                                    , \'""" + timestamp + """\'
-                                    , \'""" + user_id + """\'
-                                );""", 'post', conn)
+                               SET about_history_id = \'""" + new_id + """\',
+                                   category = \'""" + category + """\',
+                                   name = \'""" + name + """\',
+                                   datetime_gmt = \'""" + timestamp + """\',
+                                   user_id = \'""" + user_id + """\' 
+                                ;""", 'post', conn)
 
             response['message'] = 'successful'
             return response, 200
