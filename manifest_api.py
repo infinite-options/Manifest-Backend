@@ -4634,7 +4634,7 @@ class UploadIcons(Resource):
             execute("""INSERT INTO icons
                        SET uid = \'""" + NewID + """\',
                            Description = \'""" + description + """\',
-                           url = \'""" + new_icon_url + """\');""", 'post', conn)
+                           url = \'""" + new_icon_url + """\';""", 'post', conn)
             response['message'] = "Uploaded"
             return response, 200
         except:
@@ -5444,7 +5444,7 @@ class AboutHistory(Resource):
                                    name = \'""" + name + """\',
                                    datetime_gmt = \'""" + timestamp + """\',
                                    user_id = \'""" + user_id + """\' 
-                                );""", 'post', conn)
+                                ;""", 'post', conn)
 
             response['message'] = 'successful'
             return response, 200
