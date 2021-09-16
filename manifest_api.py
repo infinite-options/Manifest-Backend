@@ -5849,8 +5849,7 @@ def notify(msg,tag):
 	#hub = AzureNotificationHub("Endpoint=sb://serving-fresh-notification-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Yy/PhzWba6vmrM8geyHmKTVQPocwrDVcVlqAiokvHe4=", "Serving-Fresh-Notification-Hub", isDebug)
     hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7o7LFe8Oz6FZUQQ/gaNgqSfdN4Ckp6FCVCm3xuVg=", "Manifest-Notification-Hub", isDebug)
 
-
-
+    # APPLE NOTIFICATIONS
 	#wns_payload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"}}"
     wns_payload = {
 	    'aps':
@@ -5860,8 +5859,8 @@ def notify(msg,tag):
 	}
     hub.send_apple_notification(0, wns_payload,tag)
 
-	#wns_payload ="""{\n\"notification\":{\n\"title\":\"Notification Hub Test Notification\",\n\"body\":\"This is a sample notification delivered by Azure Notification Hubs.\"\n},\n\"data\":{\n\"property1\":\"value1\",\n\"property2\":42\n}\n}"""
-    
+	# ANDROID NOTIFICATIONS
+    #wns_payload ="""{\n\"notification\":{\n\"title\":\"Notification Hub Test Notification\",\n\"body\":\"This is a sample notification delivered by Azure Notification Hubs.\"\n},\n\"data\":{\n\"property1\":\"value1\",\n\"property2\":42\n}\n}"""
     wns_payload = {
 		"notification":{
 			"title":"Hi",
@@ -6105,7 +6104,7 @@ def ManifestNotification_CRON():
                         #notify(n['before_message']+n['before_time'])
                         print(time_diff.total_seconds(), type(time_diff.total_seconds()))
                         # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-                        if(time_diff.total_seconds() < 55 and time_diff.total_seconds() > -55):
+                        if(time_diff.total_seconds() < 25 and time_diff.total_seconds() > -25):
                             for id in getGUID(n):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6144,7 +6143,7 @@ def ManifestNotification_CRON():
                         print('time_diff:', time_diff)
                         #notify(n['during_message']+n['during_time'])
                         # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-                        if(time_diff.total_seconds() < 55 and time_diff.total_seconds() > -55):
+                        if(time_diff.total_seconds() < 25 and time_diff.total_seconds() > -25):
                             for id in getGUID(n):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6182,7 +6181,7 @@ def ManifestNotification_CRON():
                         print('time_diff:', time_diff)
                         #notify(n['after_message']+n['after_time'])
                         # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-                        if(time_diff.total_seconds() < 55 and time_diff.total_seconds() > -55):
+                        if(time_diff.total_seconds() < 25 and time_diff.total_seconds() > -25):
                             for id in getGUID(n):
                             #id = getGUID(n)
                                 if (id != ''):
