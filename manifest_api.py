@@ -3592,7 +3592,7 @@ class ExistingUser(Resource):
                                    ta_have_pic = \'""" + 'False' + """\',
                                    ta_picture = \'""" + '' + """\',
                                    important = \'""" + 'True' + """\',
-                                   advisor = \'""" + str(1) + """\');""", 'post', conn) 
+                                   advisor = \'""" + str(1) + """\';""", 'post', conn) 
                         print("Added")
                 response['message'] = user_id_response['result'][0]['new_account']
 
@@ -3675,7 +3675,7 @@ class UpdateAboutMe(Resource):
                                     , user_phone_number = \'""" + phone_number + """\'
                                     , user_history = \'""" + history + """\'
                                     , user_major_events = \'""" + major_events + """\'
-                                WHERE user_unique_id = \'""" + user_id + """\' ;""", 'post', conn)
+                                WHERE user_unique_id = \'""" + user_id + """\';""", 'post', conn)
             else:
                 user_photo_url = helper_upload_img(picture)
                 execute("""UPDATE  users
@@ -3890,7 +3890,7 @@ class UpdatePeople(Resource):
                                ta_have_pic = \'""" + str(people_have_pic).title() + """\',
                                ta_picture = \'""" + photo_url + """\',
                                important = \'""" + str(people_important).title() + """\',
-                               advisor = \'""" + str(advisor).title() + """\');""", 'post', conn) 
+                               advisor = \'""" + str(advisor).title() + """\';""", 'post', conn) 
 
             else:
                 people_picture_url = helper_upload_img(people_pic)
@@ -3922,7 +3922,7 @@ class UpdatePeople(Resource):
                                    ta_have_pic = \'""" + str(people_have_pic).title() + """\',
                                    ta_picture = \'""" + people_picture_url + """\',
                                    important = \'""" + str(people_important).title() + """\',
-                                   advisor = \'""" + str(advisor).title() + """\');""", 'post', conn) 
+                                   advisor = \'""" + str(advisor).title() + """\';""", 'post', conn) 
 
                 NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                 NewID = NewIDresponse['result'][0]['new_id']
@@ -3932,7 +3932,7 @@ class UpdatePeople(Resource):
                                url = \'""" + people_picture_url + """\',
                                Description = \'""" + 'People Picture' + """\',
                                user_id = \'""" + user_id + """\',
-                               ta_id = \'""" + ta_id + """\');""", 'post', conn) 
+                               ta_id = \'""" + ta_id + """\';""", 'post', conn) 
 
             response['message'] = 'successful'
             response['result'] = 'Update to People successful'
@@ -3993,7 +3993,7 @@ class UpdateNameTimeZone(Resource):
                            ta_have_pic = \'""" + 'False' + """\' ,
                            ta_picture = \'""" + '' + """\',
                            important = \'""" + 'True' + """\',
-                           advisor = \'""" + str(1) + """\');""", 'post', conn) 
+                           advisor = \'""" + str(1) + """\';""", 'post', conn) 
 
             response['message'] = 'successful'
             response['result'] = items
@@ -4152,7 +4152,7 @@ class Login(Resource):
                 if email == "":
                     execute("""UPDATE users SET mobile_refresh_token = \'""" + refresh_token + """\'
                                             , mobile_auth_token =  \'""" + access_token + """\'
-                            WHERE social_id =  \'""" + social_id + """\'""", 'post', conn)
+                            WHERE social_id =  \'""" + social_id + """\';""", 'post', conn)
                     query = "SELECT * from users WHERE social_id = \'" + social_id + "\';"
                     items = execute(query, 'get', conn)
                 else:
@@ -4161,9 +4161,7 @@ class Login(Resource):
                                             , mobile_auth_token =  \'""" + access_token + """\'
                                             , social_id =  \'""" + social_id + """\'
                                             , user_social_media =  \'""" + signup_platform + """\'
-
-
-                            WHERE user_email_id =  \'""" + email + """\'""", 'post', conn)
+                            WHERE user_email_id =  \'""" + email + """\';""", 'post', conn)
 
                     query = "SELECT * from users WHERE user_email_id = \'" + email + "\';"
                     items = execute(query, 'get', conn)
@@ -4190,7 +4188,7 @@ class AccessRefresh(Resource):
             print(user_id)
             execute("""UPDATE users SET mobile_refresh_token = \'""" + refresh_token + """\'
                                     , mobile_auth_token =  \'""" + access_token + """\'
-                    WHERE user_unique_id =  \'""" + user_id + """\'""", 'post', conn)
+                    WHERE user_unique_id =  \'""" + user_id + """\';""", 'post', conn)
 
             items['message'] = "Updated successfully."
             items['code'] = 200
@@ -4335,7 +4333,7 @@ class AddCoordinates(Resource):
                             y = \'""" + str(y) + """\',
                             z = \'""" + str(z) + """\',
                             timestamp = \'""" + str(timestamp) + """\'
-                            );""", 'post', conn)
+                            ;""", 'post', conn)
 
             response['message'] = 'successful'
             response['result'] = "Added in database"
