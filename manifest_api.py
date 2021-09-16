@@ -820,7 +820,7 @@ class AddNewGR(Resource):
                                 after_is_enable = \'""" + str(user_after_is_enable).title() + """\',
                                 after_is_set = \'""" + str(user_after_is_set).title() + """\',
                                 after_message = \'""" + user_after_message + """\',
-                                after_time = \'""" + user_after_time + """\');""")
+                                after_time = \'""" + user_after_time + """\';""")
             items = execute(query[3], 'post', conn)
 
             response['message'] = 'successful'
@@ -953,7 +953,7 @@ class UpdateGR(Resource):
                 # Update G/R to database
                 query = """UPDATE goals_routines
                                 SET gr_title = \'""" + gr_title + """\'
-                                    , is_available = \'""" + str(is_available).title() + """\'
+                                    ,is_available = \'""" + str(is_available).title() + """\'
                                     ,is_complete = \'""" + str(is_complete).title() + """\'
                                     ,is_sublist_available = \'""" + str(is_sublist_available).title() + """\'
                                     ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
@@ -982,7 +982,7 @@ class UpdateGR(Resource):
                     execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    Description = \'""" + description + """\',
-                                   url = \'""" + gr_picture + """\');""", 'post', conn)
+                                   url = \'""" + gr_picture + """\';""", 'post', conn)
 
                 else:
 
@@ -993,7 +993,7 @@ class UpdateGR(Resource):
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + gr_picture + """\',
                                    Description = \'""" + 'Image Uploaded' + """\',
-                                   user_id = \'""" + user_id + """\');""", 'post', conn)
+                                   user_id = \'""" + user_id + """\';""", 'post', conn)
 
             items = execute(query, 'post', conn)
 
@@ -1047,7 +1047,7 @@ class UpdateGR(Resource):
                                 after_is_enable = \'""" + str(ta_after_is_enabled).title() + """\',
                                 after_is_set = \'""" + str(ta_after_is_set).title() + """\',
                                 after_message = \'""" + ta_after_message + """\',
-                                after_time = \'""" + ta_after_time + """\');""", 'post', conn)
+                                after_time = \'""" + ta_after_time + """\';""", 'post', conn)
             else:
                 # TA notfication
                 execute("""UPDATE notifications
@@ -1135,7 +1135,7 @@ class AddNewAT(Resource):
                                     at_datetime_started = \'""" + datetime_started + """\',
                                     at_expected_completion_time = \'""" + expected_completion_time + """\',
                                     at_available_start_time = \'""" + available_start_time + """\',
-                                    at_available_end_time = \'""" + available_end_time + """\' );""")
+                                    at_available_end_time = \'""" + available_end_time + """\';""")
 
                 # query.append("""INSERT INTO actions_tasks(at_unique_id
                 #                 , at_title
@@ -1191,7 +1191,7 @@ class AddNewAT(Resource):
                                     at_datetime_started = \'""" + datetime_started + """\',
                                     at_expected_completion_time = \'""" + expected_completion_time + """\',
                                     at_available_start_time = \'""" + available_start_time + """\',
-                                    at_available_end_time = \'""" + available_end_time + """\' );""")
+                                    at_available_end_time = \'""" + available_end_time + """\';""")
 
                 if icon_type == 'icon':
                     print("In icon")
@@ -1201,7 +1201,7 @@ class AddNewAT(Resource):
                     execute("""INSERT INTO icons 
                                SET uid = \'""" + NewID + """\',
                                    Description = \'""" + description + """\',
-                                   url = \'""" + at_picture + """\');""", 'post', conn)
+                                   url = \'""" + at_picture + """\';""", 'post', conn)
 
                 else:
                     print("User Image")
@@ -1212,7 +1212,7 @@ class AddNewAT(Resource):
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + at_picture + """\',
                                    Description = \'""" + 'Image Uploaded' + """\'
-                                   user_id = \'""" + user_id + """\');""", 'post', conn)
+                                   user_id = \'""" + user_id + """\';""", 'post', conn)
 
             print("\nThis is query")
             print(query)
@@ -1290,7 +1290,7 @@ class AddNewIS(Resource):
                                     is_in_progress = \'""" + str(is_in_progress).title() + """\',
                                     is_photo = \'""" + photo_url + """\',
                                     is_timed = \'""" + str(is_timed).title() + """\',
-                                    is_expected_completion_time =  \'""" + str(expected_completion_time) + """\');""")
+                                    is_expected_completion_time =  \'""" + str(expected_completion_time) + """\';""")
 
             else:
                 print("Photo Exists")
@@ -1306,7 +1306,7 @@ class AddNewIS(Resource):
                                     is_in_progress = \'""" + str(is_in_progress).title() + """\',
                                     is_photo = \'""" + is_picture + """\',
                                     is_timed = \'""" + str(is_timed).title() + """\',
-                                    is_expected_completion_time = \'""" + str(expected_completion_time) + """\');""")
+                                    is_expected_completion_time = \'""" + str(expected_completion_time) + """\';""")
 
                 print("After query")
                 if icon_type == 'icon':
@@ -1319,7 +1319,7 @@ class AddNewIS(Resource):
                     execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    Description = \'""" + description + """\',
-                                   url = \'""" + is_picture + """\');""", 'post', conn) 
+                                   url = \'""" + is_picture + """\';""", 'post', conn) 
 
                 else:
                     print("In else")
@@ -1332,7 +1332,7 @@ class AddNewIS(Resource):
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + is_picture + """\',
                                    Description = \'""" + 'Image Uploaded' + """\',
-                                   user_id = \'""" + user_id + """\'); """, 'post', conn)
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             print(query[1])
             items = execute(query[1], 'post', conn)
@@ -1423,7 +1423,7 @@ class UpdateIS(Resource):
                     execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    Description = \'""" + description + """\',
-                                   url = \'""" + is_picture + """\');""", 'post', conn) 
+                                   url = \'""" + is_picture + """\';""", 'post', conn) 
 
                 else:
                     NewIDresponse = execute("CALL get_image_id;",  'get', conn)
@@ -1432,7 +1432,7 @@ class UpdateIS(Resource):
                     execute("""INSERT INTO image_upload
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + is_picture + """\',
-                                   user_id = \'""" + is_id + """\');""", 'post', conn)
+                                   user_id = \'""" + is_id + """\';""", 'post', conn)
 
             execute(query, 'post', conn)
             response['message'] = 'successful'
@@ -1525,7 +1525,7 @@ class UpdateAT(Resource):
                     execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    Description = \'""" + description + """\',
-                                   url = \'""" + at_picture + """\');""", 'post', conn)
+                                   url = \'""" + at_picture + """\';""", 'post', conn)
 
                 else:
                     NewIDresponse = execute("CALL get_image_id;",  'get', conn)
@@ -1534,7 +1534,7 @@ class UpdateAT(Resource):
                     execute("""INSERT INTO image_upload 
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + at_picture + """\',
-                                   user_id = \'""" + user_id + """\');""", 'post', conn)
+                                   user_id = \'""" + user_id + """\';""", 'post', conn)
 
             execute(query, 'post', conn)
             response['message'] = 'successful'
