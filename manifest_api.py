@@ -5945,8 +5945,8 @@ def ManifestNotification_CRON():
         conn = connect()
         print("In Notification CRON Function")
         
-        print("Before Notification")
-        notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
+        # print("Before Notification")
+        # notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
 
         utc_time =datetime.now(tz=pytz.utc)
 
@@ -6003,8 +6003,8 @@ def ManifestNotification_CRON():
         print("Incomplete, Active GRs: ", len(goal_routine_response))
         for i in range(len(goal_routine_response)):
             gr_id = goal_routine_response[i]['gr_unique_id']
-            print("\nNow Processing:")
-            print(i, gr_id)
+            # print("\nNow Processing:")
+            # print(i, gr_id)
 
 
             # Get all notifications of each goal and routine
@@ -6236,8 +6236,8 @@ class ManifestNotification(Resource):
             conn = connect()
             print("In Notification CRON Function")
             
-            print("Before Notification")
-            notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
+            # print("Before Notification")
+            # notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
 
             utc_time =datetime.now(tz=pytz.utc)
 
@@ -6294,8 +6294,8 @@ class ManifestNotification(Resource):
             print("Incomplete, Active GRs: ", len(goal_routine_response))
             for i in range(len(goal_routine_response)):
                 gr_id = goal_routine_response[i]['gr_unique_id']
-                print("\nNow Processing:")
-                print(i, gr_id)
+                # print("\nNow Processing:")
+                # print(i, gr_id)
 
 
                 # Get all notifications of each goal and routine
