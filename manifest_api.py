@@ -2054,7 +2054,7 @@ class CopyGR(Resource):
             print(end_day_and_time)
             # while running locally on windows use '#' instead of '-' in the format string
             end_date_time = str(end_day_and_time.strftime(
-                "%Y/%-m/%-d")) + " " + str(start_day_and_time.strftime(
+                "%Y-%m-%d")) + " " + str(start_day_and_time.strftime(
                     "%I:%M:%S %p"))
             print(end_date_time)
             # New Goal/Routine ID
@@ -2086,7 +2086,7 @@ class CopyGR(Resource):
                            gr_datetime_completed = \'""" + goal_routine_response[0]['gr_datetime_completed'] + """\',
                            gr_datetime_started = \'""" + goal_routine_response[0]['gr_datetime_started'] + """\',
                            gr_end_day_and_time = \'""" + str(end_date_time) + """\',
-                           gr_expected_completion_time = \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\');""", 'post', conn) 
+                           gr_expected_completion_time = \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\';""", 'post', conn) 
             print("After insert")
 
             # New Notification ID
@@ -2124,7 +2124,7 @@ class CopyGR(Resource):
                            after_is_enable = \'""" + notifications[0]['after_is_enable'] + """\',
                            after_is_set = \'""" + notifications[0]['after_is_set'] + """\',
                            after_message = \'""" + notifications[0]['after_message'] + """\',
-                           after_time = \'""" + notifications[0]['after_time'] + """\');""", 'post', conn) 
+                           after_time = \'""" + notifications[0]['after_time'] + """\';""", 'post', conn) 
 
             # New Notification ID
             new_notification_id_response = execute(
@@ -2153,7 +2153,7 @@ class CopyGR(Resource):
                            after_is_enable = \'""" + notifications[0]['after_is_enable'] + """\',
                            after_is_set = \'""" + notifications[0]['after_is_set'] + """\',
                            after_message = \'""" + notifications[0]['after_message'] + """\',
-                           after_time = \'""" + notifications[0]['after_time'] + """\');""", 'post', conn)
+                           after_time = \'""" + notifications[0]['after_time'] + """\';""", 'post', conn)
 
             res_actions = execute(
                 """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + goal_routine_id + """\';""", 'get', conn)
@@ -2183,7 +2183,7 @@ class CopyGR(Resource):
                                    at_datetime_started = \'""" + action_response[j]['at_datetime_started'] + """\',
                                    at_expected_completion_time = \'""" + action_response[j]['at_expected_completion_time'] + """\',
                                    at_available_start_time = \'""" + action_response[j]['at_available_start_time'] + """\',
-                                   at_available_end_time =  \'""" + action_response[j]['at_available_end_time'] + """\' );""", 'post', conn)
+                                   at_available_end_time =  \'""" + action_response[j]['at_available_end_time'] + """\' ;""", 'post', conn)
 
                     print("After action insert")
                     res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
@@ -2210,7 +2210,7 @@ class CopyGR(Resource):
                                            is_in_progress = \'""" + instructions[k]['is_in_progress'] + """\',
                                            is_photo = \'""" + instructions[k]['is_photo'] + """\',
                                            is_timed = \'""" + instructions[k]['is_timed'] + """\',
-                                           is_expected_completion_time = \'""" + instructions[k]['is_expected_completion_time'] + """\');""", 'post', conn) 
+                                           is_expected_completion_time = \'""" + instructions[k]['is_expected_completion_time'] + """\';""", 'post', conn) 
 
             response['message'] = 'successful'
 
@@ -2232,7 +2232,7 @@ class TodayGoalsRoutines_Anu(Resource):
             NewIDresponse = execute("CALL get_history_id;",  'get', conn)
             NewID = NewIDresponse['result'][0]['new_id']
             print(NewID)
-            date_format = '%m/%d/%Y %H:%M:%S'
+            date_format = '%Y-%m-%d %H:%M:%S'
             current = datetime.now(tz=pytz.utc)
             print(current)
             """ current = current.astimezone(timezone('US/Pacific')) """
@@ -2307,7 +2307,7 @@ class TodayGoalsRoutines(Resource):
             print("new_id:", NewID)
 
             # DEFINE DATE TIME FORMAT
-            date_format = '%m/%d/%Y %H:%M:%S'
+            date_format = '%Y-%m-%d %H:%M:%S'
 
             # GET CURRENT DATETIME
             current = datetime.now(tz=pytz.utc)
@@ -2839,7 +2839,7 @@ class AnotherTAAccess(Resource):
                                 ta_have_pic = \'""" + 'False' + """\',
                                 ta_picture = \'""" + '' + """\',
                                 important = \'""" + 'True' + """\',
-                                advisor = \'""" + str(1) + """\');""") 
+                                advisor = \'""" + str(1) + """\';""") 
 
             items = execute(query[1], 'post', conn)
 
@@ -2960,7 +2960,7 @@ class CreateNewPeople(Resource):
                                 , ta_picture = \'""" + people_picture_url + """\'
                                 , important = \'""" + str(important).title() + """\'
                                 WHERE user_uid = \'""" + user_id + """\' AND 
-                                ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\'""", 'post', conn)
+                                ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\';""", 'post', conn)
 
                 else:
                     if picture:
@@ -2978,7 +2978,7 @@ class CreateNewPeople(Resource):
                                    ta_have_pic = \'""" + str(have_pic).title() + """\',
                                    ta_picture = \'""" + people_picture_url + """\',
                                    important = \'""" + str(important).title() + """\',
-                                   advisor = \'""" + str(0) + """\')""", 'post', conn) 
+                                   advisor = \'""" + str(0) + """\';""", 'post', conn) 
 
             else:
                 print('else')
@@ -2999,7 +2999,7 @@ class CreateNewPeople(Resource):
                                ta_last_name = \'""" + last_name + """\',
                                employer = \'""" + '' + """\',
                                password_hashed = \'""" + '' + """\',
-                               ta_phone_number = \'""" + '' + """\')""", 'post', conn) 
+                               ta_phone_number = \'""" + '' + """\';""", 'post', conn) 
 
                 execute("""INSERT INTO relationship 
                            SET id = \'""" + NewRelationID + """\',
@@ -3010,7 +3010,7 @@ class CreateNewPeople(Resource):
                                ta_have_pic = \'""" + str(have_pic).title() + """\',
                                ta_picture = \'""" + people_picture_url + """\',
                                important = \'""" + str(important).title() + """\',
-                               advisor = \'""" + str(0) + """\')""", 'post', conn) 
+                               advisor = \'""" + str(0) + """\';""", 'post', conn) 
 
             response['message'] = 'successful'
 
@@ -3334,7 +3334,7 @@ class NewTA(Resource):
                 if user_info:
                     guid = user_info[0]['cust_guid_device_id_notification']
 
-                execute("""INSERT INTO ta_people(
+                execute("""INSERT INTO ta_people
                            SET ta_unique_id = \'""" + new_ta_id + """\',
                                ta_timestamp = \'""" + ts + """\',
                                ta_email_id  = \'""" + email_id + """\',
@@ -3343,7 +3343,8 @@ class NewTA(Resource):
                                employer = \'""" + employer + """\',
                                password_hashed = \'""" + key + """\',
                                ta_phone_number = \'""" + phone_number + """\',
-                               ta_guid_device_id_notification = \'""" + guid + """\')""", 'post', conn)
+                               ta_guid_device_id_notification = \'""" + guid + """\';""", 'post', conn)
+
                 response['message'] = 'successful'
                 response['result'] = new_ta_id
 
@@ -3389,7 +3390,7 @@ class TASocialSignUP(Resource):
                                ta_first_name = \'""" + first_name + """\',
                                ta_last_name = \'""" + last_name + """\',
                                employer = \'""" + employer + """\',
-                               ta_phone_number = \'""" + phone_number + """\')""", 'post', conn)
+                               ta_phone_number = \'""" + phone_number + """\';""", 'post', conn)
                 response['message'] = 'successful'
                 response['result'] = new_ta_id
 
@@ -3529,7 +3530,7 @@ class CreateNewUser(Resource):
                                user_picture = \'""" + '' + """\',
                                user_social_media = \'""" + 'GOOGLE' + """\',
                                new_account = \'""" + 'True' + """\',
-                               cust_guid_device_id_notification = \'""" + 'null' + """\')""", 'post', conn)
+                               cust_guid_device_id_notification = \'""" + 'null' + """\';""", 'post', conn)
 
                 NewRelationIDresponse = execute(
                     "Call get_relation_id;", 'get', conn)
@@ -3543,7 +3544,7 @@ class CreateNewUser(Resource):
                                ta_have_pic = \'""" + 'False' + """\',
                                ta_picture = \'""" + '' + """\',
                                important = \'""" + 'True' + """\',
-                               advisor = \'""" + str(1) + """\');""", 'post', conn) 
+                               advisor = \'""" + str(1) + """\';""", 'post', conn) 
 
                 response['message'] = 'successful'
                 response['result'] = new_user_id
