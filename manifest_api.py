@@ -2872,6 +2872,7 @@ class ListAllPeople(Resource):
                             , ta_phone_number as phone_number
                             , ta_picture as pic
                             , relation_type as relationship
+                            , ta_time_zone as time_zone
                         FROM relationship
                         JOIN
                         ta_people ta
@@ -2908,6 +2909,7 @@ class CreateNewPeople(Resource):
             picture = request.files.get('picture')
             important = request.form.get('important')
             photo_url = request.form.get("photo_url")
+            ta_time_zone = request.form.get("ta_time_zone")
             first_name_list = []
 
             if not picture:
@@ -2999,7 +3001,8 @@ class CreateNewPeople(Resource):
                                ta_last_name = \'""" + last_name + """\',
                                employer = \'""" + '' + """\',
                                password_hashed = \'""" + '' + """\',
-                               ta_phone_number = \'""" + '' + """\';""", 'post', conn) 
+                               ta_phone_number = \'""" + '' + """\',
+                               ta_time_zone = \'""" + ta_time_zone + """\';""", 'post', conn) 
 
                 execute("""INSERT INTO relationship 
                            SET id = \'""" + NewRelationID + """\',
@@ -3035,7 +3038,7 @@ class UserTADetails(Resource):
             user_list = []
             res = []
             ta_response = execute(
-                """SELECT ta_unique_id, ta_email_id, ta_first_name, ta_last_name, ta_phone_number FROM ta_people;""", 'get', conn)
+                """SELECT ta_unique_id, ta_email_id, ta_first_name, ta_last_name, ta_phone_number, ta_time_zone FROM ta_people;""", 'get', conn)
             user_response = execute(
                 """SELECT user_email_id, user_first_name, user_last_name, user_picture FROM users;""", 'get', conn)
 
@@ -3060,6 +3063,7 @@ class UserTADetails(Resource):
                                 res['first_name'] = ta_response['result'][i]['ta_first_name']
                                 res['last_name'] = ta_response['result'][i]['ta_last_name']
                                 res['phone_number'] = ta_response['result'][i]['ta_phone_number']
+                                res['ta_time_zone'] = ta_response['result'][i]['ta_time_zone']
                                 res['picture'] = ''
                                 res['role'] = 'no role'
                                 items.append(res)
@@ -3072,6 +3076,7 @@ class UserTADetails(Resource):
                                     res['first_name'] = ta_response['result'][i]['ta_first_name']
                                     res['last_name'] = ta_response['result'][i]['ta_last_name']
                                     res['phone_number'] = ta_response['result'][i]['ta_phone_number']
+                                    res['ta_time_zone'] = ta_response['result'][i]['ta_time_zone']
                                     res['picture'] = relation_response['result'][k]['ta_picture']
                                     res['role'] = 'advisor'
                                     items.append(res)
@@ -3305,6 +3310,7 @@ class NewTA(Resource):
             last_name = data['last_name']
             phone_number = data['phone_number']
             employer = data['employer']
+            ta_time_zone = data['ta_time_zone']
 
             ta_id_response = execute("""SELECT ta_unique_id, password_hashed FROM ta_people
                                             WHERE ta_email_id = \'""" + email_id + """\';""", 'get', conn)
@@ -3343,6 +3349,7 @@ class NewTA(Resource):
                                employer = \'""" + employer + """\',
                                password_hashed = \'""" + key + """\',
                                ta_phone_number = \'""" + phone_number + """\',
+                               ta_time_zone = \'""" + ta_time_zone + """\',
                                ta_guid_device_id_notification = \'""" + guid + """\';""", 'post', conn)
 
                 response['message'] = 'successful'
@@ -3371,6 +3378,7 @@ class TASocialSignUP(Resource):
             last_name = data['last_name']
             phone_number = data['phone_number']
             employer = data['employer']
+            ta_time_zone = data['ta_time_zone']
 
             ta_id_response = execute("""SELECT ta_unique_id, password_hashed FROM ta_people
                                             WHERE ta_email_id = \'""" + email_id + """\';""", 'get', conn)
@@ -3390,6 +3398,7 @@ class TASocialSignUP(Resource):
                                ta_first_name = \'""" + first_name + """\',
                                ta_last_name = \'""" + last_name + """\',
                                employer = \'""" + employer + """\',
+                               ta_time_zone = \'""" + ta_time_zone + """\',
                                ta_phone_number = \'""" + phone_number + """\';""", 'post', conn)
                 response['message'] = 'successful'
                 response['result'] = new_ta_id
@@ -3827,6 +3836,7 @@ class UpdatePeople(Resource):
             people_have_pic = request.form.get('people_have_pic')
             people_pic = request.files.get('people_pic')
             photo_url = request.form.get("photo_url")
+            ta_time_zone = request.form.get("ta_time_zone")
             print(user_id)
             print(ta_people_id)
             print(people_name)
@@ -3852,6 +3862,7 @@ class UpdatePeople(Resource):
                             , ta_phone_number =  \'""" + people_phone_number + """\'
                             , ta_email_id = \'""" + people_email + """\'
                             , employer = \'""" + people_employer + """\'
+                            , ta_time_zone = \'""" + ta_time_zone + """\'
                         WHERE ta_unique_id = \'""" + ta_people_id + """\' ;""", 'post', conn)
 
             relationResponse = execute("""SELECT id FROM relationship 
@@ -5154,6 +5165,7 @@ class AboutMe(Resource):
             # returns important people
             query = """ SELECT ta_people_id
                                 , ta_email_id
+                                , ta_time_zone
                                 , CONCAT(ta_first_name, SPACE(1), ta_last_name) as people_name
                                 , ta_have_pic
                                 , ta_picture
