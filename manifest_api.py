@@ -5526,9 +5526,10 @@ def notify(msg,tag):
     
     
 
-def getGUID(n):
+def getGUID_original(n):
     s = ''
     print('inside getGUID')
+    print(n)
     if 'guid' in n:
         guid = str(n['guid'])
         guid_list =guid.split(' ')
@@ -5929,15 +5930,34 @@ def ManifestNotification_CRON():
 
 # REWRITING THE NOTIFICATION CLASS
 
+def getGUID(guid):
+    s = ''
+    print('inside getGUID')
+    print(guid)
+    if 'guid' in guid:
+        guid_list =guid.split(' ')
+        l = []
+        print("guid_list_len")
+        if(len(guid_list)> 1):
+            for i in range(len(guid_list)):
+                #if(guid_list[i]=="guid"):
+                if(re.search('guid', guid_list[i])):
+                    s='guid_'+guid_list[i+1][1:-2]
+                    print(s)
+                    l.append(s)
+                    s=''
+                    print(l)
+    return l
+
 def ProcessDuration(duration):
     # PROVIDE A DURATION IN 00:00:00 FORMAT AND RETURN TOTAL SECONDS
 
-    print("\nIn Process Duration")
-    print(duration, type(duration))
+    # print("\nIn Process Duration")
+    # print(duration, type(duration))
     hours,mins,seconds = duration.split(':')
-    print(hours,mins,seconds)
+    # print(hours,mins,seconds)
     total_seconds = int(hours)*3600 + int(mins)*60 + int(seconds)
-    print(duration, total_seconds)
+    # print(duration, total_seconds)
     return(total_seconds)
     
 
@@ -5946,30 +5966,30 @@ def ProcessTime(time, time_zone):
     from datetime import datetime
     from pytz import timezone
 
-    print("\nIn Process Time: ")
-    print(time, type(time))
-    print(time_zone, type(time_zone))
+    # print("\nIn Process Time: ")
+    # print(time, type(time))
+    # print(time_zone, type(time_zone))
     
     # CURRENT DATE IN THE USER OR TAS TIMEZONE
     cur_date = datetime.now(pytz.timezone(time_zone)).date()
-    print("Current date: ", cur_date, type(cur_date))
+    # print("Current date: ", cur_date, type(cur_date))
 
     # EXTRACT TIME FROM DATETIME
     time = datetime.strptime(time, "%Y-%m-%d %I:%M:%S %p").time()
-    print("Current time: ", time, type(time))
+    # print("Current time: ", time, type(time))
 
     # COMBINE CURRENT DATE WITH TIME
     new_datetime = datetime.combine(cur_date, time)
-    print("Current datetime: ", new_datetime, type(new_datetime))
+    # print("Current datetime: ", new_datetime, type(new_datetime))
 
     # MAKE IT TIMEZONE AWARE
     tz = timezone(time_zone)
     new_datetime_tz = tz.localize(new_datetime)
-    print("Timezone Aware datetime: ", new_datetime_tz,  type(new_datetime_tz))
+    # print("Timezone Aware datetime: ", new_datetime_tz,  type(new_datetime_tz))
 
     # CONVERTS LOCAL DATETIME INTO UTC DATETIME
     new_utc_time = new_datetime_tz.astimezone(timezone('utc'))
-    print("Current Date Time in UTC: ", new_utc_time, type(new_utc_time))
+    # print("Current Date Time in UTC: ", new_utc_time, type(new_utc_time))
 
     return(new_utc_time)
 
@@ -6042,30 +6062,41 @@ class ManifestNotification(Resource):
                     print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                            print("\nBEFORE Notification Criteria met")
+                        print("\nBEFORE Notification Criteria met")
+                        for id in getGUID(guid):
+                            #id = getGUID(n)
+                                if (id != ''):
+                                    notify(n['before_message'],id)
 
 
                 if n['during_is_enable'].lower() == 'true':
-                    print(n['during_is_enable'], n['during_time'], type(n['during_time']))
+                    # print(n['during_is_enable'], n['during_time'], type(n['during_time']))
                     notification_time = start_time + timedelta(seconds=ProcessDuration(n['during_time']))
-                    print("Notification Time: ", notification_time)
+                    # print("Notification Time: ", notification_time)
                     notification_time_diff = cur_UTC - notification_time
-                    print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                    print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                            print("\nDURING Notification Criteria met")
+                        print("\nDURING Notification Criteria met")
+                        for id in getGUID(guid):
+                            #id = getGUID(n)
+                                if (id != ''):
+                                    notify(n['before_message'],id)
+
 
                 if n['after_is_enable'].lower() == 'true':
-                    print(n['after_is_enable'], n['after_time'], type(n['after_time']))
+                    # print(n['after_is_enable'], n['after_time'], type(n['after_time']))
                     notification_time = end_time + timedelta(seconds=ProcessDuration(n['after_time']))
-                    print("Notification Time: ", notification_time)
+                    # print("Notification Time: ", notification_time)
                     notification_time_diff = cur_UTC - notification_time
-                    print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                    print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                            print("\nAFTER Notification Criteria met")
-
-
+                        print("\nAFTER Notification Criteria met")
+                        for id in getGUID(guid):
+                            #id = getGUID(n)
+                                if (id != ''):
+                                    notify(n['before_message'],id)
 
 
 # Start From here
