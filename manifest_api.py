@@ -6278,6 +6278,18 @@ def ManifestNotification_CRON():
 
 # REWRITING THE NOTIFICATION CLASS
 
+def ProcessDuration(duration):
+    # PROVIDE A DURATION IN 00:00:00 FORMAT AND RETURN TOTAL SECONDS
+
+    print("\nIn Process Duration")
+    print(duration, type(duration))
+    hours,mins,seconds = duration.split(':')
+    print(hours,mins,seconds)
+    total_seconds = int(hours)*3600 + int(mins)*60 + int(seconds)
+    print(duration, total_seconds)
+    return(total_seconds)
+    
+
 def ProcessTime(time, time_zone):
     # PROVIDE A DATETIME AND TIMEZONE AND RETURN THE UPDATED DATETIME IN UTC
     from datetime import datetime
@@ -6348,6 +6360,9 @@ class ManifestNotification(Resource):
             # print(notifications)
 
             for n in notifications['result']:
+
+                # NOTE:  CHECK is_available and is_displayed_today BEFORE PROCEEDING
+
                 print("\nNotification Info:", n)
                 if n['user_ta_id'][0] == '1':
                     time_zone = n['time_zone']
@@ -6357,6 +6372,7 @@ class ManifestNotification(Resource):
                     guid = n['ta_guid_device_id_notification']
                 print(time_zone, type(time_zone))
                 print(guid, type(guid))
+                print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
 
                 start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
@@ -6365,16 +6381,38 @@ class ManifestNotification(Resource):
                 end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
                 print("FUNCTION RETURNS: ", end_time)
 
-
                 # CALCULATE TIME DIFFERENCE VS UTC
-                start_time_diff= cur_UTC - start_time
-                print("Time Difference vs UTC: ", start_time_diff, type(start_time_diff))
-                print('time_diff in seconds:', start_time_diff.total_seconds(), type(start_time_diff.total_seconds()))
+                print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+                if n['before_is_enable'].lower() == 'true':
+                    print(n['before_is_enable'], n['before_time'], type(n['before_time']))
+                    notification_time = start_time - timedelta(seconds=ProcessDuration(n['before_time']))
+                    print("Notification Time: ", notification_time)
+                    notification_time_diff = cur_UTC - notification_time
+                    print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                    print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                    if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                            print("\nBEFORE Notification Criteria met")
 
 
-                # GR END TIME
-                gr_end_time = datetime.strptime(n['gr_end_day_and_time'], "%Y-%m-%d %I:%M:%S %p").time()
-                print("Current time: ", gr_end_time, type(gr_end_time))
+                if n['during_is_enable'].lower() == 'true':
+                    print(n['during_is_enable'], n['during_time'], type(n['during_time']))
+                    notification_time = start_time + timedelta(seconds=ProcessDuration(n['during_time']))
+                    print("Notification Time: ", notification_time)
+                    notification_time_diff = cur_UTC - notification_time
+                    print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                    print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                    if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                            print("\nDURING Notification Criteria met")
+
+                if n['after_is_enable'].lower() == 'true':
+                    print(n['after_is_enable'], n['after_time'], type(n['after_time']))
+                    notification_time = end_time + timedelta(seconds=ProcessDuration(n['after_time']))
+                    print("Notification Time: ", notification_time)
+                    notification_time_diff = cur_UTC - notification_time
+                    print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                    print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                    if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                            print("\nAFTER Notification Criteria met")
 
 
 
