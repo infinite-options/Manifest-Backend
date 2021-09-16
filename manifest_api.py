@@ -2202,7 +2202,7 @@ class CopyGR(Resource):
             print(end_day_and_time)
             # while running locally on windows use '#' instead of '-' in the format string
             end_date_time = str(end_day_and_time.strftime(
-                "%Y/%-m/%-d")) + " " + str(start_day_and_time.strftime(
+                "%Y-%m-%d")) + " " + str(end_day_and_time.strftime(
                     "%I:%M:%S %p"))
             print(end_date_time)
             # New Goal/Routine ID
@@ -2286,7 +2286,7 @@ class CopyGR(Resource):
                                     , gr_at_id
                                     , before_is_enable
                                     , before_is_set
-                                    , before_message
+                                    , before_message    
                                     , before_time
                                     , during_is_enable
                                     , during_is_set
@@ -5897,7 +5897,9 @@ def getGUID(n):
 
 def changedate(obj):
     print('inside changedate')
+    print(obj)
     sdate = date.today()
+    print(sdate)
     obj =obj.replace(day = sdate.day, month = sdate.month, year = sdate.year)
     print('obj = ', obj, type(obj))
     return obj
@@ -5913,10 +5915,10 @@ def getnotificationtime(op,t,obj):
     print(obj, type(obj))
     if(op == 'before'):
         result_time = obj -  timedelta(seconds=total_seconds)
-        print(result_time)
+        print("Notification Time: ", result_time)
     elif(op == 'during' or op == 'after'):
         result_time = obj +  timedelta(seconds=total_seconds)
-        print(result_time)
+        print("Notification Time: ", result_time)
     else:
         print('Unrecognized opcode!!!')
 
@@ -5942,25 +5944,19 @@ def ManifestNotification_CRON():
     try:
         response = {}
         GRs = {}
+        users = []
+        ta = []
         conn = connect()
         print("In Notification CRON Function")
         
+        # USE THESE STATEMENTS TO CONFIRM NOTIFICATIONS TO THE PHONE ARE WORKING
         # print("Before Notification")
         # notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
 
         utc_time =datetime.now(tz=pytz.utc)
-
-        # # COMMENTING OUT THE ORIGINAL ENDPOINT CALL
-        # print("Before Endpoint Call")
-        # url = 'https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/getNotifications'
-        # #    post_url = 'https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/changeHistory/'
-        # json_url = urllib.urlopen(url)
-        # data=json.loads(json_url.read())
-        # #print(data)
-
-        users = []
-        ta = []
-        # get all goals and routines
+        print(utc_time)
+        
+        # GET ALL GOALS AND ROUTINES
         GRquery = """
             SELECT * 
             FROM goals_routines
@@ -5972,34 +5968,34 @@ def ManifestNotification_CRON():
         goal_routine_response = GRs['result']
         # print("GR Response: ", goal_routine_response)
 
-
+        # GET ALL USERS AND TIMEZONES
         users_query = """
             SELECT user_unique_id, time_zone
             FROM users;
             """
         all_users = execute(users_query, 'get', conn)
-        # all_users = execute(
-        #     """Select user_unique_id, time_zone from users;""", 'get', conn)
         # print("All Users: ", all_users)
 
-
+        # GET ALL TAS AND TIMEZONES
         tas_query = """
                 SELECT ta_unique_id, ta_time_zone
                 FROM ta_people;
             """
         all_ta = execute(tas_query, 'get', conn)
-        # all_ta = execute(
-        #     """Select ta_unique_id from ta_people;""", 'get', conn)
         # print("All TAs: ", all_ta)
 
+        # PUT USERS INTO USER ARRAY
         for i in range(len(all_users['result'])):
             users.append(all_users['result'][i]['user_unique_id'])
             # print(users)
 
+        # PUT TAS INTO TA ARRAY
         for i in range(len(all_ta['result'])):
             ta.append(all_ta['result'][i]['ta_unique_id'])
             # print(ta)
 
+        # FOR EACH INCOMPLETE, ACTIVE GR CHECK THE NOTIFICATIONS
+        # THERE IS PROBABLY A BETTER WAY TO DO THIS BY JOINING GR WITH NOTIFICATIONS AND GUIDS AND RETURNING EVERYTHING AT ONCE
         print("Incomplete, Active GRs: ", len(goal_routine_response))
         for i in range(len(goal_routine_response)):
             gr_id = goal_routine_response[i]['gr_unique_id']
@@ -6018,7 +6014,7 @@ def ManifestNotification_CRON():
             #     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
             print(res)
 
-            # STEP 2: INSERT TA AND USER GU INTO THID E GR TABLE
+            # STEP 2: INSERT TA AND USER GUID INTO THE GR TABLE
             # Get TA info if first notification is of TA
             # print(len(res['result']))
             if len(res['result']) > 0:
@@ -6074,19 +6070,33 @@ def ManifestNotification_CRON():
                 print(d['is_displayed_today'], d['is_complete'])
             if(d['is_displayed_today'] == 'True' and d['is_complete'] == 'False'):
 
+
+
+                # START PROCESSING TIME
+                print('\nPROCESSING start_time')
+                print("Original: ", d['gr_start_day_and_time'], type(d['gr_start_day_and_time']))
                 # start_day_and_time_obj = datetime.strptime(d['gr_start_day_and_time'], '%m/%d/%Y, %I:%M:%S %p')
                 start_day_and_time_obj = datetime.strptime(d['gr_start_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
-                print('start_time')
+                print("After formatting: ", start_day_and_time_obj)
+                # CALL changedate TO UPDATE ORIGINAL START DATE TO CURRENT DATE
                 start_day_and_time_obj =changedate(start_day_and_time_obj)
-                end_day_and_time_obj = datetime.strptime(d['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
-                print('end_time')
-                end_day_and_time_obj = changedate(end_day_and_time_obj)
-                start_day_and_time_obj = start_day_and_time_obj.replace(second = 0)
-                end_day_and_time_obj = end_day_and_time_obj.replace(second = 0)
-                #print(date_time_obj.strftime('%m/%d/%Y, %I:%M:%S %p'))
+                print("After Change Date: ", start_day_and_time_obj)
 
-                # start_day_and_time_obj = d['gr_start_day_and_time']
-                # end_day_and_time_obj = d['gr_end_day_and_time']
+                print('\nPROCESSING end_time')
+                print("Original: ", d['gr_end_day_and_time'], type(d['gr_end_day_and_time']))
+                end_day_and_time_obj = datetime.strptime(d['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
+                print("After formatting: ", end_day_and_time_obj)
+                end_day_and_time_obj = changedate(end_day_and_time_obj)
+                print("After Change Date: ", end_day_and_time_obj)
+
+                print("\nReplace seconds?")
+                start_day_and_time_obj = start_day_and_time_obj.replace(second = 0)
+                print("After Replace: ", start_day_and_time_obj)
+                end_day_and_time_obj = end_day_and_time_obj.replace(second = 0)
+                print("After Replace: ", end_day_and_time_obj)
+
+
+
 
                 print("\nStarting for loop")
                 for n in d['notifications']:
@@ -6094,32 +6104,38 @@ def ManifestNotification_CRON():
                     if(n['before_is_enable'] == 'True'):
                         print('\nbefore_notification_time')
                         before_not_time = getnotificationtime('before', n['before_time'], start_day_and_time_obj)
-                        print('\nbefore changedate')
-                        before_not_time = changedate(before_not_time)
-                        print(before_not_time)
-                        print("UTC Time")
-                        print(utc_time)
+                        print("BEFORE Notification Time in UTC: ", before_not_time)
+                        # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
+
+                        # print('\nbefore changedate')
+                        # before_not_time = changedate(before_not_time)
+                        # print(before_not_time)
+
+                        print("\nUTC Time from above: ", utc_time)
                         time_diff= utc_time - before_not_time
                         print('time_diff:', time_diff, type(time_diff))
-                        #notify(n['before_message']+n['before_time'])
-                        print(time_diff.total_seconds(), type(time_diff.total_seconds()))
+                        print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
+
+
+                        # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
                         # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-                        if(time_diff.total_seconds() < 25 and time_diff.total_seconds() > -25):
+                        if(time_diff.total_seconds() < 30 and time_diff.total_seconds() > -30):
+                            print("\nBEFORE Notification Criteria met")
                             for id in getGUID(n):
                             #id = getGUID(n)
                                 if (id != ''):
                                     notify(n['before_message'],id)
                                     # mycursor = mydb.cursor()
 
-                                    setNotification_query = """
-                                            UPDATE notifications 
-                                            SET before_is_set = 'True' 
-                                            WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-                                        """
-                                    sql = execute(setNotification_query, 'get', conn)
+                                    # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
+                                    # setNotification_query = """
+                                    #         UPDATE notifications 
+                                    #         SET before_is_set = 'True' 
+                                    #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                    #     """
+                                    # sql = execute(setNotification_query, 'get', conn)
                                     
                                     # sql = "UPDATE notifications SET before_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-                                    
                                     
                                     # mycursor.execute(sql)
                                     # mydb.commit()
@@ -6127,36 +6143,50 @@ def ManifestNotification_CRON():
                                     # f.write(id+' ')
                                     # f.write(str(before_not_time)+ ' ')
                                     # f.write('\n')
-                        print(n['before_time'])
-                        print(n['before_message'])
+                                    print("GUID Notification sent")
+                                print("BEFORE GUID notification complete", id)
+                            print("All GUIDs processed")
+                        print("BEFORE notification complete")
+                        # print(n['before_time'])
+                        # print(n['before_message'])
                     
-                        print(utc_time)
-                        print(time_diff.total_seconds())
+                        # print(utc_time)
+                        # print(time_diff.total_seconds())
                         print('\n')
+
+
                     if(n['during_is_enable'] == 'True'):
                         print('\nduring_notification_time')
                         during_not_time = getnotificationtime('during', n['during_time'], start_day_and_time_obj)
-                        print('\nduring changedate')
-                        during_not_time = changedate(during_not_time)
-                        print(during_not_time)
+                        print("DURING Notification Time in UTC: ", during_not_time)
+                        # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
+                        
+                        # print('\nduring changedate')
+                        # during_not_time = changedate(during_not_time)
+                        # print(during_not_time)
+
+                        print("\nUTC Time from above: ", utc_time)
                         time_diff= utc_time - during_not_time
-                        print('time_diff:', time_diff)
-                        #notify(n['during_message']+n['during_time'])
+                        print('time_diff:', time_diff, type(time_diff))
+                        print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
+                        
+                        # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
                         # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-                        if(time_diff.total_seconds() < 25 and time_diff.total_seconds() > -25):
+                        if(time_diff.total_seconds() < 30 and time_diff.total_seconds() > -30):
+                            print("\nDURING Notification Criteria met")
                             for id in getGUID(n):
                             #id = getGUID(n)
                                 if (id != ''):
                                     notify(n['during_message'],id)
                                     # mycursor = mydb.cursor()
 
-                                    setNotification_query = """
-                                            UPDATE notifications 
-                                            SET during_is_set = 'True' 
-                                            WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-                                        """
-                                    sql = execute(setNotification_query, 'get', conn)
-
+                                    # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
+                                    # setNotification_query = """
+                                    #         UPDATE notifications 
+                                    #         SET during_is_set = 'True' 
+                                    #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                    #     """
+                                    # sql = execute(setNotification_query, 'get', conn)
 
                                     # sql = "UPDATE notifications SET during_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
 
@@ -6166,35 +6196,50 @@ def ManifestNotification_CRON():
                                     # f.write(id+ ' ')
                                     # f.write(str(during_not_time)+ ' ')
                                     # f.write('\n')
-                        print(n['during_time'])
-                        print(n['during_message'])
-                        print(during_not_time)
-                        print(time_diff.total_seconds())
+                                    print("GUID Notification sent")
+                                print("DURING GUID notification complete", id)
+                            print("All GUIDs processed")
+                        print("DURING notification complete")
+                        # print(n['during_time'])
+                        # print(n['during_message'])
+
+                        # print(during_not_time)
+                        # print(time_diff.total_seconds())
                         print('\n')
+
+                        
                     if(n['after_is_enable'] == 'True'):
                         print('\nafter_notification_time')
                         after_not_time = getnotificationtime('after', n['after_time'], end_day_and_time_obj)
-                        print('\nafter changedate')
-                        after_not_time = changedate(after_not_time)
-                        print(after_not_time)
+                        print("AFTER Notification Time in UTC: ", after_not_time)
+                        # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
+                        
+                        # print('\nafter changedate')
+                        # after_not_time = changedate(after_not_time)
+                        # print(after_not_time)
+                        
+                        print("\nUTC Time from above: ", utc_time)
                         time_diff= utc_time - after_not_time
-                        print('time_diff:', time_diff)
-                        #notify(n['after_message']+n['after_time'])
+                        print('time_diff:', time_diff, type(time_diff))
+                        print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
+                        
+                        # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
                         # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-                        if(time_diff.total_seconds() < 25 and time_diff.total_seconds() > -25):
+                        if(time_diff.total_seconds() < 30 and time_diff.total_seconds() > -30):
+                            print("\nAFTER Notification Criteria met")
                             for id in getGUID(n):
                             #id = getGUID(n)
                                 if (id != ''):
                                     notify(n['after_message'],id)
                                     # mycursor = mydb.cursor()
 
-                                    setNotification_query = """
-                                            UPDATE notifications 
-                                            SET after_is_set = 'True' 
-                                            WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-                                        """
-                                    sql = execute(setNotification_query, 'get', conn)
-
+                                    # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
+                                    # setNotification_query = """
+                                    #         UPDATE notifications 
+                                    #         SET after_is_set = 'True' 
+                                    #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                    #     """
+                                    # sql = execute(setNotification_query, 'get', conn)
 
                                     # sql = "UPDATE notifications SET after_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
 
@@ -6204,10 +6249,15 @@ def ManifestNotification_CRON():
                                     # f.write(id+' ')
                                     # f.write(str(after_not_time)+' ')
                                     # f.write('\n')
-                        print(n['after_time'])
-                        print(n['after_message'])
-                        print(after_not_time)
-                        print(time_diff.total_seconds())
+                                    print("GUID Notification sent")
+                                print("AFTER GUID notification complete", id)
+                            print("All GUIDs processed")
+                        print("AFTER notification complete")
+                        # print(n['after_time'])
+                        # print(n['after_message'])
+
+                        # print(after_not_time)
+                        # print(time_diff.total_seconds())
                         print('\n')	
 
 
@@ -6233,25 +6283,19 @@ class ManifestNotification(Resource):
         try:
             response = {}
             GRs = {}
+            users = []
+            ta = []
             conn = connect()
             print("In Notification CRON Function")
             
+            # USE THESE STATEMENTS TO CONFIRM NOTIFICATIONS TO THE PHONE ARE WORKING
             # print("Before Notification")
             # notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
 
             utc_time =datetime.now(tz=pytz.utc)
-
-            # # COMMENTING OUT THE ORIGINAL ENDPOINT CALL
-            # print("Before Endpoint Call")
-            # url = 'https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/getNotifications'
-            # #    post_url = 'https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/changeHistory/'
-            # json_url = urllib.urlopen(url)
-            # data=json.loads(json_url.read())
-            # #print(data)
-
-            users = []
-            ta = []
-            # get all goals and routines
+            print(utc_time)
+            
+            # GET ALL GOALS AND ROUTINES
             GRquery = """
                 SELECT * 
                 FROM goals_routines
@@ -6263,34 +6307,34 @@ class ManifestNotification(Resource):
             goal_routine_response = GRs['result']
             # print("GR Response: ", goal_routine_response)
 
-
+            # GET ALL USERS AND TIMEZONES
             users_query = """
                 SELECT user_unique_id, time_zone
                 FROM users;
                 """
             all_users = execute(users_query, 'get', conn)
-            # all_users = execute(
-            #     """Select user_unique_id, time_zone from users;""", 'get', conn)
             # print("All Users: ", all_users)
 
-
+            # GET ALL TAS AND TIMEZONES
             tas_query = """
                     SELECT ta_unique_id, ta_time_zone
                     FROM ta_people;
                 """
             all_ta = execute(tas_query, 'get', conn)
-            # all_ta = execute(
-            #     """Select ta_unique_id from ta_people;""", 'get', conn)
             # print("All TAs: ", all_ta)
 
+            # PUT USERS INTO USER ARRAY
             for i in range(len(all_users['result'])):
                 users.append(all_users['result'][i]['user_unique_id'])
                 # print(users)
 
+            # PUT TAS INTO TA ARRAY
             for i in range(len(all_ta['result'])):
                 ta.append(all_ta['result'][i]['ta_unique_id'])
                 # print(ta)
 
+            # FOR EACH INCOMPLETE, ACTIVE GR CHECK THE NOTIFICATIONS
+            # THERE IS PROBABLY A BETTER WAY TO DO THIS BY JOINING GR WITH NOTIFICATIONS AND GUIDS AND RETURNING EVERYTHING AT ONCE
             print("Incomplete, Active GRs: ", len(goal_routine_response))
             for i in range(len(goal_routine_response)):
                 gr_id = goal_routine_response[i]['gr_unique_id']
@@ -6309,7 +6353,7 @@ class ManifestNotification(Resource):
                 #     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
                 print(res)
 
-                # STEP 2: INSERT TA AND USER GU INTO THID E GR TABLE
+                # STEP 2: INSERT TA AND USER GUID INTO THE GR TABLE
                 # Get TA info if first notification is of TA
                 # print(len(res['result']))
                 if len(res['result']) > 0:
@@ -6365,19 +6409,33 @@ class ManifestNotification(Resource):
                     print(d['is_displayed_today'], d['is_complete'])
                 if(d['is_displayed_today'] == 'True' and d['is_complete'] == 'False'):
 
+
+
+                    # START PROCESSING TIME
+                    print('\nPROCESSING start_time')
+                    print("Original: ", d['gr_start_day_and_time'], type(d['gr_start_day_and_time']))
                     # start_day_and_time_obj = datetime.strptime(d['gr_start_day_and_time'], '%m/%d/%Y, %I:%M:%S %p')
                     start_day_and_time_obj = datetime.strptime(d['gr_start_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
-                    print('start_time')
+                    print("After formatting: ", start_day_and_time_obj)
+                    # CALL changedate TO UPDATE ORIGINAL START DATE TO CURRENT DATE
                     start_day_and_time_obj =changedate(start_day_and_time_obj)
-                    end_day_and_time_obj = datetime.strptime(d['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
-                    print('end_time')
-                    end_day_and_time_obj = changedate(end_day_and_time_obj)
-                    start_day_and_time_obj = start_day_and_time_obj.replace(second = 0)
-                    end_day_and_time_obj = end_day_and_time_obj.replace(second = 0)
-                    #print(date_time_obj.strftime('%m/%d/%Y, %I:%M:%S %p'))
+                    print("After Change Date: ", start_day_and_time_obj)
 
-                    # start_day_and_time_obj = d['gr_start_day_and_time']
-                    # end_day_and_time_obj = d['gr_end_day_and_time']
+                    print('\nPROCESSING end_time')
+                    print("Original: ", d['gr_end_day_and_time'], type(d['gr_end_day_and_time']))
+                    end_day_and_time_obj = datetime.strptime(d['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
+                    print("After formatting: ", end_day_and_time_obj)
+                    end_day_and_time_obj = changedate(end_day_and_time_obj)
+                    print("After Change Date: ", end_day_and_time_obj)
+
+                    print("\nReplace seconds?")
+                    start_day_and_time_obj = start_day_and_time_obj.replace(second = 0)
+                    print("After Replace: ", start_day_and_time_obj)
+                    end_day_and_time_obj = end_day_and_time_obj.replace(second = 0)
+                    print("After Replace: ", end_day_and_time_obj)
+
+
+
 
                     print("\nStarting for loop")
                     for n in d['notifications']:
@@ -6385,32 +6443,38 @@ class ManifestNotification(Resource):
                         if(n['before_is_enable'] == 'True'):
                             print('\nbefore_notification_time')
                             before_not_time = getnotificationtime('before', n['before_time'], start_day_and_time_obj)
-                            print('\nbefore changedate')
-                            before_not_time = changedate(before_not_time)
-                            print(before_not_time)
-                            print("UTC Time")
-                            print(utc_time)
+                            print("BEFORE Notification Time in UTC: ", before_not_time)
+                            # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
+
+                            # print('\nbefore changedate')
+                            # before_not_time = changedate(before_not_time)
+                            # print(before_not_time)
+
+                            print("\nUTC Time from above: ", utc_time)
                             time_diff= utc_time - before_not_time
                             print('time_diff:', time_diff, type(time_diff))
-                            #notify(n['before_message']+n['before_time'])
-                            print(time_diff.total_seconds(), type(time_diff.total_seconds()))
+                            print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
+
+
+                            # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
                             # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
                             if(time_diff.total_seconds() < 600 and time_diff.total_seconds() > -600):
+                                print("\nBEFORE Notification Criteria met")
                                 for id in getGUID(n):
                                 #id = getGUID(n)
                                     if (id != ''):
                                         notify(n['before_message'],id)
                                         # mycursor = mydb.cursor()
 
-                                        setNotification_query = """
-                                                UPDATE notifications 
-                                                SET before_is_set = 'True' 
-                                                WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-                                            """
-                                        sql = execute(setNotification_query, 'get', conn)
+                                        # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
+                                        # setNotification_query = """
+                                        #         UPDATE notifications 
+                                        #         SET before_is_set = 'True' 
+                                        #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                        #     """
+                                        # sql = execute(setNotification_query, 'get', conn)
                                         
                                         # sql = "UPDATE notifications SET before_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-                                        
                                         
                                         # mycursor.execute(sql)
                                         # mydb.commit()
@@ -6418,36 +6482,50 @@ class ManifestNotification(Resource):
                                         # f.write(id+' ')
                                         # f.write(str(before_not_time)+ ' ')
                                         # f.write('\n')
-                            print(n['before_time'])
-                            print(n['before_message'])
+                                        print("GUID Notification sent")
+                                    print("BEFORE GUID notification complete", id)
+                                print("All GUIDs processed")
+                            print("BEFORE notification complete")
+                            # print(n['before_time'])
+                            # print(n['before_message'])
                         
-                            print(utc_time)
-                            print(time_diff.total_seconds())
+                            # print(utc_time)
+                            # print(time_diff.total_seconds())
                             print('\n')
+
+
                         if(n['during_is_enable'] == 'True'):
                             print('\nduring_notification_time')
                             during_not_time = getnotificationtime('during', n['during_time'], start_day_and_time_obj)
-                            print('\nduring changedate')
-                            during_not_time = changedate(during_not_time)
-                            print(during_not_time)
+                            print("DURING Notification Time in UTC: ", during_not_time)
+                            # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
+                            
+                            # print('\nduring changedate')
+                            # during_not_time = changedate(during_not_time)
+                            # print(during_not_time)
+
+                            print("\nUTC Time from above: ", utc_time)
                             time_diff= utc_time - during_not_time
-                            print('time_diff:', time_diff)
-                            #notify(n['during_message']+n['during_time'])
+                            print('time_diff:', time_diff, type(time_diff))
+                            print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
+                            
+                            # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
                             # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
                             if(time_diff.total_seconds() < 600 and time_diff.total_seconds() > -600):
+                                print("\nDURING Notification Criteria met")
                                 for id in getGUID(n):
                                 #id = getGUID(n)
                                     if (id != ''):
                                         notify(n['during_message'],id)
                                         # mycursor = mydb.cursor()
 
-                                        setNotification_query = """
-                                                UPDATE notifications 
-                                                SET during_is_set = 'True' 
-                                                WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-                                            """
-                                        sql = execute(setNotification_query, 'get', conn)
-
+                                        # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
+                                        # setNotification_query = """
+                                        #         UPDATE notifications 
+                                        #         SET during_is_set = 'True' 
+                                        #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                        #     """
+                                        # sql = execute(setNotification_query, 'get', conn)
 
                                         # sql = "UPDATE notifications SET during_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
 
@@ -6457,35 +6535,50 @@ class ManifestNotification(Resource):
                                         # f.write(id+ ' ')
                                         # f.write(str(during_not_time)+ ' ')
                                         # f.write('\n')
-                            print(n['during_time'])
-                            print(n['during_message'])
-                            print(during_not_time)
-                            print(time_diff.total_seconds())
+                                        print("GUID Notification sent")
+                                    print("DURING GUID notification complete", id)
+                                print("All GUIDs processed")
+                            print("DURING notification complete")
+                            # print(n['during_time'])
+                            # print(n['during_message'])
+
+                            # print(during_not_time)
+                            # print(time_diff.total_seconds())
                             print('\n')
+
+                            
                         if(n['after_is_enable'] == 'True'):
                             print('\nafter_notification_time')
                             after_not_time = getnotificationtime('after', n['after_time'], end_day_and_time_obj)
-                            print('\nafter changedate')
-                            after_not_time = changedate(after_not_time)
-                            print(after_not_time)
+                            print("AFTER Notification Time in UTC: ", after_not_time)
+                            # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
+                            
+                            # print('\nafter changedate')
+                            # after_not_time = changedate(after_not_time)
+                            # print(after_not_time)
+                            
+                            print("\nUTC Time from above: ", utc_time)
                             time_diff= utc_time - after_not_time
-                            print('time_diff:', time_diff)
-                            #notify(n['after_message']+n['after_time'])
+                            print('time_diff:', time_diff, type(time_diff))
+                            print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
+                            
+                            # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
                             # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
                             if(time_diff.total_seconds() < 600 and time_diff.total_seconds() > -600):
+                                print("\nAFTER Notification Criteria met")
                                 for id in getGUID(n):
                                 #id = getGUID(n)
                                     if (id != ''):
                                         notify(n['after_message'],id)
                                         # mycursor = mydb.cursor()
 
-                                        setNotification_query = """
-                                                UPDATE notifications 
-                                                SET after_is_set = 'True' 
-                                                WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-                                            """
-                                        sql = execute(setNotification_query, 'get', conn)
-
+                                        # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
+                                        # setNotification_query = """
+                                        #         UPDATE notifications 
+                                        #         SET after_is_set = 'True' 
+                                        #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
+                                        #     """
+                                        # sql = execute(setNotification_query, 'get', conn)
 
                                         # sql = "UPDATE notifications SET after_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
 
@@ -6495,10 +6588,15 @@ class ManifestNotification(Resource):
                                         # f.write(id+' ')
                                         # f.write(str(after_not_time)+' ')
                                         # f.write('\n')
-                            print(n['after_time'])
-                            print(n['after_message'])
-                            print(after_not_time)
-                            print(time_diff.total_seconds())
+                                        print("GUID Notification sent")
+                                    print("AFTER GUID notification complete", id)
+                                print("All GUIDs processed")
+                            print("AFTER notification complete")
+                            # print(n['after_time'])
+                            # print(n['after_message'])
+
+                            # print(after_not_time)
+                            # print(time_diff.total_seconds())
                             print('\n')	
 
 
