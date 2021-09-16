@@ -6278,9 +6278,37 @@ def ManifestNotification_CRON():
 
 # REWRITING THE NOTIFICATION CLASS
 
-def ProcessTime(time, tz):
-    print(time, tz)
-    return(time)
+def ProcessTime(time, time_zone):
+    # PROVIDE A DATETIME AND TIMEZONE AND RETURN THE UPDATED DATETIME IN UTC
+    from datetime import datetime
+    from pytz import timezone
+
+    print("\nIn Process Time: ")
+    print(time, type(time))
+    print(time_zone, type(time_zone))
+    
+    # CURRENT DATE IN THE USER OR TAS TIMEZONE
+    cur_date = datetime.now(pytz.timezone(time_zone)).date()
+    print("Current date: ", cur_date, type(cur_date))
+
+    # EXTRACT TIME FROM DATETIME
+    time = datetime.strptime(time, "%Y-%m-%d %I:%M:%S %p").time()
+    print("Current time: ", time, type(time))
+
+    # COMBINE CURRENT DATE WITH TIME
+    new_datetime = datetime.combine(cur_date, time)
+    print("Current datetime: ", new_datetime, type(new_datetime))
+
+    # MAKE IT TIMEZONE AWARE
+    tz = timezone(time_zone)
+    new_datetime_tz = tz.localize(new_datetime)
+    print("Timezone Aware datetime: ", new_datetime_tz,  type(new_datetime_tz))
+
+    # CONVERTS LOCAL DATETIME INTO UTC DATETIME
+    new_utc_time = new_datetime_tz.astimezone(timezone('utc'))
+    print("Current Date Time in UTC: ", new_utc_time, type(new_utc_time))
+
+    return(new_utc_time)
 
 
 class ManifestNotification(Resource):
@@ -6330,40 +6358,18 @@ class ManifestNotification(Resource):
                 print(time_zone, type(time_zone))
                 print(guid, type(guid))
 
-                # CURRENT DATE IN THE USER OR TAS TIMEZONE
-                cur_date = datetime.now(pytz.timezone(time_zone)).date()
-                print("Current date: ", cur_date, type(cur_date))
 
+                start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
+                print("FUNCTION RETURNS: ", start_time)
 
+                end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
+                print("FUNCTION RETURNS: ", end_time)
 
-                
-                # GR START TIME
-                gr_start_time = datetime.strptime(n['gr_start_day_and_time'], "%Y-%m-%d %I:%M:%S %p").time()
-                print("Current time: ", gr_start_time, type(gr_start_time))
-
-                # COMBINE CURRENT DATE WITH GR TIME
-                cur_datetime = datetime.combine(cur_date, gr_start_time)
-                print("Current datetime: ", cur_datetime, type(cur_datetime))
-
-                # MAKE IT TIMEZONE AWARE
-                cst = timezone(time_zone)
-                cur_datetime_tz = cst.localize(cur_datetime)
-                print("Timezone Aware datetime: ", cur_datetime_tz,  type(cur_datetime_tz))
-
-                # CONVERTS LOCAL DATETIME INTO UTC DATETIME
-                current = cur_datetime_tz.astimezone(timezone('utc'))
-                print("Current Date Time in UTC: ", current, type(current))
 
                 # CALCULATE TIME DIFFERENCE VS UTC
-                start_time_diff= cur_UTC - current
+                start_time_diff= cur_UTC - start_time
                 print("Time Difference vs UTC: ", start_time_diff, type(start_time_diff))
                 print('time_diff in seconds:', start_time_diff.total_seconds(), type(start_time_diff.total_seconds()))
-
-
-
-                function_time = ProcessTime(gr_start_time, time_zone)
-                print(function_time)
-
 
 
                 # GR END TIME
