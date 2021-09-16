@@ -2000,30 +2000,43 @@ class CopyGR(Resource):
             print("In try block")
             conn = connect()
             data = request.get_json(force=True)
+            print(data)
 
             user_id = data['user_id']
             goal_routine_id = data['gr_id']
             ta_id = data['ta_id']
 
             timezone_query = execute(
-                """SELECT time_zone FROM users where user_unique_id = \'""" + user_id + """\';""", 'get', conn)
+                """ SELECT time_zone 
+                    FROM users 
+                    WHERE user_unique_id = \'""" + user_id + """\';""", 'get', conn)
             timezone = timezone_query['result'][0]['time_zone']
+            print(timezone)
 
-            items = execute("""SELECT * FROM goals_routines WHERE gr_unique_id = \'""" +
-                            goal_routine_id + """\';""", 'get', conn)
-
-            notification = execute(
-                """SELECT * FROM notifications WHERE gr_at_id = \'""" + goal_routine_id + """\';""", 'get', conn)
+            items = execute(
+                """SELECT * 
+                FROM goals_routines 
+                WHERE gr_unique_id = \'""" + goal_routine_id + """\';""", 'get', conn)
 
             goal_routine_response = items['result']
             print(goal_routine_response)
+
+            notification = execute(
+                """SELECT * 
+                FROM notifications 
+                WHERE gr_at_id = \'""" + goal_routine_id + """\';""", 'get', conn)
+
+            notification_response = notification['result']
+            print(notification_response)
+
+
             time = goal_routine_response[0]['gr_start_day_and_time'].split(',')
-            print(time)
+            print(time, type(time))
             # time[1] = time[1][1:]
             # print(time[1])
 
             time1 = goal_routine_response[0]['gr_end_day_and_time'].split(',')
-            print(time1)
+            print(time1, type(time1))
             # time1[1] = time1[1][1:]
             # print(time1[1])
 
@@ -2031,16 +2044,14 @@ class CopyGR(Resource):
             print(datetime_str)
             datetime_str = datetime_str.replace(",", "")
             print(datetime_str)
-            datetime_object1 = datetime.strptime(
-                datetime_str, '%Y-%m-%d %I:%M:%S %p')
+            datetime_object1 = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p')
             print(datetime_object1)
 
             datetime_str = goal_routine_response[0]['gr_end_day_and_time']
             print(datetime_str)
             datetime_str = datetime_str.replace(",", "")
             print(datetime_str)
-            datetime_object2 = datetime.strptime(
-                datetime_str, '%Y-%m-%d %I:%M:%S %p')
+            datetime_object2 = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p')
             print(datetime_object2)
 
             diff = datetime_object2 - datetime_object1
@@ -2050,16 +2061,12 @@ class CopyGR(Resource):
             start_day_and_time = now_timestamp
             print(start_day_and_time)
             # while running locally on windows use '#' instead of '-' in the format string
-            start_date_time = str(start_day_and_time.strftime(
-                "%Y-%m-%d")) + " " + str(start_day_and_time.strftime(
-                    "%I:%M:%S %p"))
+            start_date_time = str(start_day_and_time.strftime("%Y-%m-%d")) + " " + str(start_day_and_time.strftime("%I:%M:%S %p"))
             print(start_date_time)
             end_day_and_time = start_day_and_time + diff
             print(end_day_and_time)
             # while running locally on windows use '#' instead of '-' in the format string
-            end_date_time = str(end_day_and_time.strftime(
-                "%Y/%-m/%-d")) + " " + str(start_day_and_time.strftime(
-                    "%I:%M:%S %p"))
+            end_date_time = str(end_day_and_time.strftime("%Y-%m-%d")) + " " + str(end_day_and_time.strftime("%I:%M:%S %p"))
             print(end_date_time)
             # New Goal/Routine ID
             query = ["CALL get_gr_id;"]
@@ -2090,7 +2097,7 @@ class CopyGR(Resource):
                            gr_datetime_completed = \'""" + goal_routine_response[0]['gr_datetime_completed'] + """\',
                            gr_datetime_started = \'""" + goal_routine_response[0]['gr_datetime_started'] + """\',
                            gr_end_day_and_time = \'""" + str(end_date_time) + """\',
-                           gr_expected_completion_time = \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\');""", 'post', conn) 
+                           gr_expected_completion_time = \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\';""", 'post', conn) 
             print("After insert")
 
             # New Notification ID
@@ -2128,7 +2135,7 @@ class CopyGR(Resource):
                            after_is_enable = \'""" + notifications[0]['after_is_enable'] + """\',
                            after_is_set = \'""" + notifications[0]['after_is_set'] + """\',
                            after_message = \'""" + notifications[0]['after_message'] + """\',
-                           after_time = \'""" + notifications[0]['after_time'] + """\');""", 'post', conn) 
+                           after_time = \'""" + notifications[0]['after_time'] + """\';""", 'post', conn) 
 
             # New Notification ID
             new_notification_id_response = execute(
@@ -2157,7 +2164,7 @@ class CopyGR(Resource):
                            after_is_enable = \'""" + notifications[0]['after_is_enable'] + """\',
                            after_is_set = \'""" + notifications[0]['after_is_set'] + """\',
                            after_message = \'""" + notifications[0]['after_message'] + """\',
-                           after_time = \'""" + notifications[0]['after_time'] + """\');""", 'post', conn)
+                           after_time = \'""" + notifications[0]['after_time'] + """\';""", 'post', conn)
 
             res_actions = execute(
                 """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + goal_routine_id + """\';""", 'get', conn)
@@ -2187,7 +2194,7 @@ class CopyGR(Resource):
                                    at_datetime_started = \'""" + action_response[j]['at_datetime_started'] + """\',
                                    at_expected_completion_time = \'""" + action_response[j]['at_expected_completion_time'] + """\',
                                    at_available_start_time = \'""" + action_response[j]['at_available_start_time'] + """\',
-                                   at_available_end_time =  \'""" + action_response[j]['at_available_end_time'] + """\' );""", 'post', conn)
+                                   at_available_end_time =  \'""" + action_response[j]['at_available_end_time'] + """\' ;""", 'post', conn)
 
                     print("After action insert")
                     res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
@@ -2214,7 +2221,7 @@ class CopyGR(Resource):
                                            is_in_progress = \'""" + instructions[k]['is_in_progress'] + """\',
                                            is_photo = \'""" + instructions[k]['is_photo'] + """\',
                                            is_timed = \'""" + instructions[k]['is_timed'] + """\',
-                                           is_expected_completion_time = \'""" + instructions[k]['is_expected_completion_time'] + """\');""", 'post', conn) 
+                                           is_expected_completion_time = \'""" + instructions[k]['is_expected_completion_time'] + """\';""", 'post', conn) 
 
             response['message'] = 'successful'
 
