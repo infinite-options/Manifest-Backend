@@ -2916,10 +2916,12 @@ class CreateNewPeople(Resource):
             important = request.form.get('important')
             photo_url = request.form.get("photo_url")
             ta_time_zone = request.form.get("ta_time_zone")
+            people_email = request.form.get("people_email")
+            people_employer = request.form.get("people_employer")
+            people_phone_number = request.form.get("people_phone_number")
             first_name_list = []
 
             if not picture:
-
                 have_pic = 'FALSE'
             else:
                 have_pic = 'TRUE'
@@ -3002,12 +3004,12 @@ class CreateNewPeople(Resource):
                 execute("""INSERT INTO ta_people
                            SET ta_unique_id = \'""" + NewPeopleID + """\',
                                ta_timestamp = \'""" + ts + """\',
-                               ta_email_id = \'""" + '' + """\',
+                               ta_email_id = \'""" + people_email + """\',
                                ta_first_name = \'""" + first_name + """\',
                                ta_last_name = \'""" + last_name + """\',
-                               employer = \'""" + '' + """\',
+                               employer = \'""" + people_employer + """\',
                                password_hashed = \'""" + '' + """\',
-                               ta_phone_number = \'""" + '' + """\',
+                               ta_phone_number = \'""" + people_phone_number + """\',
                                ta_time_zone = \'""" + ta_time_zone + """\';""", 'post', conn) 
 
                 execute("""INSERT INTO relationship 
@@ -6642,11 +6644,6 @@ class TimeFunction(Resource):
             
             # DEFINE DATE TIME FORMAT AND CONVERT TO A STRING
             print("\nGET DATETIME IN STR FORMAT")
-            date_format = '%m/%d/%Y %H:%M:%S'
-            date = current.strftime(date_format)
-            print("Current Date Time in PST Formatted: ", date, type(date))
-
-            # DEFINE DATE TIME FORMAT AND CONVERT TO A STRING
             date_format = '%Y-%m-%d %H:%M:%S'
             date = current.strftime(date_format)
             print("Current Date Time in PST Formatted: ", date, type(date))
@@ -6779,7 +6776,7 @@ def ManifestGRATIS_CRON():
             # print("Current Date Time in LOCAL TIME          : ", current, type(current))
 
             # DEFINE DATE TIME FORMAT
-            date_format = '%m/%d/%Y %H:%M:%S'
+            date_format = '%Y-%m-%d %H:%M:%S'
             date = current.strftime(date_format)
             # print("Current Date Time in PST Formatted: ", date)
 
@@ -8116,7 +8113,7 @@ class ChangeHistory_annotated(Resource):
             # MAY NOT NEED ANY OF THIS SINCE IT HAPPENS IN TODAYGOALSROUTINE
             # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
             # NewID = NewIDresponse['result'][0]['new_id']
-            date_format = '%m/%d/%Y %H:%M:%S'
+            date_format = '%Y-%m-%d %H:%M:%S'
             current = datetime.now(tz=pytz.utc)
             print("\nUTC Time is: ", current, type (current))
             current = current.astimezone(timezone('US/Pacific'))
@@ -8547,7 +8544,7 @@ class ChangeHistory(Resource):
 
             # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
             # NewID = NewIDresponse['result'][0]['new_id']
-            date_format = '%m/%d/%Y %H:%M:%S'
+            date_format = '%Y-%m-%d %H:%M:%S'
             current = datetime.now(tz=pytz.utc)
             current = current.astimezone(timezone('US/Pacific'))
             date = current.strftime(date_format)
