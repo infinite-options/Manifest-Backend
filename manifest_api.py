@@ -152,7 +152,7 @@ def connect():
     global RDS_USER
     global RDS_DB
 
-    print("Trying to connect to RDS (API v2)...")
+    # print("Trying to connect to RDS (API v2)...")
     try:
         conn = pymysql.connect(host=RDS_HOST,
                                user=RDS_USER,
@@ -161,7 +161,7 @@ def connect():
                                db=RDS_DB,
                                charset='utf8mb4',
                                cursorclass=pymysql.cursors.DictCursor)
-        print("Successfully connected to RDS. (API v2)")
+        # print("Successfully connected to RDS. (API v2)")
         return conn
     except:
         print("Could not connect to RDS. (API v2)")
@@ -171,7 +171,7 @@ def connect():
 def disconnect(conn):
     try:
         conn.close()
-        print("Successfully disconnected from MySQL database. (API v2)")
+        # print("Successfully disconnected from MySQL database. (API v2)")
     except:
         print("Could not properly disconnect from MySQL database. (API v2)")
         raise Exception("Failure disconnecting from MySQL database. (API v2)")
@@ -695,7 +695,7 @@ class AddNewGR(Resource):
                         gr_end_day_and_time = \'""" + end_day_and_time + """\',
                         gr_expected_completion_time = \'""" + expected_completion_time + """\'
                             ;""")
-                print(query[1])
+                # print(query[1])
                 execute(query[1], 'post', conn)
 
             # If a new picture is uploaded
@@ -4506,6 +4506,7 @@ class GetIconsHygiene(Resource):
     def get(self):
         response = {}
         try:
+            print("GetIconsHygiene")
             conn = connect()
 
             items = execute(
@@ -4525,6 +4526,7 @@ class GetIconsClothing(Resource):
     def get(self):
         response = {}
         try:
+            print("GetIconsClothing")
             conn = connect()
 
             items = execute(
@@ -4544,6 +4546,7 @@ class GetIconsFood(Resource):
     def get(self):
         response = {}
         try:
+            print("GetIconsFood")
             conn = connect()
 
             items = execute(
@@ -4563,6 +4566,7 @@ class GetIconsActivities(Resource):
     def get(self):
         response = {}
         try:
+            print("GetIconsActivities")
             conn = connect()
 
             items = execute(
@@ -4582,6 +4586,7 @@ class GetIconsOther(Resource):
     def get(self):
         response = {}
         try:
+            print("GetIconsOther")
             conn = connect()
 
             items = execute(
@@ -4601,6 +4606,7 @@ class GetImages(Resource):
     def get(self, user_id):
         response = {}
         try:
+            print("GetImages")
             conn = connect()
 
             items = execute(
@@ -4620,6 +4626,7 @@ class GetPeopleImages(Resource):
     def get(self, ta_id):
         response = {}
         try:
+            print("GetPeopleImages")
             conn = connect()
 
             items = execute(
