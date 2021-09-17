@@ -6042,7 +6042,7 @@ def ManifestNotification_CRON():
 
             # NOTE:  CHECK is_available and is_displayed_today BEFORE PROCEEDING
 
-            print("\nNotification Info:", n)
+            print("\nNotification Info:", n['notification_id'])
             if n['user_ta_id'][0] == '1':
                 time_zone = n['time_zone']
                 guid = n['cust_guid_device_id_notification']
@@ -6051,7 +6051,7 @@ def ManifestNotification_CRON():
                 guid = n['ta_guid_device_id_notification']
             print(time_zone, type(time_zone))
             print(guid, type(guid))
-            print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+            # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
 
             start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
@@ -6069,7 +6069,7 @@ def ManifestNotification_CRON():
                 notification_time_diff = cur_UTC - notification_time
                 print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                 print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
+                if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
                     print("\nBEFORE Notification Criteria met")
                     for id in getGUID(guid):
                         #id = getGUID(n)
@@ -6084,7 +6084,7 @@ def ManifestNotification_CRON():
                 notification_time_diff = cur_UTC - notification_time
                 # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                 # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
+                if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
                     print("\nDURING Notification Criteria met")
                     for id in getGUID(guid):
                         #id = getGUID(n)
@@ -6099,14 +6099,14 @@ def ManifestNotification_CRON():
                 notification_time_diff = cur_UTC - notification_time
                 # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                 # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
+                if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
                     print("\nAFTER Notification Criteria met")
                     for id in getGUID(guid):
                         #id = getGUID(n)
                             if (id != ''):
                                 notify(n['after_message'],id)
 
-        return response, 200
+        return {"result" : 200}
 
     except:
         raise BadRequest('ManifestNotification_CRON Request failed, please try again later.')
@@ -6116,7 +6116,7 @@ def ManifestNotification_CRON():
 
 
 # USE THIS CLASS FOR DEBUG PURPOSES AND THEN COPY OVER DEF - REMEMBER TO CHANGE DURATION TIMES
-class ManifestNotification_CRON(Resource):
+class ManifestNotification_CLASS(Resource):
     def get(self):
 
         from datetime import datetime
@@ -6156,7 +6156,7 @@ class ManifestNotification_CRON(Resource):
 
                 # NOTE:  CHECK is_available and is_displayed_today BEFORE PROCEEDING
 
-                print("\nNotification Info:", n)
+                print("\nNotification Info:", n['notification_id'])
                 if n['user_ta_id'][0] == '1':
                     time_zone = n['time_zone']
                     guid = n['cust_guid_device_id_notification']
@@ -6165,7 +6165,7 @@ class ManifestNotification_CRON(Resource):
                     guid = n['ta_guid_device_id_notification']
                 print(time_zone, type(time_zone))
                 print(guid, type(guid))
-                print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+                # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
 
                 start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
@@ -9581,7 +9581,7 @@ api.add_resource(Notifications, '/api/v2/notifications')
 api.add_resource(TodayGR, '/api/v2/todayGR')
 
 
-api.add_resource(ManifestNotification_CRON, '/api/v2/ManifestNotification_CRON')
+api.add_resource(ManifestNotification_CLASS, '/api/v2/ManifestNotification_CLASS')
 
 
 api.add_resource(GetNotifications, '/api/v2/getNotifications')  # working
