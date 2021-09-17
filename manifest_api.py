@@ -6016,7 +6016,7 @@ def ManifestNotification_CRON():
 
         # GETS CURRENT DATETIME IN UTC
         cur_UTC = datetime.now(tz=pytz.utc).replace(microsecond=0)
-        print("Current Date Time in GMT        : ", cur_UTC, type(cur_UTC))
+        # print("Current Date Time in GMT        : ", cur_UTC, type(cur_UTC))
 
         # STEP 1: GET CURRENT NOTIFICATIONS
         notifications_query = """
@@ -6035,40 +6035,40 @@ def ManifestNotification_CRON():
             """
         
         notifications = execute(notifications_query, 'get', conn)
-        print(len(notifications['result']))
+        # print(len(notifications['result']))
         # print(notifications)
 
         for n in notifications['result']:
 
             # NOTE:  CHECK is_available and is_displayed_today BEFORE PROCEEDING
 
-            print("\nNotification Info:", n)
+            # print("\nNotification Info:", n)
             if n['user_ta_id'][0] == '1':
                 time_zone = n['time_zone']
                 guid = n['cust_guid_device_id_notification']
             else:
                 time_zone = n['ta_time_zone']
                 guid = n['ta_guid_device_id_notification']
-            print(time_zone, type(time_zone))
-            print(guid, type(guid))
-            print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+            # print(time_zone, type(time_zone))
+            # print(guid, type(guid))
+            # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
 
             start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
-            print("FUNCTION RETURNS: ", start_time)
+            # print("FUNCTION RETURNS: ", start_time)
 
             end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
-            print("FUNCTION RETURNS: ", end_time)
+            # print("FUNCTION RETURNS: ", end_time)
 
             # CALCULATE TIME DIFFERENCE VS UTC
             print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
             if n['before_is_enable'].lower() == 'true':
-                print(n['before_is_enable'], n['before_time'], type(n['before_time']))
+                # print(n['before_is_enable'], n['before_time'], type(n['before_time']))
                 notification_time = start_time - timedelta(seconds=ProcessDuration(n['before_time']))
-                print("Notification Time: ", notification_time)
+                # print("Notification Time: ", notification_time)
                 notification_time_diff = cur_UTC - notification_time
-                print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                 if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
                     print("\nBEFORE Notification Criteria met")
                     for id in getGUID(guid):
@@ -6116,7 +6116,7 @@ def ManifestNotification_CRON():
 
 
 # USE THIS CLASS FOR DEBUG PURPOSES AND THEN COPY OVER DEF - REMEMBER TO CHANGE DURATION TIMES
-class ManifestNotification(Resource):
+class ManifestNotification_CRON(Resource):
     def get(self):
 
         from datetime import datetime
@@ -6130,7 +6130,7 @@ class ManifestNotification(Resource):
 
             # GETS CURRENT DATETIME IN UTC
             cur_UTC = datetime.now(tz=pytz.utc).replace(microsecond=0)
-            print("Current Date Time in GMT        : ", cur_UTC, type(cur_UTC))
+            # print("Current Date Time in GMT        : ", cur_UTC, type(cur_UTC))
 
             # STEP 1: GET CURRENT NOTIFICATIONS
             notifications_query = """
@@ -6149,7 +6149,7 @@ class ManifestNotification(Resource):
                 """
             
             notifications = execute(notifications_query, 'get', conn)
-            print(len(notifications['result']))
+            # print(len(notifications['result']))
             # print(notifications)
 
             for n in notifications['result']:
@@ -9581,7 +9581,7 @@ api.add_resource(Notifications, '/api/v2/notifications')
 api.add_resource(TodayGR, '/api/v2/todayGR')
 
 
-api.add_resource(ManifestNotification, '/api/v2/ManifestNotification')
+api.add_resource(ManifestNotification_CRON, '/api/v2/ManifestNotification_CRON')
 
 
 api.add_resource(GetNotifications, '/api/v2/getNotifications')  # working
