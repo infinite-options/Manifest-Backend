@@ -9328,18 +9328,21 @@ class Calender(Resource):
 class update_guid_notification(Resource):
 
     def post(self, action):
+        print("In Update GUID", action)
         response = {}
         items = {}
 
         try:
             conn = connect()
             data = request.get_json(force=True)
+            print(data)
 
             uid = data['user_unique_id']
             guid = data['guid']
             notification = data['notification']
 
             if action == 'add':
+                print("In Add")
 
                 query = """
                         SELECT *
@@ -9347,21 +9350,24 @@ class update_guid_notification(Resource):
                         WHERE user_unique_id = \'""" + uid + """\'
                         """
                 items = execute(query, 'get', conn)
+                print("Get Query: ", items)
 
                 ta_query = """SELECT * FROM ta_people
                                 WHERE ta_email_id = \'""" + items['result'][0]['user_email_id'] + """\'"""
 
                 ta_people_query = execute(ta_query, 'get', conn)
+                print("TA People Query: ", ta_people_query)
 
                 del data['user_unique_id']
 
                 flag = 0
 
-                json_guid = json.loads(
-                    items['result'][0]['cust_guid_device_id_notification'])
+                json_guid = json.loads(items['result'][0]['cust_guid_device_id_notification'])
+                print("JSON GUID BEFORE: ", json_guid)
 
                 test = str(data).replace("'", "\"")
                 data = "'" + test + "'"
+                print(data)
 
                 if ta_people_query['result']:
                     query = " " \
@@ -9370,6 +9376,7 @@ class update_guid_notification(Resource):
                             "WHERE ta_unique_id = '" + ta_people_query['result'][0]['ta_unique_id'] + "';" \
                             ""
                     res = execute(query, 'post', conn)
+                    print(res)
 
                 if items['result']:
                     query1 = " " \
@@ -9378,6 +9385,7 @@ class update_guid_notification(Resource):
                         "WHERE user_unique_id = '" + uid + "';" \
                         ""
                     items = execute(query1, 'post', conn)
+                    print("Update Query: ", items)
 
                     if items['code'] == 281:
                         items['code'] = 200
@@ -9391,6 +9399,7 @@ class update_guid_notification(Resource):
                 return items
 
             elif action == 'update':
+                print("In Update")
 
                 query = """
                     SELECT cust_guid_device_id_notification
@@ -9398,21 +9407,32 @@ class update_guid_notification(Resource):
                     WHERE user_unique_id = \'""" + uid + """\';
                     """
                 items = execute(query, 'get', conn)
+                print("Get Query: ", items)
 
-                json_guid = json.loads(
-                    items['result'][0]['cust_guid_device_id_notification'])
+                print("Items Result: ", items['result'])
+                print("Items detailed Result: ", items['result'][0]['cust_guid_device_id_notification'])
+
+                json_guid = json.loads(items['result'][0]['cust_guid_device_id_notification'])
+                print("JSON GUID BEFORE: ", json_guid)
+                
                 for i, vals in enumerate(json_guid):
+                    print(i, vals)
                     if vals == None or vals == 'null':
                         continue
                     if vals['guid'] == data['guid']:
                         json_guid[i]['notification'] = data['notification']
                         break
 
+                print("JSON GUID AFTER: ", json_guid)
+
                 if json_guid[0] == None:
                     json_guid[0] = 'null'
+                print(json_guid)  
 
                 guid = str(json_guid)
+                print("String GUID: ", guid)
                 guid = guid.replace("'", '"')
+                print("GUID Replaced: ", guid)
 
                 query = """
                         UPDATE  users  
@@ -9421,6 +9441,7 @@ class update_guid_notification(Resource):
                         WHERE ( user_unique_id  = '""" + uid + """' );
                         """
                 items = execute(query, 'post', conn)
+                print("Update Query: ", items)
                 if items['code'] != 281:
                     items['message'] = 'guid not updated check sql query and data'
 
