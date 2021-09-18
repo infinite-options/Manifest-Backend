@@ -6024,19 +6024,19 @@ def ManifestNotification_CRON():
                     n.*,
                     gr.gr_title, is_available, is_complete, is_in_progress, is_displayed_today, is_persistent, gr_start_day_and_time, gr_end_day_and_time,
                     u.time_zone, cust_guid_device_id_notification,
-                    ta.ta_time_zone, ta_guid_device_id_notification
+                    ta.ta_guid_device_id_notification
                 FROM manifest.notifications n
                 LEFT JOIN manifest.goals_routines gr
                     ON gr_at_id = gr_unique_id
                 LEFT JOIN manifest.users u
-                    ON user_ta_id = user_unique_id
+                    ON user_id = user_unique_id
                 LEFT JOIN manifest.ta_people ta
                     ON user_ta_id = ta_unique_id;
             """
         
         notifications = execute(notifications_query, 'get', conn)
         print(len(notifications['result']))
-        print(notifications)
+        # print(notifications)
 
         for n in notifications['result']:
 
@@ -6044,16 +6044,14 @@ def ManifestNotification_CRON():
 
             print("\nNotification Info:", n['notification_id'])
             if n['user_ta_id'][0] == '1':
-                time_zone = n['time_zone']
                 guid = n['cust_guid_device_id_notification']
             else:
-                time_zone = n['ta_time_zone']
                 guid = n['ta_guid_device_id_notification']
-            print(time_zone, type(time_zone))
             print(guid, type(guid))
             # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
-
+            time_zone = n['time_zone']
+            print(time_zone, type(time_zone))
             start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
             print("FUNCTION RETURNS: ", start_time)
 
@@ -6106,7 +6104,7 @@ def ManifestNotification_CRON():
                             if (id != ''):
                                 notify(n['after_message'],id)
 
-        return {"result" : 200}
+        return response, 200
 
     except:
         raise BadRequest('ManifestNotification_CRON Request failed, please try again later.')
@@ -6138,19 +6136,19 @@ class ManifestNotification_CLASS(Resource):
                         n.*,
                         gr.gr_title, is_available, is_complete, is_in_progress, is_displayed_today, is_persistent, gr_start_day_and_time, gr_end_day_and_time,
                         u.time_zone, cust_guid_device_id_notification,
-                        ta.ta_time_zone, ta_guid_device_id_notification
+                        ta.ta_guid_device_id_notification
                     FROM manifest.notifications n
                     LEFT JOIN manifest.goals_routines gr
                         ON gr_at_id = gr_unique_id
                     LEFT JOIN manifest.users u
-                        ON user_ta_id = user_unique_id
+                        ON user_id = user_unique_id
                     LEFT JOIN manifest.ta_people ta
                         ON user_ta_id = ta_unique_id;
                 """
             
             notifications = execute(notifications_query, 'get', conn)
             print(len(notifications['result']))
-            print(notifications)
+            # print(notifications)
 
             for n in notifications['result']:
 
@@ -6158,16 +6156,14 @@ class ManifestNotification_CLASS(Resource):
 
                 print("\nNotification Info:", n['notification_id'])
                 if n['user_ta_id'][0] == '1':
-                    time_zone = n['time_zone']
                     guid = n['cust_guid_device_id_notification']
                 else:
-                    time_zone = n['ta_time_zone']
                     guid = n['ta_guid_device_id_notification']
-                print(time_zone, type(time_zone))
                 print(guid, type(guid))
                 # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
-
+                time_zone = n['time_zone']
+                print(time_zone, type(time_zone))
                 start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
                 print("FUNCTION RETURNS: ", start_time)
 
@@ -6589,40 +6585,7 @@ class TimeFunction(Resource):
             
             conn = connect()
 
-            # # STEP 0: GET LIST OF UNIQUE USERS AND THEIR TIME ZONE
-            # query = """
-            #             SELECT user_unique_id, day_end, time_zone
-            #             FROM users
-            #             """
-            # users = execute(query, 'get', conn)
-            # # print(users)
-            # print(len(users['result']))
-
-            # # TEST TO MAKE SURE USERS ARE COMING IN
-            # for i in range(len(users['result'])):
-            #     print(i, " ", users['result'][i]['user_unique_id'] )
-            #     print("\nCurrent Record: ", users['result'][i])
-
-            # for i in range(len(users['result'])):
-            #     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-            #     print("GET CURRENT USER", i)
-
-            #     user_id = users['result'][i]['user_unique_id']
-            #     print("\nCurrent Record: ", user_id, " ", users['result'][i])
-
-            #     print(len(users['result'][i]['time_zone']))
-
-            #     # FIND CURRENT TIME ZONE OR SET THE TIMEZONE
-            #     if len(users['result'][i]['time_zone']) > 0:
-            #         time_zone = timezone(users['result'][i]['time_zone'])
-            #         # print(time_zone)
-            #     else:
-            #         time_zone = 'America/Los_Angeles'
-            #     print(time_zone)
-
-
-
-             # TIME MANIPULATION: TAKE CURRENT TIME IN LOCAL TIMEZONE AND ISOLATE THE DATE AND TIME
+            # TIME MANIPULATION: TAKE CURRENT TIME IN LOCAL TIMEZONE AND ISOLATE THE DATE AND TIME
             print("\nGET DATE AND TIME IN DATETIME FORMAT")
             time_zone = 'America/Tijuana'
             print("Time Zone: ", time_zone)
@@ -6693,36 +6656,6 @@ class TimeFunction(Resource):
             raise BadRequest('Request failed, please try again later.')
         finally:
             disconnect(conn)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -7333,10 +7266,7 @@ def ManifestGRATIS_CRON():
                             # print(updateISquery)
                             updateIS = execute(updateISquery, 'post', conn)
                             print(updateIS)
-                    print("finished Reset for Goal: ", goal['gr_unique_id'] )
-
-
-                        
+                    print("finished Reset for Goal: ", goal['gr_unique_id'] )                     
     
         return 200
 
