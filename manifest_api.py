@@ -6073,7 +6073,7 @@ def ManifestNotification_CRON():
                 notification_time_diff = cur_UTC - notification_time
                 print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                 print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
                     print("\nBEFORE Notification Criteria met")
                     for id in getGUID(guid):
                         #id = getGUID(n)
@@ -6088,7 +6088,7 @@ def ManifestNotification_CRON():
                 notification_time_diff = cur_UTC - notification_time
                 # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                 # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
                     print("\nDURING Notification Criteria met")
                     for id in getGUID(guid):
                         #id = getGUID(n)
@@ -6103,7 +6103,7 @@ def ManifestNotification_CRON():
                 notification_time_diff = cur_UTC - notification_time
                 # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                 # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
                     print("\nAFTER Notification Criteria met")
                     for id in getGUID(guid):
                         #id = getGUID(n)
