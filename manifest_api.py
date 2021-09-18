@@ -5943,20 +5943,26 @@ def getGUID(guid):
     s = ''
     print('inside getGUID')
     print(guid)
+    l = []
+    print("Initialize GUID List: ", l)
     if 'guid' in guid:
         guid_list =guid.split(' ')
-        l = []
-        print("guid_list_len")
+        print("List after split: ", guid_list)
+        print("guid_list_len: ", len(guid_list))
         if(len(guid_list)> 1):
             for i in range(len(guid_list)):
                 #if(guid_list[i]=="guid"):
                 if(re.search('guid', guid_list[i])):
                     s='guid_'+guid_list[i+1][1:-2]
-                    print(s)
-                    l.append(s)
+                    print("S: ", s)
+                    # CHECKS TO MAKE SURE THERE ARE ONLY UNIQUE GUIDS IN THE LIST
+                    if s not in l:
+                        l.append(s)
+                        print("Current List: ", l)
                     s=''
-                    print(l)
+    print(l)
     return l
+
 
 def ProcessDuration(duration):
     # PROVIDE A DURATION IN 00:00:00 FORMAT AND RETURN TOTAL SECONDS
