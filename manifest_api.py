@@ -6022,7 +6022,7 @@ def ManifestNotification_CRON():
 
         # GETS CURRENT DATETIME IN UTC
         cur_UTC = datetime.now(tz=pytz.utc).replace(microsecond=0)
-        print("Current Date Time in GMT        : ", cur_UTC, type(cur_UTC))
+        # print("Current Date Time in GMT        : ", cur_UTC, type(cur_UTC))
 
         # STEP 1: GET CURRENT NOTIFICATIONS
         notifications_query = """
@@ -6053,28 +6053,28 @@ def ManifestNotification_CRON():
                 guid = n['cust_guid_device_id_notification']
             else:
                 guid = n['ta_guid_device_id_notification']
-            print(guid, type(guid))
+            # print(guid, type(guid))
             # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
             time_zone = n['time_zone']
-            print(time_zone, type(time_zone))
+            # print(time_zone, type(time_zone))
             start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
-            print("FUNCTION RETURNS: ", start_time)
+            # print("FUNCTION RETURNS: ", start_time)
 
             end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
-            print("FUNCTION RETURNS: ", end_time)
+            # print("FUNCTION RETURNS: ", end_time)
 
             # CALCULATE TIME DIFFERENCE VS UTC
-            print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+            # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
             if n['before_is_enable'].lower() == 'true':
-                print(n['before_is_enable'], n['before_time'], type(n['before_time']))
+                # print(n['before_is_enable'], n['before_time'], type(n['before_time']))
                 notification_time = start_time - timedelta(seconds=ProcessDuration(n['before_time']))
-                print("Notification Time: ", notification_time)
+                # print("Notification Time: ", notification_time)
                 notification_time_diff = cur_UTC - notification_time
-                print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                 if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                    print("\nBEFORE Notification Criteria met")
+                    # print("\nBEFORE Notification Criteria met")
                     for id in getGUID(guid):
                         #id = getGUID(n)
                             if (id != ''):
@@ -6089,7 +6089,7 @@ def ManifestNotification_CRON():
                 # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                 # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                 if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                    print("\nDURING Notification Criteria met")
+                    # print("\nDURING Notification Criteria met")
                     for id in getGUID(guid):
                         #id = getGUID(n)
                             if (id != ''):
@@ -6104,7 +6104,7 @@ def ManifestNotification_CRON():
                 # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                 # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                 if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                    print("\nAFTER Notification Criteria met")
+                    # print("\nAFTER Notification Criteria met")
                     for id in getGUID(guid):
                         #id = getGUID(n)
                             if (id != ''):
