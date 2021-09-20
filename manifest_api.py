@@ -5517,7 +5517,8 @@ def notify(msg,tag):
     wns_payload = {
 	    'aps':
 	        {
-	            'alert': msg
+	            'alert': msg,
+                'sound':'default'
 	        }
 	}
     hub.send_apple_notification(0, wns_payload,tag)
