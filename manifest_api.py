@@ -5993,178 +5993,178 @@ def GRATIS_History(user_id):
     finally:
         disconnect(conn)
 
-class GRATIS(Resource):
-    # GET ALL GRATIS INFOMATION GIVEN USER ID
-    def __call__(self):
-        print("In GRATIS SELF CALL")
+# class GRATIS(Resource):
+#     # GET ALL GRATIS INFOMATION GIVEN USER ID
+#     def __call__(self):
+#         print("In GRATIS SELF CALL")
 
-    def get(self, user_id):
-        print("In GRATIS")
-        response = {}
-        try:
+#     def get(self, user_id):
+#         print("In GRATIS")
+#         response = {}
+#         try:
 
-            conn = connect()
+#             conn = connect()
 
-            # Get all goals and routines of the user
-            GR_query = """
-                SELECT * 
-                FROM goals_routines
-                WHERE user_id = \'""" + user_id + """\' AND is_available = 'True' AND is_displayed_today = 'True';
-                """
-            # print(GR_query)
-            GR = execute(GR_query, 'get', conn)
-            # print(GR)
+#             # Get all goals and routines of the user
+#             GR_query = """
+#                 SELECT * 
+#                 FROM goals_routines
+#                 WHERE user_id = \'""" + user_id + """\' AND is_available = 'True' AND is_displayed_today = 'True';
+#                 """
+#             # print(GR_query)
+#             GR = execute(GR_query, 'get', conn)
+#             # print(GR)
 
-            # print("Number of Goals and Routines: ", len(GR['result']))
+#             # print("Number of Goals and Routines: ", len(GR['result']))
 
-            for i in range(len(GR['result'])):
-                gr_id = GR['result'][i]['gr_unique_id']
-                # print(gr_id)
+#             for i in range(len(GR['result'])):
+#                 gr_id = GR['result'][i]['gr_unique_id']
+#                 # print(gr_id)
 
-                # Get all Actions and Tasks for a specific GR
-                AT_query = """
-                    SELECT * 
-                    FROM actions_tasks 
-                    WHERE goal_routine_id = \'""" + gr_id + """\';
-                    """
+#                 # Get all Actions and Tasks for a specific GR
+#                 AT_query = """
+#                     SELECT * 
+#                     FROM actions_tasks 
+#                     WHERE goal_routine_id = \'""" + gr_id + """\';
+#                     """
 
-                # print(AT_query)
-                AT = execute(AT_query, 'get', conn)
-                # print(AT)
+#                 # print(AT_query)
+#                 AT = execute(AT_query, 'get', conn)
+#                 # print(AT)
 
-                if len(AT['result']) > 0:
-                    GR['result'][i]['actions'] = list(AT['result'])
-                    for j in range(len(AT['result'])):
-                        at_id = AT['result'][j]['at_unique_id']
-                        # print(at_id)
+#                 if len(AT['result']) > 0:
+#                     GR['result'][i]['actions'] = list(AT['result'])
+#                     for j in range(len(AT['result'])):
+#                         at_id = AT['result'][j]['at_unique_id']
+#                         # print(at_id)
 
-                        # Get all Instructions and Steps for a specific GR
-                        IS_query = """
-                            SELECT * 
-                            FROM instructions_steps
-                            WHERE at_id = \'""" + at_id + """\'
-                            ORDER BY is_sequence;
-                            """
+#                         # Get all Instructions and Steps for a specific GR
+#                         IS_query = """
+#                             SELECT * 
+#                             FROM instructions_steps
+#                             WHERE at_id = \'""" + at_id + """\'
+#                             ORDER BY is_sequence;
+#                             """
 
-                        # print(IS_query)
-                        IS = execute(IS_query, 'get', conn)
-                        # print(IS)
+#                         # print(IS_query)
+#                         IS = execute(IS_query, 'get', conn)
+#                         # print(IS)
 
-                        if len(IS['result']) > 0:
-                            GR['result'][i]['actions'][j]['instructions'] = list(IS['result'])
+#                         if len(IS['result']) > 0:
+#                             GR['result'][i]['actions'][j]['instructions'] = list(IS['result'])
 
-            # print("Response from GRATIS: ", GR['result'])
-            # response = GR['result']
-            response = GR['result']
+#             # print("Response from GRATIS: ", GR['result'])
+#             # response = GR['result']
+#             response = GR['result']
 
-            return response
+#             return response
 
-        except:
-            raise BadRequest('GRATIS Request failed, please try again later.')
-        finally:
-            disconnect(conn)
+#         except:
+#             raise BadRequest('GRATIS Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
 
 
-class GRATIS_History(Resource):
-    # GET ALL GRATIS INFOMATION GIVEN USER ID MAPPED TO FIT INTO HISTORY TABLE
-    def __call__(self):
-        print("\nIn HISTORY SELF CALL")
+# class GRATIS_History(Resource):
+#     # GET ALL GRATIS INFOMATION GIVEN USER ID MAPPED TO FIT INTO HISTORY TABLE
+#     def __call__(self):
+#         print("\nIn HISTORY SELF CALL")
 
-    def get(self, user_id):
-        print("\nIn GRATIS_HISTORY")
-        response = {}
-        try:
+#     def get(self, user_id):
+#         print("\nIn GRATIS_HISTORY")
+#         response = {}
+#         try:
 
-            conn = connect()
+#             conn = connect()
 
-            # Get all goals and routines of the user
-            GR_query = """
-                SELECT
-                    gr_unique_id AS routine,
-                    gr_title AS title,	
-                    CASE
-                        WHEN is_complete = "True" THEN  "completed"
-                        WHEN is_in_progress = "True" THEN  "started"
-                        ELSE "not started"
-                    END AS status,
-                    is_available, 
-                    is_sublist_available,
-                    gr_photo AS photo, 
-                    gr_start_day_and_time AS start_day_and_time, 
-                    gr_end_day_and_time AS end_day_and_time
-                FROM manifest.goals_routines
-                WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
-                """
-            # print(GR_query)
-            GR = execute(GR_query, 'get', conn)
-            # print(GR)
+#             # Get all goals and routines of the user
+#             GR_query = """
+#                 SELECT
+#                     gr_unique_id AS routine,
+#                     gr_title AS title,	
+#                     CASE
+#                         WHEN is_complete = "True" THEN  "completed"
+#                         WHEN is_in_progress = "True" THEN  "started"
+#                         ELSE "not started"
+#                     END AS status,
+#                     is_available, 
+#                     is_sublist_available,
+#                     gr_photo AS photo, 
+#                     gr_start_day_and_time AS start_day_and_time, 
+#                     gr_end_day_and_time AS end_day_and_time
+#                 FROM manifest.goals_routines
+#                 WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
+#                 """
+#             # print(GR_query)
+#             GR = execute(GR_query, 'get', conn)
+#             # print(GR)
 
-            # print("Number of Goals and Routines: ", len(GR['result']))
+#             # print("Number of Goals and Routines: ", len(GR['result']))
 
-            for i in range(len(GR['result'])):
-                gr_id = GR['result'][i]['routine']
-                # print(gr_id)
+#             for i in range(len(GR['result'])):
+#                 gr_id = GR['result'][i]['routine']
+#                 # print(gr_id)
 
-                # Get all Actions and Tasks for a specific GR
-                AT_query = """
-                    SELECT
-                        at_unique_id AS action,
-                        at_title AS title,
-                        CASE
-                            WHEN is_complete = "True" THEN  "completed"
-                            WHEN is_in_progress = "True" THEN  "started"
-                            ELSE "not started"
-                        END AS status,
-                        is_available,
-                        is_sublist_available,
-                        at_photo AS photo
-                    FROM manifest.actions_tasks 
-                    WHERE goal_routine_id = \'""" + gr_id + """\';
-                    """
-                # print(AT_query)
-                AT = execute(AT_query, 'get', conn)
-                # print(AT)
+#                 # Get all Actions and Tasks for a specific GR
+#                 AT_query = """
+#                     SELECT
+#                         at_unique_id AS action,
+#                         at_title AS title,
+#                         CASE
+#                             WHEN is_complete = "True" THEN  "completed"
+#                             WHEN is_in_progress = "True" THEN  "started"
+#                             ELSE "not started"
+#                         END AS status,
+#                         is_available,
+#                         is_sublist_available,
+#                         at_photo AS photo
+#                     FROM manifest.actions_tasks 
+#                     WHERE goal_routine_id = \'""" + gr_id + """\';
+#                     """
+#                 # print(AT_query)
+#                 AT = execute(AT_query, 'get', conn)
+#                 # print(AT)
 
-                if len(AT['result']) > 0:
-                    GR['result'][i]['actions'] = list(AT['result'])
-                    for j in range(len(AT['result'])):
-                        at_id = AT['result'][j]['action']
-                        # print(at_id)
+#                 if len(AT['result']) > 0:
+#                     GR['result'][i]['actions'] = list(AT['result'])
+#                     for j in range(len(AT['result'])):
+#                         at_id = AT['result'][j]['action']
+#                         # print(at_id)
 
-                        # Get all Instructions and Steps for a specific GR
-                        IS_query = """
-                            SELECT
-                                is_unique_id AS instruction, 
-                                is_title AS title,
-                                is_sequence, 
-                                is_available,
-                                CASE
-                                    WHEN is_complete = "True" THEN  "completed"
-                                    WHEN is_in_progress = "True" THEN  "started"
-                                    ELSE "not started"
-                                END AS status,
-                                is_photo AS photo
-                            FROM manifest.instructions_steps
-                            WHERE at_id = \'""" + at_id + """\'
-                            ORDER BY is_sequence;
-                            """
-                        # print(IS_query)
-                        IS = execute(IS_query, 'get', conn)
-                        # print(IS)
+#                         # Get all Instructions and Steps for a specific GR
+#                         IS_query = """
+#                             SELECT
+#                                 is_unique_id AS instruction, 
+#                                 is_title AS title,
+#                                 is_sequence, 
+#                                 is_available,
+#                                 CASE
+#                                     WHEN is_complete = "True" THEN  "completed"
+#                                     WHEN is_in_progress = "True" THEN  "started"
+#                                     ELSE "not started"
+#                                 END AS status,
+#                                 is_photo AS photo
+#                             FROM manifest.instructions_steps
+#                             WHERE at_id = \'""" + at_id + """\'
+#                             ORDER BY is_sequence;
+#                             """
+#                         # print(IS_query)
+#                         IS = execute(IS_query, 'get', conn)
+#                         # print(IS)
 
-                        if len(IS['result']) > 0:
-                            GR['result'][i]['actions'][j]['instructions'] = list(IS['result'])
+#                         if len(IS['result']) > 0:
+#                             GR['result'][i]['actions'][j]['instructions'] = list(IS['result'])
 
-            # print("Response from GRATIS_History: ", GR['result'])
-            # response = GR['result']
-            response = GR['result']
+#             # print("Response from GRATIS_History: ", GR['result'])
+#             # response = GR['result']
+#             response = GR['result']
 
-            return response
+#             return response
 
-        except:
-            raise BadRequest('GRATIS Request failed, please try again later.')
-        finally:
-            disconnect(conn)
+#         except:
+#             raise BadRequest('GRATIS Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
 
 
 # class GRATIS_Reset(Resource):
@@ -6237,7 +6237,8 @@ def ManifestHistory_CRON():
 
         for u in user_tz['result']:
             # GET TIME AND DATE FOR SPECIFIC USER
-            print("\nUser: ", u['user_unique_id'])
+            user = u['user_unique_id']
+            print("\nUser: ", user)
             # CURRENT DATETIME IN THE USER OR TAS TIMEZONE
             cur_datetime = datetime.now(pytz.timezone(u['time_zone']))
             print("Current datetime: ", cur_datetime, type(cur_datetime))
@@ -6269,7 +6270,7 @@ def ManifestHistory_CRON():
                 print("Date affected: ", date_affected)
 
                 # CAPTURE GRATIS SNAPSHOT
-                getGRATIS_History = GRATIS_History(u['user_unique_id'])
+                getGRATIS_History = GRATIS_History(user)
                 print("Return from GRATIS_History: ", getGRATIS_History)
 
 
@@ -6282,7 +6283,7 @@ def ManifestHistory_CRON():
                 history_query = """
                     SELECT id 
                     FROM manifest.history
-                    WHERE user_id = \'""" + u['user_unique_id'] + """\'
+                    WHERE user_id = \'""" + user + """\'
                         AND date_affected = \'""" + str(date_affected) + """\';
                     """
                 currentGR = execute(history_query, 'get', conn)
@@ -6301,7 +6302,7 @@ def ManifestHistory_CRON():
                     query = """
                         INSERT INTO manifest.history
                         SET id = \'""" + NewID + """\',
-                            user_id = \'""" + u['user_unique_id'] + """\',
+                            user_id = \'""" + user + """\',
                             date = \'""" + date + """\',
                             details = \'""" + str(json.dumps(getGRATIS_History)) + """\',
                             date_affected = \'""" + str(date_affected) + """\';
@@ -6318,7 +6319,7 @@ def ManifestHistory_CRON():
                     query = """
                         UPDATE manifest.history
                         SET id = \'""" + currentGR['result'][0]['id'] + """\',
-                            user_id = \'""" + u['user_unique_id'] + """\',
+                            user_id = \'""" + user + """\',
                             date = \'""" + date + """\',
                             details = \'""" + json.dumps(getGRATIS_History) + """\',
                             date_affected = \'""" + str(date_affected) + """\'
@@ -6333,10 +6334,10 @@ def ManifestHistory_CRON():
             
                 # STEP 3: RESET ALL CURRENT GRATIS
                 # print("RESET all GRATIS Info")
-                print("\nReset all Current GRATIS for user: ", u['user_unique_id'])
+                print("\nReset all Current GRATIS for user: ", user)
 
                 # GET CURRENT GRATIS
-                getGRATIS = GRATIS(u['user_unique_id'])
+                getGRATIS = GRATIS(user)
                 print(getGRATIS)
 
                 # FOR REFERENCE, THIS IS WHAT WAS RETURNED FROM GRATIS_History - DOESN'T HAVE REPEAT INFO
@@ -6544,7 +6545,8 @@ class ManifestHistory_CLASS(Resource):
 
             for u in user_tz['result']:
                 # GET TIME AND DATE FOR SPECIFIC USER
-                print("\nUser: ", u['user_unique_id'])
+                user = u['user_unique_id']
+                print("\nUser: ", user)
                 # CURRENT DATETIME IN THE USER OR TAS TIMEZONE
                 cur_datetime = datetime.now(pytz.timezone(u['time_zone']))
                 print("Current datetime: ", cur_datetime, type(cur_datetime))
@@ -6576,7 +6578,7 @@ class ManifestHistory_CLASS(Resource):
                     print("Date affected: ", date_affected)
 
                     # CAPTURE GRATIS SNAPSHOT
-                    getGRATIS_History = GRATIS_History.get(self, u['user_unique_id'])
+                    getGRATIS_History = GRATIS_History(user)
                     print("Return from GRATIS_History: ", getGRATIS_History)
 
 
@@ -6589,7 +6591,7 @@ class ManifestHistory_CLASS(Resource):
                     history_query = """
                         SELECT id 
                         FROM manifest.history
-                        WHERE user_id = \'""" + u['user_unique_id'] + """\'
+                        WHERE user_id = \'""" + user + """\'
                           AND date_affected = \'""" + str(date_affected) + """\';
                         """
                     currentGR = execute(history_query, 'get', conn)
@@ -6608,7 +6610,7 @@ class ManifestHistory_CLASS(Resource):
                         query = """
                             INSERT INTO manifest.history
                             SET id = \'""" + NewID + """\',
-                                user_id = \'""" + u['user_unique_id'] + """\',
+                                user_id = \'""" + user + """\',
                                 date = \'""" + date + """\',
                                 details = \'""" + str(json.dumps(getGRATIS_History)) + """\',
                                 date_affected = \'""" + str(date_affected) + """\';
@@ -6625,7 +6627,7 @@ class ManifestHistory_CLASS(Resource):
                         query = """
                             UPDATE manifest.history
                             SET id = \'""" + currentGR['result'][0]['id'] + """\',
-                                user_id = \'""" + u['user_unique_id'] + """\',
+                                user_id = \'""" + user + """\',
                                 date = \'""" + date + """\',
                                 details = \'""" + json.dumps(getGRATIS_History) + """\',
                                 date_affected = \'""" + str(date_affected) + """\'
@@ -6640,10 +6642,10 @@ class ManifestHistory_CLASS(Resource):
                 
                     # STEP 3: RESET ALL CURRENT GRATIS
                     # print("RESET all GRATIS Info")
-                    print("\nReset all Current GRATIS for user: ", u['user_unique_id'])
+                    print("\nReset all Current GRATIS for user: ", user)
 
                     # GET CURRENT GRATIS
-                    getGRATIS = GRATIS.get(self, u['user_unique_id'])
+                    getGRATIS = GRATIS(user)
                     print(getGRATIS)
 
                     # FOR REFERENCE, THIS IS WHAT WAS RETURNED FROM GRATIS_History - DOESN'T HAVE REPEAT INFO
@@ -8714,8 +8716,8 @@ api.add_resource(TodayGR, '/api/v2/todayGR')
 
 api.add_resource(ManifestNotification_CLASS, '/api/v2/ManifestNotification_CLASS')
 api.add_resource(ManifestHistory_CLASS, '/api/v2/ManifestHistory_CLASS')
-api.add_resource(GRATIS, '/api/v2/GRATIS/<string:user_id>')
-api.add_resource(GRATIS_History, '/api/v2/GRATIS_History/<string:user_id>')
+# api.add_resource(GRATIS, '/api/v2/GRATIS/<string:user_id>')
+# api.add_resource(GRATIS_History, '/api/v2/GRATIS_History/<string:user_id>')
 
 
 api.add_resource(GetNotifications, '/api/v2/getNotifications')  # working
