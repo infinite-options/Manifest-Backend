@@ -6095,7 +6095,7 @@ class ManifestHistory_CLASS(Resource):
                 print("Current date in ", date_format, ": ", date, type(date))
 
                 # THRESHOLD TIME
-                threshold_time = datetime(2000, 1, 1, 7, 0, 0, 0).time()
+                threshold_time = datetime(2000, 1, 1, 8, 0, 0, 0).time()
                 print("Threshold time:   ", threshold_time, type(threshold_time))
 
 
@@ -6169,15 +6169,10 @@ class ManifestHistory_CLASS(Resource):
                         historyUpdate = execute(query, 'post', conn)
                         print(historyUpdate)
 
-
                 
                     # STEP 3: RESET ALL CURRENT GRATIS
-                    # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                    # print("RESET all GRATIS Info")
                     print("\nReset all Current GRATIS for user: ", u['user_unique_id'])
-
-                    # print("Current Date from above: ", cur_date)
-                    # current_week_day = cur_date.strftime('%A').lower()
-                    # print("Current Weekday: ", current_week_day)
 
                     # GET CURRENT GRATIS
                     getGRATIS = GRATIS.get(self, u['user_unique_id'])
@@ -6195,15 +6190,7 @@ class ManifestHistory_CLASS(Resource):
                     for goal in getGRATIS:
                         print("\n", goal['gr_unique_id'])
                         
-                        # NOT SURE I NEED ANY OF THESE GETS OR PRINTS
-                        # # RESET VARIABLES 
-                        # is_displayed_today = 'False'
-                        # print("Reset is_displayed_today to false: ", is_displayed_today)
-                        # repeat_ends_on = (datetime.min).date()
-                        # print("Repeat Ends On: ", repeat_ends_on)
-
-
-                        # # GET INFO FROM getGRATIS
+                        # GET INFO FROM getGRATIS
                         repeat = goal['repeat']
                         print("\nRepeat:        ", repeat)
                         repeat_type = goal['repeat_type']
@@ -6233,54 +6220,6 @@ class ManifestHistory_CLASS(Resource):
 
                         
 
-                        
-                        # NO LONGER HAVE WEEK, MONTH OR YEAR REPEAT FUNCTIONALITY.  KEEP THIS CODE BECAUSE IT WORKED BEFORE
-                        # week_days_unsorted = []
-                        # occurence_dates = []
-                        # # print(1)
-
-                        # # SORT THROUGH REPEAT WEEKDAYS TO SEE WHICH ARE TRUE
-                        # for key in repeat_week_days.keys():
-                        #     print("Key = ", key)
-                        #     if repeat_week_days[key].lower() == 'true':
-                        #         if key.lower() == "monday":
-                        #             week_days_unsorted.append(1)
-                        #         if key.lower() == "tuesday":
-                        #             week_days_unsorted.append(2)
-                        #         if key.lower() == "wednesday":
-                        #             week_days_unsorted.append(3)
-                        #         if key.lower() == "thursday":
-                        #             week_days_unsorted.append(4)
-                        #         if key.lower() == "friday":
-                        #             week_days_unsorted.append(5)
-                        #         if key.lower() == "saturday":
-                        #             week_days_unsorted.append(6)
-                        #         if key.lower() == "sunday":
-                        #             week_days_unsorted.append(7)
-                        # week_days = sorted(week_days_unsorted)
-                        # print("Repeat Days: ", week_days)
-                        
-
-                        # print(current_week_day)
-                        # if current_week_day == "monday":
-                        #     current_week_day = 1
-                        # if current_week_day == "tuesday":
-                        #     current_week_day = 2
-                        # if current_week_day == "wednesday":
-                        #     current_week_day = 3
-                        # if current_week_day == "thursday":
-                        #     current_week_day = 4
-                        # if current_week_day == "friday":
-                        #     current_week_day = 5
-                        # if current_week_day == "saturday":
-                        #     current_week_day = 6
-                        # if current_week_day == "sunday":
-                        #     current_week_day = 7
-                        # print(current_week_day)
-
-                        # print("Easier option? Just shifted by 1 day")
-                        # print(cur_date.weekday())
-
                         # IF NO REPEAT, IS_DISPLAYED_TODAY IS TRUE ONLY IF CURRENT DATE = START DATE
                         if repeat.lower() == 'false':
                             is_displayed_today = (start_date == cur_date)
@@ -6307,70 +6246,7 @@ class ManifestHistory_CLASS(Resource):
                                         #     is_displayed_today = 'True'
                                         #     print("Is_Displayed_Today: ", is_displayed_today)
 
-                                    # NO LONGER HAVE WEEK, MONTH OR YEAR REPEAT FUNCTIONALITY.  KEEP THIS CODE BECAUSE IT WORKED BEFORE
-                                    # elif goal['repeat_frequency'].lower() == 'week':
-                                    #     # print("in if if elif")
-                                    #     numberOfWeek = 0
-
-                                    #     init_date = start_date
-                                    #     start_day = init_date.isoweekday()
-                                    #     # print("Weekly")
-                                    #     result = []
-                                    #     for x in week_days:
-                                    #         if x < start_day:
-                                    #             result.append(x)
-                                    #     new_week = []
-                                    #     if len(result) > 0:
-                                    #         new_week = week_days[len(result):]
-                                    #         for day in result:
-                                    #             new_week.append(day)
-                                    #         week_days = new_week
-
-                                    #     for i in range(goal['repeat_occurences']):
-                                    #         if i < len(week_days):
-                                    #             dow = week_days[i]
-                                    #         if i >= len(week_days):
-                                    #             numberOfWeek = math.floor(
-                                    #                 i / len(week_days))
-                                    #             dow = week_days[i % len(week_days)]
-
-                                    #         new_date = init_date
-                                    #         today = new_date.isoweekday()
-                                    #         day_i_need = dow
-                                    #         if today <= day_i_need:
-                                    #             days = day_i_need - today
-                                    #             nextDayOfTheWeek = new_date + timedelta(days=days)
-                                    #         else:
-                                    #             new_date = new_date + relativedelta(weeks=1)
-                                    #             days = day_i_need - today
-                                    #             nextDayOfTheWeek = new_date + timedelta(days=-days)
-                                    #         add_weeks = numberOfWeek * int(goal['repeat_every'])
-                                    #         date = nextDayOfTheWeek + relativedelta(weeks=add_weeks)
-                                    #         occurence_dates.append(date)
-                                    #     # print("current", currentDate)
-                                    #     # print(occurence_dates)
-                                    #     if cur_date in occurence_dates:
-                                    #         is_displayed_today = True
-                                    #     # print(goal['gr_title'], is_displayed_today)
-                                    #     # print("P")
-                                        
-                                    # elif goal['repeat_frequency'].lower() == 'month':
-                                    #     # print("in if elif month")
-                                    #     # print("month")
-                                    #     repeat_occurences = goal['repeat_occurences'] - 1
-                                    #     repeat_every = goal['repeat_every']
-                                    #     end_month = int(
-                                    #         repeat_occurences) * int(repeat_every)
-                                    #     repeat_ends_on = start_date + relativedelta(months=end_month)
-                                    #     # print(repeat_ends_on)
-
-                                    # elif goal['repeat_frequency'].lower() == 'year':
-                                    #     # print("year")
-                                    #     repeat_occurences = goal['repeat_occurences']
-                                    #     repeat_every = goal['repeat_every']
-                                    #     end_year = int(repeat_occurences) * int(repeat_every)
-                                    #     repeat_ends_on = start_date + relativedelta(years=end_year)
-                                    #     # print(repeat_ends_on)
+                                    
 
                                 # IF REPEAT NEVER ENDS
                                 elif repeat_type.lower() == 'never':
@@ -6406,49 +6282,6 @@ class ManifestHistory_CLASS(Resource):
                                     is_displayed_today = 'True'
                                     print("Is_Displayed_Today: ", is_displayed_today)
 
-                            
-                            # NO LONGER HAVE WEEK, MONTH OR YEAR REPEAT FUNCTIONALITY.  KEEP THIS CODE BECAUSE IT WORKED BEFORE
-                            # CHECK TO MAKE SURE CURRENT DATE IS BEFORE REPEAT END ON DATE
-                            # if cur_date <= repeat_ends_on:
-                            #     repeat_every = int(goal['repeat_every'])
-                            #     # print("\nRepeat Every: ", repeat_every)
-                            #     # print("Repeat Frequency: ", goal['repeat_frequency'])
-                            #     if goal['repeat_frequency'].lower() == 'day':
-                            #         epoch = dt.datetime.utcfromtimestamp(0).date()
-                            #         current_time = (
-                            #             cur_date - epoch).total_seconds() * 1000.0
-                            #         # print("Current time: ", current_time)
-                            #         start_time = (
-                            #             start_date - epoch).total_seconds() * 1000.0
-                            #         # print("Start time: ", start_time)
-                            #         # THIS STATEMENT DETERMINES IF IS_DISPLAYED IS TRUE OR FALSE
-                            #         is_displayed_today = (math.floor(
-                            #             (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
-                            #         # print("is_displayed_today: ", is_displayed_today)
-
-                            #         # print(goal['gr_title'], is_displayed_today)
-
-                            #     if goal['repeat_frequency'].lower() == 'week':
-                            #         if current_week_day in week_days:
-                            #             epoch = dt.datetime.utcfromtimestamp(0).date()
-                            #             current_time = (
-                            #                 cur_date - epoch).total_seconds() * 1000.0
-                            #             start_time = (
-                            #                 start_date - epoch).total_seconds() * 1000.0
-                            #             is_displayed_today = (math.floor(
-                            #                 (current_time - start_time)/(7*24*3600*1000)) % repeat_every) == 0
-                                    
-                            #     if goal['repeat_frequency'].lower() == 'month':
-                            #         is_displayed_today = currentDate.day == start_date.day and (
-                            #             (currentDate.year - start_date.year) * 12 + currentDate.month - start_date.month) % repeat_every == 0
-                                    
-                            #         # print(goal['gr_title'], is_displayed_today)
-
-                            #     if goal['repeat_frequency'].lower() == 'year':
-                            #         is_displayed_today = currentDate.day == start_date.day and currentDate.month == start_date.month and (
-                            #             currentDate.year - start_date.year) % repeat_every == 0
-                                    
-                                    # print(goal['gr_title'], is_displayed_today)
 
 
                         # UPDATE GRATIS
@@ -6513,59 +6346,18 @@ class ManifestHistory_CLASS(Resource):
                                 print(updateIS)
                         print("finished Reset for Goal: ", goal['gr_unique_id'] )     
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   
                 else:
                     # TIME IS AFTER THRESHOLD AND DATE AFFECTED IS CURRENT DATE
                     date_affected = cur_datetime.date()
 
 
             response = user_tz
-            
-
-            # CAPTURE GRATIS SNAPSHOT
-
-            # DETERMINE DATE AFFECTED
-
-            # STORE SNAPSHOT
         
             return response, 200
         except:
             raise BadRequest('Request failed, please try again later.')
         finally:
             disconnect(conn)
-
-
-
-        
 
 
 
