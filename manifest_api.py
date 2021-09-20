@@ -7065,737 +7065,737 @@ def ManifestGRATIS_CRON():
 
             
 
-class ChangeHistory(Resource):
-    def __call__(self):
-        print("In ChangeHistory Call")
+# class ChangeHistory(Resource):
+#     def __call__(self):
+#         print("In ChangeHistory Call")
 
-    def post(self, user_id):
+#     def post(self, user_id):
 
-        print("in Change History")
-        from datetime import datetime
-        from pytz import timezone
-        import pytz
+#         print("in Change History")
+#         from datetime import datetime
+#         from pytz import timezone
+#         import pytz
 
-        response = {}
-        try:
-            conn = connect()
+#         response = {}
+#         try:
+#             conn = connect()
 
-            # MAY NOT NEED ANY OF THIS SINCE IT HAPPENS IN TODAYGOALSROUTINE
-            # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
-            # NewID = NewIDresponse['result'][0]['new_id']
-            date_format = '%Y-%m-%d %H:%M:%S'
-            current = datetime.now(tz=pytz.utc)
-            print("\nUTC Time is: ", current, type (current))
-            current = current.astimezone(timezone('US/Pacific'))
-            print("PST Time is: ", current, type (current))
-
-
+#             # MAY NOT NEED ANY OF THIS SINCE IT HAPPENS IN TODAYGOALSROUTINE
+#             # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+#             # NewID = NewIDresponse['result'][0]['new_id']
+#             date_format = '%Y-%m-%d %H:%M:%S'
+#             current = datetime.now(tz=pytz.utc)
+#             print("\nUTC Time is: ", current, type (current))
+#             current = current.astimezone(timezone('US/Pacific'))
+#             print("PST Time is: ", current, type (current))
 
 
 
 
-            date = current.strftime(date_format)
-            print("\nDate Time Stamp: ", date)
 
-            # THESE TWO STATEMENTS ARE IDENTICAL
-            current_time = current.strftime("%H:%M:%S")
-            print("Time Stamp: ", current_time)
-            current_time = datetime.strptime(current_time, "%H:%M:%S").time()
-            print("Time Stamp: ", current_time)
 
-            # SET START AND END TIMES TO MIDNIGHT TO 1AM
-            start = dt.time(0, 0, 0)
-            print("Start time: ", start)
-            end = dt.time(0, 59, 59)
-            print("End time: ", end)
+#             date = current.strftime(date_format)
+#             print("\nDate Time Stamp: ", date)
 
-            # DETERMINE DATE AFFECTED
-            # IF CURRENT TIME IS AFTER START AND END THEN IT IS TODAY
-            if current_time > start and current_time > end:
-                date_affected = current.date()
-            # IF CURRENT TIME IS AFTER START AND BEFORE END THEN IT IS YESTERDAY
-            else:
-                print("\nin else")
-                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                print("Current date: ", current, type(current))
-                date_affected = current + timedelta(days=-1)
-                date_affected = date_affected.date()
-            print("Date Affected: ", date_affected)
+#             # THESE TWO STATEMENTS ARE IDENTICAL
+#             current_time = current.strftime("%H:%M:%S")
+#             print("Time Stamp: ", current_time)
+#             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
+#             print("Time Stamp: ", current_time)
 
-            currentDate = (dt.datetime.now().date())
-            print("Current Date: ", currentDate)
-            current_week_day = currentDate.strftime('%A').lower()
-            print("Current Weekday: ", current_week_day)
+#             # SET START AND END TIMES TO MIDNIGHT TO 1AM
+#             start = dt.time(0, 0, 0)
+#             print("Start time: ", start)
+#             end = dt.time(0, 59, 59)
+#             print("End time: ", end)
 
-            # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
-            print("\nbefore Function call")
-            TodayGoalsRoutines.post(self, user_id)
-            print("after Function call")
+#             # DETERMINE DATE AFFECTED
+#             # IF CURRENT TIME IS AFTER START AND END THEN IT IS TODAY
+#             if current_time > start and current_time > end:
+#                 date_affected = current.date()
+#             # IF CURRENT TIME IS AFTER START AND BEFORE END THEN IT IS YESTERDAY
+#             else:
+#                 print("\nin else")
+#                 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+#                 print("Current date: ", current, type(current))
+#                 date_affected = current + timedelta(days=-1)
+#                 date_affected = date_affected.date()
+#             print("Date Affected: ", date_affected)
 
-            goals = execute(
-                """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
+#             currentDate = (dt.datetime.now().date())
+#             print("Current Date: ", currentDate)
+#             current_week_day = currentDate.strftime('%A').lower()
+#             print("Current Weekday: ", current_week_day)
 
-            print("Before For Loop")
-            for goal in goals['result']:
-                print("\nGoal/Routine is: ", goal)
-                is_displayed_today = 'False'
-                print("Not sure why we set is_displayed today to False: ", is_displayed_today)
-                datetime_str = goal['gr_start_day_and_time']
-                print(datetime_str)
-                datetime_str = datetime_str.replace(",", "")
-                print(datetime_str,type(datetime_str))
+#             # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
+#             print("\nbefore Function call")
+#             TodayGoalsRoutines.post(self, user_id)
+#             print("after Function call")
+
+#             goals = execute(
+#                 """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
+
+#             print("Before For Loop")
+#             for goal in goals['result']:
+#                 print("\nGoal/Routine is: ", goal)
+#                 is_displayed_today = 'False'
+#                 print("Not sure why we set is_displayed today to False: ", is_displayed_today)
+#                 datetime_str = goal['gr_start_day_and_time']
+#                 print(datetime_str)
+#                 datetime_str = datetime_str.replace(",", "")
+#                 print(datetime_str,type(datetime_str))
                 
-                start_date = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                print(start_date)
-                repeat_week_days = json.loads(goal['repeat_week_days'])
-                print(repeat_week_days)
-                repeat_ends_on = (datetime.min).date()
-                print(repeat_ends_on)
+#                 start_date = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                 print(start_date)
+#                 repeat_week_days = json.loads(goal['repeat_week_days'])
+#                 print(repeat_week_days)
+#                 repeat_ends_on = (datetime.min).date()
+#                 print(repeat_ends_on)
 
-                week_days_unsorted = []
-                occurence_dates = []
-                print(1)
+#                 week_days_unsorted = []
+#                 occurence_dates = []
+#                 print(1)
 
-                for key in repeat_week_days.keys():
-                    print(key)
-                    if repeat_week_days[key].lower() == 'true':
-                        if key.lower() == "monday":
-                            week_days_unsorted.append(1)
-                        if key.lower() == "tuesday":
-                            week_days_unsorted.append(2)
-                        if key.lower() == "wednesday":
-                            week_days_unsorted.append(3)
-                        if key.lower() == "thursday":
-                            week_days_unsorted.append(4)
-                        if key.lower() == "friday":
-                            week_days_unsorted.append(5)
-                        if key.lower() == "saturday":
-                            week_days_unsorted.append(6)
-                        if key.lower() == "sunday":
-                            week_days_unsorted.append(7)
-                week_days = sorted(week_days_unsorted)
-                print("Repeat Days: ", week_days)
+#                 for key in repeat_week_days.keys():
+#                     print(key)
+#                     if repeat_week_days[key].lower() == 'true':
+#                         if key.lower() == "monday":
+#                             week_days_unsorted.append(1)
+#                         if key.lower() == "tuesday":
+#                             week_days_unsorted.append(2)
+#                         if key.lower() == "wednesday":
+#                             week_days_unsorted.append(3)
+#                         if key.lower() == "thursday":
+#                             week_days_unsorted.append(4)
+#                         if key.lower() == "friday":
+#                             week_days_unsorted.append(5)
+#                         if key.lower() == "saturday":
+#                             week_days_unsorted.append(6)
+#                         if key.lower() == "sunday":
+#                             week_days_unsorted.append(7)
+#                 week_days = sorted(week_days_unsorted)
+#                 print("Repeat Days: ", week_days)
                 
 
-                print(current_week_day)
-                if current_week_day == "monday":
-                    current_week_day = 1
-                if current_week_day == "tuesday":
-                    current_week_day = 2
-                if current_week_day == "wednesday":
-                    current_week_day = 3
-                if current_week_day == "thursday":
-                    current_week_day = 4
-                if current_week_day == "friday":
-                    current_week_day = 5
-                if current_week_day == "saturday":
-                    current_week_day = 6
-                if current_week_day == "sunday":
-                    current_week_day = 7
-                print(current_week_day)
-                print(3)
+#                 print(current_week_day)
+#                 if current_week_day == "monday":
+#                     current_week_day = 1
+#                 if current_week_day == "tuesday":
+#                     current_week_day = 2
+#                 if current_week_day == "wednesday":
+#                     current_week_day = 3
+#                 if current_week_day == "thursday":
+#                     current_week_day = 4
+#                 if current_week_day == "friday":
+#                     current_week_day = 5
+#                 if current_week_day == "saturday":
+#                     current_week_day = 6
+#                 if current_week_day == "sunday":
+#                     current_week_day = 7
+#                 print(current_week_day)
+#                 print(3)
 
-                if goal['repeat'].lower() == 'false':
-                    epoch = dt.datetime.utcfromtimestamp(0).date()
-                    current_time = (
-                        currentDate - epoch).total_seconds() * 1000.0
-                    start_time = (start_date - epoch).total_seconds() * 1000.0
-                    is_displayed_today = (current_time - start_time) == 0
-                    print(goal['gr_title'], is_displayed_today)
-                    # execute("""UPDATE goals_routines
-                    #             SET is_in_progress = \'""" +'False'+"""\'
-                    #             , is_complete = \'""" +'False'+"""\'
-                    #             , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
-                    #             WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                 if goal['repeat'].lower() == 'false':
+#                     epoch = dt.datetime.utcfromtimestamp(0).date()
+#                     current_time = (
+#                         currentDate - epoch).total_seconds() * 1000.0
+#                     start_time = (start_date - epoch).total_seconds() * 1000.0
+#                     is_displayed_today = (current_time - start_time) == 0
+#                     print(goal['gr_title'], is_displayed_today)
+#                     # execute("""UPDATE goals_routines
+#                     #             SET is_in_progress = \'""" +'False'+"""\'
+#                     #             , is_complete = \'""" +'False'+"""\'
+#                     #             , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+#                     #             WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                    # execute("""UPDATE actions_tasks
-                    #             SET is_in_progress = \'""" +'False'+"""\'
-                    #             , is_complete = \'""" +'False'+"""\'
-                    #             WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                     # execute("""UPDATE actions_tasks
+#                     #             SET is_in_progress = \'""" +'False'+"""\'
+#                     #             , is_complete = \'""" +'False'+"""\'
+#                     #             WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                    # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
-                    # if len(actions_task_response['result']) > 0:
-                    #     for i in rangelen(actions_task_response['result']):
-                    #         execute("""UPDATE instructions_steps
-                    #                     SET is_in_progress = \'""" +'False'+"""\'
-                    #                     , is_complete = \'""" +'False'+"""\'
-                    #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
-                else:
-                    print(4)
-                    print(currentDate)
-                    print(start_date)
-                    if currentDate >= start_date:
-                        print("In if")
-                        print("In if repeat type", goal['repeat_type'])
-                        print("In if repeat frequency", goal['repeat_frequency'])
+#                     # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+#                     # if len(actions_task_response['result']) > 0:
+#                     #     for i in rangelen(actions_task_response['result']):
+#                     #         execute("""UPDATE instructions_steps
+#                     #                     SET is_in_progress = \'""" +'False'+"""\'
+#                     #                     , is_complete = \'""" +'False'+"""\'
+#                     #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+#                 else:
+#                     print(4)
+#                     print(currentDate)
+#                     print(start_date)
+#                     if currentDate >= start_date:
+#                         print("In if")
+#                         print("In if repeat type", goal['repeat_type'])
+#                         print("In if repeat frequency", goal['repeat_frequency'])
 
-                        # IF REPEAT ENDS AFTER
-                        # if goal['repeat_type'].lower() == 'after':
-                        if goal['repeat_type'].lower() == 'occur':
-                            print("In if after")
-                            if goal['repeat_frequency'].lower() == 'day':
-                                print("In if if if")
-                                print("day")
-                                repeat_occurences = goal['repeat_occurences'] - 1
-                                repeat_every = goal['repeat_every']
-                                number_days = int(
-                                    repeat_occurences) * int(repeat_every)
-                                repeat_ends_on = start_date + \
-                                    timedelta(days=number_days)
-                                print(repeat_ends_on)
+#                         # IF REPEAT ENDS AFTER
+#                         # if goal['repeat_type'].lower() == 'after':
+#                         if goal['repeat_type'].lower() == 'occur':
+#                             print("In if after")
+#                             if goal['repeat_frequency'].lower() == 'day':
+#                                 print("In if if if")
+#                                 print("day")
+#                                 repeat_occurences = goal['repeat_occurences'] - 1
+#                                 repeat_every = goal['repeat_every']
+#                                 number_days = int(
+#                                     repeat_occurences) * int(repeat_every)
+#                                 repeat_ends_on = start_date + \
+#                                     timedelta(days=number_days)
+#                                 print(repeat_ends_on)
 
-                            elif goal['repeat_frequency'].lower() == 'week':
-                                print("in if if elif")
-                                numberOfWeek = 0
+#                             elif goal['repeat_frequency'].lower() == 'week':
+#                                 print("in if if elif")
+#                                 numberOfWeek = 0
 
-                                init_date = start_date
-                                start_day = init_date.isoweekday()
-                                print("Weekly")
-                                result = []
-                                for x in week_days:
-                                    if x < start_day:
-                                        result.append(x)
-                                new_week = []
-                                if len(result) > 0:
-                                    new_week = week_days[len(result):]
-                                    for day in result:
-                                        new_week.append(day)
-                                    week_days = new_week
+#                                 init_date = start_date
+#                                 start_day = init_date.isoweekday()
+#                                 print("Weekly")
+#                                 result = []
+#                                 for x in week_days:
+#                                     if x < start_day:
+#                                         result.append(x)
+#                                 new_week = []
+#                                 if len(result) > 0:
+#                                     new_week = week_days[len(result):]
+#                                     for day in result:
+#                                         new_week.append(day)
+#                                     week_days = new_week
 
-                                for i in range(goal['repeat_occurences']):
-                                    if i < len(week_days):
-                                        dow = week_days[i]
-                                    if i >= len(week_days):
-                                        numberOfWeek = math.floor(
-                                            i / len(week_days))
-                                        dow = week_days[i % len(week_days)]
+#                                 for i in range(goal['repeat_occurences']):
+#                                     if i < len(week_days):
+#                                         dow = week_days[i]
+#                                     if i >= len(week_days):
+#                                         numberOfWeek = math.floor(
+#                                             i / len(week_days))
+#                                         dow = week_days[i % len(week_days)]
 
-                                    new_date = init_date
-                                    today = new_date.isoweekday()
-                                    day_i_need = dow
-                                    if today <= day_i_need:
-                                        days = day_i_need - today
-                                        nextDayOfTheWeek = new_date + \
-                                            timedelta(days=days)
-                                    else:
-                                        new_date = new_date + \
-                                            relativedelta(weeks=1)
-                                        days = day_i_need - today
-                                        nextDayOfTheWeek = new_date + \
-                                            timedelta(days=-days)
-                                    add_weeks = numberOfWeek * \
-                                        int(goal['repeat_every'])
-                                    date = nextDayOfTheWeek + \
-                                        relativedelta(weeks=add_weeks)
-                                    occurence_dates.append(date)
-                                print("current", currentDate)
-                                print(occurence_dates)
-                                if currentDate in occurence_dates:
-                                    is_displayed_today = True
-                                print(goal['gr_title'], is_displayed_today)
-                                print("P")
-                                # execute("""UPDATE goals_routines
-                                # SET is_in_progress = \'""" +'False'+"""\'
-                                # , is_complete = \'""" +'False'+"""\'
-                                # , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
-                                # WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                                     new_date = init_date
+#                                     today = new_date.isoweekday()
+#                                     day_i_need = dow
+#                                     if today <= day_i_need:
+#                                         days = day_i_need - today
+#                                         nextDayOfTheWeek = new_date + \
+#                                             timedelta(days=days)
+#                                     else:
+#                                         new_date = new_date + \
+#                                             relativedelta(weeks=1)
+#                                         days = day_i_need - today
+#                                         nextDayOfTheWeek = new_date + \
+#                                             timedelta(days=-days)
+#                                     add_weeks = numberOfWeek * \
+#                                         int(goal['repeat_every'])
+#                                     date = nextDayOfTheWeek + \
+#                                         relativedelta(weeks=add_weeks)
+#                                     occurence_dates.append(date)
+#                                 print("current", currentDate)
+#                                 print(occurence_dates)
+#                                 if currentDate in occurence_dates:
+#                                     is_displayed_today = True
+#                                 print(goal['gr_title'], is_displayed_today)
+#                                 print("P")
+#                                 # execute("""UPDATE goals_routines
+#                                 # SET is_in_progress = \'""" +'False'+"""\'
+#                                 # , is_complete = \'""" +'False'+"""\'
+#                                 # , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+#                                 # WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                                # execute("""UPDATE actions_tasks
-                                # SET is_in_progress = \'""" +'False'+"""\'
-                                # , is_complete = \'""" +'False'+"""\'
-                                # WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                                 # execute("""UPDATE actions_tasks
+#                                 # SET is_in_progress = \'""" +'False'+"""\'
+#                                 # , is_complete = \'""" +'False'+"""\'
+#                                 # WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                                # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
-                                # if len(actions_task_response['result']) > 0:
-                                #     for i in rangelen(actions_task_response['result']):
-                                #         execute("""UPDATE instructions_steps
-                                #                     SET is_in_progress = \'""" +'False'+"""\'
-                                #                     , is_complete = \'""" +'False'+"""\'
-                                #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+#                                 # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+#                                 # if len(actions_task_response['result']) > 0:
+#                                 #     for i in rangelen(actions_task_response['result']):
+#                                 #         execute("""UPDATE instructions_steps
+#                                 #                     SET is_in_progress = \'""" +'False'+"""\'
+#                                 #                     , is_complete = \'""" +'False'+"""\'
+#                                 #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
 
-                            elif goal['repeat_frequency'].lower() == 'month':
-                                print("in if elif month")
-                                print("month")
-                                repeat_occurences = goal['repeat_occurences'] - 1
-                                repeat_every = goal['repeat_every']
-                                end_month = int(
-                                    repeat_occurences) * int(repeat_every)
-                                repeat_ends_on = start_date + \
-                                    relativedelta(months=end_month)
-                                print(repeat_ends_on)
+#                             elif goal['repeat_frequency'].lower() == 'month':
+#                                 print("in if elif month")
+#                                 print("month")
+#                                 repeat_occurences = goal['repeat_occurences'] - 1
+#                                 repeat_every = goal['repeat_every']
+#                                 end_month = int(
+#                                     repeat_occurences) * int(repeat_every)
+#                                 repeat_ends_on = start_date + \
+#                                     relativedelta(months=end_month)
+#                                 print(repeat_ends_on)
 
-                            elif goal['repeat_frequency'].lower() == 'year':
-                                print("year")
-                                repeat_occurences = goal['repeat_occurences']
-                                repeat_every = goal['repeat_every']
-                                end_year = int(repeat_occurences) * \
-                                    int(repeat_every)
-                                repeat_ends_on = start_date + \
-                                    relativedelta(years=end_year)
-                                print(repeat_ends_on)
+#                             elif goal['repeat_frequency'].lower() == 'year':
+#                                 print("year")
+#                                 repeat_occurences = goal['repeat_occurences']
+#                                 repeat_every = goal['repeat_every']
+#                                 end_year = int(repeat_occurences) * \
+#                                     int(repeat_every)
+#                                 repeat_ends_on = start_date + \
+#                                     relativedelta(years=end_year)
+#                                 print(repeat_ends_on)
 
-                        # IF REPEAT NEVER ENDS
-                        elif goal['repeat_type'].lower() == 'never':
-                            print("In if never ")
-                            print("never")
-                            repeat_ends_on = currentDate
-                            print(goal['gr_title'], repeat_ends_on)
+#                         # IF REPEAT NEVER ENDS
+#                         elif goal['repeat_type'].lower() == 'never':
+#                             print("In if never ")
+#                             print("never")
+#                             repeat_ends_on = currentDate
+#                             print(goal['gr_title'], repeat_ends_on)
 
-                        # IF REPEAT ENDS ON A SPECIFIC DAY
-                        elif goal['repeat_type'].lower() == 'on':
-                            print("In if on ")
-                            print("in goal repeat ends on", goal['repeat_ends_on'])
-                            repeat_ends = goal['repeat_ends_on']
-                            print(repeat_ends)
-                            repeat_ends_on = repeat_ends[:24]
-                            print(repeat_ends_on)
-                            #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
-                            repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
+#                         # IF REPEAT ENDS ON A SPECIFIC DAY
+#                         elif goal['repeat_type'].lower() == 'on':
+#                             print("In if on ")
+#                             print("in goal repeat ends on", goal['repeat_ends_on'])
+#                             repeat_ends = goal['repeat_ends_on']
+#                             print(repeat_ends)
+#                             repeat_ends_on = repeat_ends[:24]
+#                             print(repeat_ends_on)
+#                             #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+#                             repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
 
-                    print("\nRepeat End on: ", repeat_ends_on)
-                    if currentDate <= repeat_ends_on:
-                        repeat_every = int(goal['repeat_every'])
-                        print("\nRepeat Every: ", repeat_every)
-                        print("Repeat Frequency: ", goal['repeat_frequency'])
-                        if goal['repeat_frequency'].lower() == 'day':
-                            epoch = dt.datetime.utcfromtimestamp(0).date()
-                            current_time = (
-                                currentDate - epoch).total_seconds() * 1000.0
-                            print("Current time: ", current_time)
-                            start_time = (
-                                start_date - epoch).total_seconds() * 1000.0
-                            print("Start time: ", start_time)
-                            # THIS STATEMENT DETERMINES IF IS_DISPLAYED IS TRUE OR FALSE
-                            is_displayed_today = (math.floor(
-                                (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
-                            print("is_displayed_today: ", is_displayed_today)
+#                     print("\nRepeat End on: ", repeat_ends_on)
+#                     if currentDate <= repeat_ends_on:
+#                         repeat_every = int(goal['repeat_every'])
+#                         print("\nRepeat Every: ", repeat_every)
+#                         print("Repeat Frequency: ", goal['repeat_frequency'])
+#                         if goal['repeat_frequency'].lower() == 'day':
+#                             epoch = dt.datetime.utcfromtimestamp(0).date()
+#                             current_time = (
+#                                 currentDate - epoch).total_seconds() * 1000.0
+#                             print("Current time: ", current_time)
+#                             start_time = (
+#                                 start_date - epoch).total_seconds() * 1000.0
+#                             print("Start time: ", start_time)
+#                             # THIS STATEMENT DETERMINES IF IS_DISPLAYED IS TRUE OR FALSE
+#                             is_displayed_today = (math.floor(
+#                                 (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
+#                             print("is_displayed_today: ", is_displayed_today)
 
-                            # execute("""UPDATE goals_routines
-                            #     SET is_in_progress = \'""" +'False'+"""\'
-                            #     , is_complete = \'""" +'False'+"""\'
-                            #     , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
-                            #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                             # execute("""UPDATE goals_routines
+#                             #     SET is_in_progress = \'""" +'False'+"""\'
+#                             #     , is_complete = \'""" +'False'+"""\'
+#                             #     , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+#                             #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                            # execute("""UPDATE actions_tasks
-                            #     SET is_in_progress = \'""" +'False'+"""\'
-                            #     , is_complete = \'""" +'False'+"""\'
-                            #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                             # execute("""UPDATE actions_tasks
+#                             #     SET is_in_progress = \'""" +'False'+"""\'
+#                             #     , is_complete = \'""" +'False'+"""\'
+#                             #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                            # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
-                            # if len(actions_task_response['result']) > 0:
-                            #     for i in rangelen(actions_task_response['result']):
-                            #         execute("""UPDATE instructions_steps
-                            #                     SET is_in_progress = \'""" +'False'+"""\'
-                            #                     , is_complete = \'""" +'False'+"""\'
-                            #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+#                             # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+#                             # if len(actions_task_response['result']) > 0:
+#                             #     for i in rangelen(actions_task_response['result']):
+#                             #         execute("""UPDATE instructions_steps
+#                             #                     SET is_in_progress = \'""" +'False'+"""\'
+#                             #                     , is_complete = \'""" +'False'+"""\'
+#                             #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
 
-                            print(goal['gr_title'], is_displayed_today)
+#                             print(goal['gr_title'], is_displayed_today)
 
-                        if goal['repeat_frequency'].lower() == 'week':
-                            if current_week_day in week_days:
-                                epoch = dt.datetime.utcfromtimestamp(0).date()
-                                current_time = (
-                                    currentDate - epoch).total_seconds() * 1000.0
-                                start_time = (
-                                    start_date - epoch).total_seconds() * 1000.0
-                                is_displayed_today = (math.floor(
-                                    (current_time - start_time)/(7*24*3600*1000)) % repeat_every) == 0
-                            # execute("""UPDATE goals_routines
-                            #             SET is_in_progress = \'""" +'False'+"""\'
-                            #             , is_complete = \'""" +'False'+"""\'
-                            #             , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
-                            #             WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                         if goal['repeat_frequency'].lower() == 'week':
+#                             if current_week_day in week_days:
+#                                 epoch = dt.datetime.utcfromtimestamp(0).date()
+#                                 current_time = (
+#                                     currentDate - epoch).total_seconds() * 1000.0
+#                                 start_time = (
+#                                     start_date - epoch).total_seconds() * 1000.0
+#                                 is_displayed_today = (math.floor(
+#                                     (current_time - start_time)/(7*24*3600*1000)) % repeat_every) == 0
+#                             # execute("""UPDATE goals_routines
+#                             #             SET is_in_progress = \'""" +'False'+"""\'
+#                             #             , is_complete = \'""" +'False'+"""\'
+#                             #             , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+#                             #             WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                            # execute("""UPDATE actions_tasks
-                            #     SET is_in_progress = \'""" +'False'+"""\'
-                            #     , is_complete = \'""" +'False'+"""\'
-                            #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
-                            # print(goal['gr_title'] , is_displayed_today)
-                            # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
-                            # if len(actions_task_response['result']) > 0:
-                            #     for i in rangelen(actions_task_response['result']):
-                            #         execute("""UPDATE instructions_steps
-                            #                     SET is_in_progress = \'""" +'False'+"""\'
-                            #                     , is_complete = \'""" +'False'+"""\'
-                            #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+#                             # execute("""UPDATE actions_tasks
+#                             #     SET is_in_progress = \'""" +'False'+"""\'
+#                             #     , is_complete = \'""" +'False'+"""\'
+#                             #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                             # print(goal['gr_title'] , is_displayed_today)
+#                             # actions_task_response = execute("""SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+#                             # if len(actions_task_response['result']) > 0:
+#                             #     for i in rangelen(actions_task_response['result']):
+#                             #         execute("""UPDATE instructions_steps
+#                             #                     SET is_in_progress = \'""" +'False'+"""\'
+#                             #                     , is_complete = \'""" +'False'+"""\'
+#                             #                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
 
-                        if goal['repeat_frequency'].lower() == 'month':
-                            is_displayed_today = currentDate.day == start_date.day and (
-                                (currentDate.year - start_date.year) * 12 + currentDate.month - start_date.month) % repeat_every == 0
-                            # execute("""UPDATE goals_routines
-                            #     SET is_in_progress = \'""" +'False'+"""\'
-                            #     , is_complete = \'""" +'False'+"""\'
-                            #     , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
-                            #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                         if goal['repeat_frequency'].lower() == 'month':
+#                             is_displayed_today = currentDate.day == start_date.day and (
+#                                 (currentDate.year - start_date.year) * 12 + currentDate.month - start_date.month) % repeat_every == 0
+#                             # execute("""UPDATE goals_routines
+#                             #     SET is_in_progress = \'""" +'False'+"""\'
+#                             #     , is_complete = \'""" +'False'+"""\'
+#                             #     , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+#                             #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                            # execute("""UPDATE actions_tasks
-                            #     SET is_in_progress = \'""" +'False'+"""\'
-                            #     , is_complete = \'""" +'False'+"""\'
-                            #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
-                            print(goal['gr_title'], is_displayed_today)
+#                             # execute("""UPDATE actions_tasks
+#                             #     SET is_in_progress = \'""" +'False'+"""\'
+#                             #     , is_complete = \'""" +'False'+"""\'
+#                             #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                             print(goal['gr_title'], is_displayed_today)
 
-                        if goal['repeat_frequency'].lower() == 'year':
-                            is_displayed_today = currentDate.day == start_date.day and currentDate.month == start_date.month and (
-                                currentDate.year - start_date.year) % repeat_every == 0
-                            # execute("""UPDATE goals_routines
-                            #     SET is_in_progress = \'""" +'False'+"""\'
-                            #     , is_complete = \'""" +'False'+"""\'
-                            #     , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
-                            #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                         if goal['repeat_frequency'].lower() == 'year':
+#                             is_displayed_today = currentDate.day == start_date.day and currentDate.month == start_date.month and (
+#                                 currentDate.year - start_date.year) % repeat_every == 0
+#                             # execute("""UPDATE goals_routines
+#                             #     SET is_in_progress = \'""" +'False'+"""\'
+#                             #     , is_complete = \'""" +'False'+"""\'
+#                             #     , is_displayed_today = \'""" +str(is_displayed_today).title()+"""\'
+#                             #     WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                            # execute("""UPDATE actions_tasks
-                            #     SET is_in_progress = \'""" +'False'+"""\'
-                            #     , is_complete = \'""" +'False'+"""\'
-                            #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
-                            print(goal['gr_title'], is_displayed_today)
+#                             # execute("""UPDATE actions_tasks
+#                             #     SET is_in_progress = \'""" +'False'+"""\'
+#                             #     , is_complete = \'""" +'False'+"""\'
+#                             #     WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                             print(goal['gr_title'], is_displayed_today)
 
-                    # if currentDate > repeat_ends_on:
-                    #     execute("""UPDATE goals_routines
-                    #             SET is_in_progress = \'""" +'False'+"""\'
-                    #             , is_complete = \'""" +'False'+"""\'
-                    #             , is_displayed_today = \'""" +'False'+"""\'
-                    #             WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
-                    #     execute("""UPDATE actions_tasks
-                    #             SET is_in_progress = \'""" +'False'+"""\'
-                    #             , is_complete = \'""" +'False'+"""\'
-                    #             WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
-                print("Pragya")
+#                     # if currentDate > repeat_ends_on:
+#                     #     execute("""UPDATE goals_routines
+#                     #             SET is_in_progress = \'""" +'False'+"""\'
+#                     #             , is_complete = \'""" +'False'+"""\'
+#                     #             , is_displayed_today = \'""" +'False'+"""\'
+#                     #             WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                     #     execute("""UPDATE actions_tasks
+#                     #             SET is_in_progress = \'""" +'False'+"""\'
+#                     #             , is_complete = \'""" +'False'+"""\'
+#                     #             WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                 print("Pragya")
                 
-                # TEMPORARILY COMMENT OUT TO SEE WHAT THE REST OF THE FUNCTION DOES
+#                 # TEMPORARILY COMMENT OUT TO SEE WHAT THE REST OF THE FUNCTION DOES
 
-                print("\nThe Bottom Line: ")
-                print(goal['gr_unique_id'])
-                print(goal['gr_title'])
-                print("Is Displayed Today: ", is_displayed_today)
-                print("************")
-                print(str(is_displayed_today).title())
+#                 print("\nThe Bottom Line: ")
+#                 print(goal['gr_unique_id'])
+#                 print(goal['gr_title'])
+#                 print("Is Displayed Today: ", is_displayed_today)
+#                 print("************")
+#                 print(str(is_displayed_today).title())
 
-                execute("""UPDATE goals_routines
-                                SET is_in_progress = \'""" + 'False'+"""\'
-                                , is_complete = \'""" + 'False'+"""\'
-                                , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
-                                WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                 execute("""UPDATE goals_routines
+#                                 SET is_in_progress = \'""" + 'False'+"""\'
+#                                 , is_complete = \'""" + 'False'+"""\'
+#                                 , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
+#                                 WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                execute("""UPDATE actions_tasks
-                            SET is_in_progress = \'""" + 'False'+"""\'
-                            , is_complete = \'""" + 'False'+"""\'
-                            WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                 execute("""UPDATE actions_tasks
+#                             SET is_in_progress = \'""" + 'False'+"""\'
+#                             , is_complete = \'""" + 'False'+"""\'
+#                             WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                actions_task_response = execute(
-                    """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
-                print("AT length: ", len(actions_task_response['result']))
-                if len(actions_task_response['result']) > 0:
-                    for i in range(len(actions_task_response['result'])):
-                        execute("""UPDATE instructions_steps
-                                    SET is_in_progress = \'""" + 'False'+"""\'
-                                    , is_complete = \'""" + 'False'+"""\'
-                                    WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+#                 actions_task_response = execute(
+#                     """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+#                 print("AT length: ", len(actions_task_response['result']))
+#                 if len(actions_task_response['result']) > 0:
+#                     for i in range(len(actions_task_response['result'])):
+#                         execute("""UPDATE instructions_steps
+#                                     SET is_in_progress = \'""" + 'False'+"""\'
+#                                     , is_complete = \'""" + 'False'+"""\'
+#                                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
 
-            response['message'] = 'successful'
+#             response['message'] = 'successful'
 
-            return response, 200
-        except:
-            raise BadRequest(
-                'Change History Request failed, please try again later.')
-        finally:
-            disconnect(conn)
+#             return response, 200
+#         except:
+#             raise BadRequest(
+#                 'Change History Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
 
-class ChangeHistory_old(Resource):
-    def post(self, user_id):
+# class ChangeHistory_old(Resource):
+#     def post(self, user_id):
 
-        print("in Change History")
-        from datetime import datetime
-        from pytz import timezone
-        import pytz
+#         print("in Change History")
+#         from datetime import datetime
+#         from pytz import timezone
+#         import pytz
 
-        response = {}
-        try:
-            conn = connect()
+#         response = {}
+#         try:
+#             conn = connect()
 
-            # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
-            # NewID = NewIDresponse['result'][0]['new_id']
-            date_format = '%Y-%m-%d %H:%M:%S'
-            current = datetime.now(tz=pytz.utc)
-            current = current.astimezone(timezone('US/Pacific'))
-            date = current.strftime(date_format)
-            current_time = current.strftime("%H:%M:%S")
-            print(current_time)
-            current_time = datetime.strptime(current_time, "%H:%M:%S").time()
-            print(current_time)
-            start = dt.time(0, 0, 0)
-            end = dt.time(0, 59, 59)
+#             # NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+#             # NewID = NewIDresponse['result'][0]['new_id']
+#             date_format = '%Y-%m-%d %H:%M:%S'
+#             current = datetime.now(tz=pytz.utc)
+#             current = current.astimezone(timezone('US/Pacific'))
+#             date = current.strftime(date_format)
+#             current_time = current.strftime("%H:%M:%S")
+#             print(current_time)
+#             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
+#             print(current_time)
+#             start = dt.time(0, 0, 0)
+#             end = dt.time(0, 59, 59)
 
-            if current_time > start and current_time > end:
-                date_affected = current.date()
-            else:
-                date_affected = current + timedelta(days=-1)
-                date_affected = date_affected.date()
+#             if current_time > start and current_time > end:
+#                 date_affected = current.date()
+#             else:
+#                 date_affected = current + timedelta(days=-1)
+#                 date_affected = date_affected.date()
 
-            currentDate = (dt.datetime.now().date())
-            current_week_day = currentDate.strftime('%A').lower()
+#             currentDate = (dt.datetime.now().date())
+#             current_week_day = currentDate.strftime('%A').lower()
 
-            # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
-            print("before Function call")
-            TodayGoalsRoutines.post(self, user_id)
-            print("after Function call")
+#             # PUT TODAYS GRATIS INFO INTO HISTORY TABLE
+#             print("before Function call")
+#             TodayGoalsRoutines.post(self, user_id)
+#             print("after Function call")
 
-            goals = execute(
-                """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
+#             goals = execute(
+#                 """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';""", 'get', conn)
 
             
 
-            print("Before For Loop")
-            for goal in goals['result']:
-                print(0)
-                print(goal)
-                is_displayed_today = 'False'
-                print(0.1)
-                datetime_str = goal['gr_start_day_and_time']
-                print(0.2)
-                print(datetime_str)
-                datetime_str = datetime_str.replace(",", "")
-                print(0.3)
-                print(datetime_str,type(datetime_str))
+#             print("Before For Loop")
+#             for goal in goals['result']:
+#                 print(0)
+#                 print(goal)
+#                 is_displayed_today = 'False'
+#                 print(0.1)
+#                 datetime_str = goal['gr_start_day_and_time']
+#                 print(0.2)
+#                 print(datetime_str)
+#                 datetime_str = datetime_str.replace(",", "")
+#                 print(0.3)
+#                 print(datetime_str,type(datetime_str))
                 
-                start_date = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                print(0.4)
-                repeat_week_days = json.loads(goal['repeat_week_days'])
-                print(0.5)
-                repeat_ends_on = (datetime.min).date()
+#                 start_date = datetime.strptime(datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                 print(0.4)
+#                 repeat_week_days = json.loads(goal['repeat_week_days'])
+#                 print(0.5)
+#                 repeat_ends_on = (datetime.min).date()
 
-                week_days_unsorted = []
-                occurence_dates = []
-                print(1)
+#                 week_days_unsorted = []
+#                 occurence_dates = []
+#                 print(1)
 
-                for key in repeat_week_days.keys():
-                    if repeat_week_days[key].lower() == 'true':
-                        if key.lower() == "monday":
-                            week_days_unsorted.append(1)
-                        if key.lower() == "tuesday":
-                            week_days_unsorted.append(2)
-                        if key.lower() == "wednesday":
-                            week_days_unsorted.append(3)
-                        if key.lower() == "thursday":
-                            week_days_unsorted.append(4)
-                        if key.lower() == "friday":
-                            week_days_unsorted.append(5)
-                        if key.lower() == "saturday":
-                            week_days_unsorted.append(6)
-                        if key.lower() == "sunday":
-                            week_days_unsorted.append(7)
-                week_days = sorted(week_days_unsorted)
-                print(2)
+#                 for key in repeat_week_days.keys():
+#                     if repeat_week_days[key].lower() == 'true':
+#                         if key.lower() == "monday":
+#                             week_days_unsorted.append(1)
+#                         if key.lower() == "tuesday":
+#                             week_days_unsorted.append(2)
+#                         if key.lower() == "wednesday":
+#                             week_days_unsorted.append(3)
+#                         if key.lower() == "thursday":
+#                             week_days_unsorted.append(4)
+#                         if key.lower() == "friday":
+#                             week_days_unsorted.append(5)
+#                         if key.lower() == "saturday":
+#                             week_days_unsorted.append(6)
+#                         if key.lower() == "sunday":
+#                             week_days_unsorted.append(7)
+#                 week_days = sorted(week_days_unsorted)
+#                 print(2)
 
-                if current_week_day == "monday":
-                    current_week_day = 1
-                if current_week_day == "tuesday":
-                    current_week_day = 2
-                if current_week_day == "wednesday":
-                    current_week_day = 3
-                if current_week_day == "thursday":
-                    current_week_day = 4
-                if current_week_day == "friday":
-                    current_week_day = 5
-                if current_week_day == "saturday":
-                    current_week_day = 6
-                if current_week_day == "sunday":
-                    current_week_day = 7
-                print(3)
+#                 if current_week_day == "monday":
+#                     current_week_day = 1
+#                 if current_week_day == "tuesday":
+#                     current_week_day = 2
+#                 if current_week_day == "wednesday":
+#                     current_week_day = 3
+#                 if current_week_day == "thursday":
+#                     current_week_day = 4
+#                 if current_week_day == "friday":
+#                     current_week_day = 5
+#                 if current_week_day == "saturday":
+#                     current_week_day = 6
+#                 if current_week_day == "sunday":
+#                     current_week_day = 7
+#                 print(3)
 
-                if goal['repeat'].lower() == 'false':
-                    epoch = dt.datetime.utcfromtimestamp(0).date()
-                    current_time = (
-                        currentDate - epoch).total_seconds() * 1000.0
-                    start_time = (start_date - epoch).total_seconds() * 1000.0
-                    is_displayed_today = (current_time - start_time) == 0
-                    print(goal['gr_title'], is_displayed_today)
+#                 if goal['repeat'].lower() == 'false':
+#                     epoch = dt.datetime.utcfromtimestamp(0).date()
+#                     current_time = (
+#                         currentDate - epoch).total_seconds() * 1000.0
+#                     start_time = (start_date - epoch).total_seconds() * 1000.0
+#                     is_displayed_today = (current_time - start_time) == 0
+#                     print(goal['gr_title'], is_displayed_today)
                     
-                else:
-                    print(4)
-                    print(currentDate)
-                    print(start_date)
-                    if currentDate >= start_date:
-                        print("In if")
-                        print("In if repeat type", goal['repeat_type'])
-                        print("In if repeat frequency", goal['repeat_frequency'])
-                        # if goal['repeat_type'].lower() == 'after':
-                        if goal['repeat_type'].lower() == 'occur':
-                            print("In if after")
-                            if goal['repeat_frequency'].lower() == 'day':
-                                print("In if if if")
-                                print("day")
-                                repeat_occurences = goal['repeat_occurences'] - 1
-                                repeat_every = goal['repeat_every']
-                                number_days = int(
-                                    repeat_occurences) * int(repeat_every)
-                                repeat_ends_on = start_date + \
-                                    timedelta(days=number_days)
-                                print(repeat_ends_on)
+#                 else:
+#                     print(4)
+#                     print(currentDate)
+#                     print(start_date)
+#                     if currentDate >= start_date:
+#                         print("In if")
+#                         print("In if repeat type", goal['repeat_type'])
+#                         print("In if repeat frequency", goal['repeat_frequency'])
+#                         # if goal['repeat_type'].lower() == 'after':
+#                         if goal['repeat_type'].lower() == 'occur':
+#                             print("In if after")
+#                             if goal['repeat_frequency'].lower() == 'day':
+#                                 print("In if if if")
+#                                 print("day")
+#                                 repeat_occurences = goal['repeat_occurences'] - 1
+#                                 repeat_every = goal['repeat_every']
+#                                 number_days = int(
+#                                     repeat_occurences) * int(repeat_every)
+#                                 repeat_ends_on = start_date + \
+#                                     timedelta(days=number_days)
+#                                 print(repeat_ends_on)
 
-                            elif goal['repeat_frequency'].lower() == 'week':
-                                print("in if if elif")
-                                numberOfWeek = 0
+#                             elif goal['repeat_frequency'].lower() == 'week':
+#                                 print("in if if elif")
+#                                 numberOfWeek = 0
 
-                                init_date = start_date
-                                start_day = init_date.isoweekday()
-                                print("Weekly")
-                                result = []
-                                for x in week_days:
-                                    if x < start_day:
-                                        result.append(x)
-                                new_week = []
-                                if len(result) > 0:
-                                    new_week = week_days[len(result):]
-                                    for day in result:
-                                        new_week.append(day)
-                                    week_days = new_week
+#                                 init_date = start_date
+#                                 start_day = init_date.isoweekday()
+#                                 print("Weekly")
+#                                 result = []
+#                                 for x in week_days:
+#                                     if x < start_day:
+#                                         result.append(x)
+#                                 new_week = []
+#                                 if len(result) > 0:
+#                                     new_week = week_days[len(result):]
+#                                     for day in result:
+#                                         new_week.append(day)
+#                                     week_days = new_week
 
-                                for i in range(goal['repeat_occurences']):
-                                    if i < len(week_days):
-                                        dow = week_days[i]
-                                    if i >= len(week_days):
-                                        numberOfWeek = math.floor(
-                                            i / len(week_days))
-                                        dow = week_days[i % len(week_days)]
+#                                 for i in range(goal['repeat_occurences']):
+#                                     if i < len(week_days):
+#                                         dow = week_days[i]
+#                                     if i >= len(week_days):
+#                                         numberOfWeek = math.floor(
+#                                             i / len(week_days))
+#                                         dow = week_days[i % len(week_days)]
 
-                                    new_date = init_date
-                                    today = new_date.isoweekday()
-                                    day_i_need = dow
-                                    if today <= day_i_need:
-                                        days = day_i_need - today
-                                        nextDayOfTheWeek = new_date + \
-                                            timedelta(days=days)
-                                    else:
-                                        new_date = new_date + \
-                                            relativedelta(weeks=1)
-                                        days = day_i_need - today
-                                        nextDayOfTheWeek = new_date + \
-                                            timedelta(days=-days)
-                                    add_weeks = numberOfWeek * \
-                                        int(goal['repeat_every'])
-                                    date = nextDayOfTheWeek + \
-                                        relativedelta(weeks=add_weeks)
-                                    occurence_dates.append(date)
-                                print("current", currentDate)
-                                print(occurence_dates)
-                                if currentDate in occurence_dates:
-                                    is_displayed_today = True
-                                print(goal['gr_title'], is_displayed_today)
-                                print("P")
+#                                     new_date = init_date
+#                                     today = new_date.isoweekday()
+#                                     day_i_need = dow
+#                                     if today <= day_i_need:
+#                                         days = day_i_need - today
+#                                         nextDayOfTheWeek = new_date + \
+#                                             timedelta(days=days)
+#                                     else:
+#                                         new_date = new_date + \
+#                                             relativedelta(weeks=1)
+#                                         days = day_i_need - today
+#                                         nextDayOfTheWeek = new_date + \
+#                                             timedelta(days=-days)
+#                                     add_weeks = numberOfWeek * \
+#                                         int(goal['repeat_every'])
+#                                     date = nextDayOfTheWeek + \
+#                                         relativedelta(weeks=add_weeks)
+#                                     occurence_dates.append(date)
+#                                 print("current", currentDate)
+#                                 print(occurence_dates)
+#                                 if currentDate in occurence_dates:
+#                                     is_displayed_today = True
+#                                 print(goal['gr_title'], is_displayed_today)
+#                                 print("P")
                                 
 
-                            elif goal['repeat_frequency'].lower() == 'month':
-                                print("in if elif month")
-                                print("month")
-                                repeat_occurences = goal['repeat_occurences'] - 1
-                                repeat_every = goal['repeat_every']
-                                end_month = int(
-                                    repeat_occurences) * int(repeat_every)
-                                repeat_ends_on = start_date + \
-                                    relativedelta(months=end_month)
-                                print(repeat_ends_on)
+#                             elif goal['repeat_frequency'].lower() == 'month':
+#                                 print("in if elif month")
+#                                 print("month")
+#                                 repeat_occurences = goal['repeat_occurences'] - 1
+#                                 repeat_every = goal['repeat_every']
+#                                 end_month = int(
+#                                     repeat_occurences) * int(repeat_every)
+#                                 repeat_ends_on = start_date + \
+#                                     relativedelta(months=end_month)
+#                                 print(repeat_ends_on)
 
-                            elif goal['repeat_frequency'].lower() == 'year':
-                                print("year")
-                                repeat_occurences = goal['repeat_occurences']
-                                repeat_every = goal['repeat_every']
-                                end_year = int(repeat_occurences) * \
-                                    int(repeat_every)
-                                repeat_ends_on = start_date + \
-                                    relativedelta(years=end_year)
-                                print(repeat_ends_on)
+#                             elif goal['repeat_frequency'].lower() == 'year':
+#                                 print("year")
+#                                 repeat_occurences = goal['repeat_occurences']
+#                                 repeat_every = goal['repeat_every']
+#                                 end_year = int(repeat_occurences) * \
+#                                     int(repeat_every)
+#                                 repeat_ends_on = start_date + \
+#                                     relativedelta(years=end_year)
+#                                 print(repeat_ends_on)
 
-                        elif goal['repeat_type'].lower() == 'never':
-                            print("In if never ")
-                            print("never")
-                            repeat_ends_on = currentDate
-                            print(goal['gr_title'], repeat_ends_on)
+#                         elif goal['repeat_type'].lower() == 'never':
+#                             print("In if never ")
+#                             print("never")
+#                             repeat_ends_on = currentDate
+#                             print(goal['gr_title'], repeat_ends_on)
 
-                        elif goal['repeat_type'].lower() == 'on':
-                            print("In if on ")
-                            print("in goal repeat ends on", goal['repeat_ends_on'])
-                            repeat_ends = goal['repeat_ends_on']
-                            print(repeat_ends)
-                            repeat_ends_on = repeat_ends[:24]
-                            print(repeat_ends_on)
-                            #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
-                            repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
+#                         elif goal['repeat_type'].lower() == 'on':
+#                             print("In if on ")
+#                             print("in goal repeat ends on", goal['repeat_ends_on'])
+#                             repeat_ends = goal['repeat_ends_on']
+#                             print(repeat_ends)
+#                             repeat_ends_on = repeat_ends[:24]
+#                             print(repeat_ends_on)
+#                             #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+#                             repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
 
-                    if currentDate <= repeat_ends_on:
-                        repeat_every = int(goal['repeat_every'])
+#                     if currentDate <= repeat_ends_on:
+#                         repeat_every = int(goal['repeat_every'])
 
-                        if goal['repeat_frequency'].lower() == 'day':
-                            epoch = dt.datetime.utcfromtimestamp(0).date()
-                            current_time = (
-                                currentDate - epoch).total_seconds() * 1000.0
-                            start_time = (
-                                start_date - epoch).total_seconds() * 1000.0
-                            is_displayed_today = (math.floor(
-                                (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
+#                         if goal['repeat_frequency'].lower() == 'day':
+#                             epoch = dt.datetime.utcfromtimestamp(0).date()
+#                             current_time = (
+#                                 currentDate - epoch).total_seconds() * 1000.0
+#                             start_time = (
+#                                 start_date - epoch).total_seconds() * 1000.0
+#                             is_displayed_today = (math.floor(
+#                                 (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
 
                         
 
-                            print(goal['gr_title'], is_displayed_today)
+#                             print(goal['gr_title'], is_displayed_today)
 
-                        if goal['repeat_frequency'].lower() == 'week':
-                            if current_week_day in week_days:
-                                epoch = dt.datetime.utcfromtimestamp(0).date()
-                                current_time = (
-                                    currentDate - epoch).total_seconds() * 1000.0
-                                start_time = (
-                                    start_date - epoch).total_seconds() * 1000.0
-                                is_displayed_today = (math.floor(
-                                    (current_time - start_time)/(7*24*3600*1000)) % repeat_every) == 0
+#                         if goal['repeat_frequency'].lower() == 'week':
+#                             if current_week_day in week_days:
+#                                 epoch = dt.datetime.utcfromtimestamp(0).date()
+#                                 current_time = (
+#                                     currentDate - epoch).total_seconds() * 1000.0
+#                                 start_time = (
+#                                     start_date - epoch).total_seconds() * 1000.0
+#                                 is_displayed_today = (math.floor(
+#                                     (current_time - start_time)/(7*24*3600*1000)) % repeat_every) == 0
                             
 
-                        if goal['repeat_frequency'].lower() == 'month':
-                            is_displayed_today = currentDate.day == start_date.day and (
-                                (currentDate.year - start_date.year) * 12 + currentDate.month - start_date.month) % repeat_every == 0
+#                         if goal['repeat_frequency'].lower() == 'month':
+#                             is_displayed_today = currentDate.day == start_date.day and (
+#                                 (currentDate.year - start_date.year) * 12 + currentDate.month - start_date.month) % repeat_every == 0
                             
-                            print(goal['gr_title'], is_displayed_today)
+#                             print(goal['gr_title'], is_displayed_today)
 
-                        if goal['repeat_frequency'].lower() == 'year':
-                            is_displayed_today = currentDate.day == start_date.day and currentDate.month == start_date.month and (
-                                currentDate.year - start_date.year) % repeat_every == 0
+#                         if goal['repeat_frequency'].lower() == 'year':
+#                             is_displayed_today = currentDate.day == start_date.day and currentDate.month == start_date.month and (
+#                                 currentDate.year - start_date.year) % repeat_every == 0
                             
-                            print(goal['gr_title'], is_displayed_today)
+#                             print(goal['gr_title'], is_displayed_today)
 
                    
-                print("Pragya")
-                execute("""UPDATE goals_routines
-                                SET is_in_progress = \'""" + 'False'+"""\'
-                                , is_complete = \'""" + 'False'+"""\'
-                                , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
-                                , gr_datetime_started = ""
-                                , gr_datetime_completed = ""
-                                WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                 print("Pragya")
+#                 execute("""UPDATE goals_routines
+#                                 SET is_in_progress = \'""" + 'False'+"""\'
+#                                 , is_complete = \'""" + 'False'+"""\'
+#                                 , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
+#                                 , gr_datetime_started = ""
+#                                 , gr_datetime_completed = ""
+#                                 WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                execute("""UPDATE actions_tasks
-                            SET is_in_progress = \'""" + 'False'+"""\'
-                            , is_complete = \'""" + 'False'+"""\'
-                            , at_datetime_started = ""
-                            , at_datetime_completed = ""
-                            WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
+#                 execute("""UPDATE actions_tasks
+#                             SET is_in_progress = \'""" + 'False'+"""\'
+#                             , is_complete = \'""" + 'False'+"""\'
+#                             , at_datetime_started = ""
+#                             , at_datetime_completed = ""
+#                             WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'post', conn)
 
-                actions_task_response = execute(
-                    """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
-                if len(actions_task_response['result']) > 0:
-                    for i in range(len(actions_task_response['result'])):
-                        execute("""UPDATE instructions_steps
-                                    SET is_in_progress = \'""" + 'False'+"""\'
-                                    , is_complete = \'""" + 'False'+"""\'
-                                    WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
+#                 actions_task_response = execute(
+#                     """SELECT * FROM actions_tasks WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';""", 'get', conn)
+#                 if len(actions_task_response['result']) > 0:
+#                     for i in range(len(actions_task_response['result'])):
+#                         execute("""UPDATE instructions_steps
+#                                     SET is_in_progress = \'""" + 'False'+"""\'
+#                                     , is_complete = \'""" + 'False'+"""\'
+#                                     WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';""", 'post', conn)
 
             
 
-            response['message'] = 'successful'
+#             response['message'] = 'successful'
 
-            return response, 200
-        except:
-            raise BadRequest(
-                'Change History Request failed, please try again later.')
-        finally:
-            disconnect(conn)
+#             return response, 200
+#         except:
+#             raise BadRequest(
+#                 'Change History Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
 
 class Calender(Resource):
     def get(self, user_id):
@@ -8291,8 +8291,8 @@ api.add_resource(AccessRefresh, '/api/v2/updateAccessRefresh')
 api.add_resource(UpdateAboutMe2, '/api/v2/update')
 api.add_resource(UploadIcons, '/api/v2/uploadIcons')
 api.add_resource(UpdatePeople, '/api/v2/updatePeople')
-api.add_resource(ChangeHistory, '/api/v2/changeHistory/<string:user_id>')
-api.add_resource(ChangeHistory_old, '/api/v2/changeHistory_annotated/<string:user_id>')
+# api.add_resource(ChangeHistory, '/api/v2/changeHistory/<string:user_id>')
+# api.add_resource(ChangeHistory_old, '/api/v2/changeHistory_annotated/<string:user_id>')
 api.add_resource(ExistingUser, '/api/v2/existingUser')
 api.add_resource(ResetGR, '/api/v2/resetGR/<string:gr_id>')
 api.add_resource(update_guid_notification, '/api/v2/updateGuid/<string:action>')
