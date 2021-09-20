@@ -6090,12 +6090,12 @@ class ManifestHistory_CLASS(Resource):
                 print("Current date:     ", cur_date, type(cur_date))
 
                 # CURRENT DATE IN THE USER OR TAS TIMEZONE IN A SPECIFIC FORMAT
-                date_format = '%m/%d/%Y %H:%M:%S'
+                date_format = '%Y-%m-%d %H:%M:%S'
                 date = cur_datetime.strftime(date_format)
                 print("Current date in ", date_format, ": ", date, type(date))
 
                 # THRESHOLD TIME
-                threshold_time = datetime(2000, 1, 1, 8, 0, 0, 0).time()
+                threshold_time = datetime(2000, 1, 1, 13, 0, 0, 0).time()
                 print("Threshold time:   ", threshold_time, type(threshold_time))
 
 
