@@ -423,6 +423,9 @@ class GAI(Resource):
 
 # Returns Routines with actions/tasks and instructions/steps
 class RTS(Resource):
+    def __call__(self):
+        print("In RTS")
+
     def get(self, user_id):
         response = {}
         items = {}
@@ -438,7 +441,7 @@ class RTS(Resource):
             print(items)
             goal_routine_response = items['result']
 
-            print(len(goal_routine_response))
+            print("Number of Routines: ", len(goal_routine_response))
             if len(goal_routine_response) == 0:
                 response['message'] = 'No Routines'
                 return response
@@ -4677,9 +4680,9 @@ class GetHistory(Resource):
         try:
             conn = connect()
 
-            print("before Function call")
-            TodayGoalsRoutines.post(self, user_id)
-            print("after Function call")
+            # print("before Function call")
+            # TodayGoalsRoutines.post(self, user_id)
+            # print("after Function call")
 
             items = execute(
                 """SELECT * FROM history where user_id = \'""" + user_id + """\';""", 'get', conn)
@@ -5498,12 +5501,12 @@ class Notifications(Resource):
             disconnect(conn)
 
 
-# CRON JOB
+# CRON JOBS
 
-# OPTIMIZED CRON JOB
+# NOTIFICATION CRON JOB FUNCTIONS AND SUBFUCTIONS
 
 def notify(msg,tag):
-    print(msg,tag)
+    # print(msg,tag)
     #return
     isDebug = True
 	#hub = AzureNotificationHub("Endpoint=sb://serving-fresh-notification-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Yy/PhzWba6vmrM8geyHmKTVQPocwrDVcVlqAiokvHe4=", "Serving-Fresh-Notification-Hub", isDebug)
@@ -5533,434 +5536,30 @@ def notify(msg,tag):
 	}
     hub.send_google_notification(0, wns_payload,tag)
     
-    
-
-# def getGUID_original(n):
-#     s = ''
-#     print('inside getGUID')
-#     print(n)
-#     if 'guid' in n:
-#         guid = str(n['guid'])
-#         guid_list =guid.split(' ')
-#         l = []
-#         print("guid_list_len")
-#         if(len(guid_list)> 1):
-#             for i in range(len(guid_list)):
-#                 #if(guid_list[i]=="guid"):
-#                 if(re.search('guid', guid_list[i])):
-#                     s='guid_'+guid_list[i+1][1:-2]
-#                     print(s)
-#                     l.append(s)
-#                     s=''
-#                     print(l)
-#     return l
-
-
-# def changedate(obj):
-#     print('inside changedate')
-#     print(obj)
-#     # FINDS CURRENT DATE IN datetime.date FORMAT
-#     sdate = date.today()
-#     print(sdate, type(sdate))
-#     # PRINTS OBJ IN datetime.datetime FORMAT
-#     obj =obj.replace(day = sdate.day, month = sdate.month, year = sdate.year)
-#     print('obj = ', obj, type(obj))
-#     return obj
-
-
-# def getnotificationtime(op,t,obj):
-#     from pytz import timezone
-#     print("Inside get notification time", op, t, obj)
-#     hours,mins,seconds = t.split(':')
-#     print(hours,mins,seconds)
-#     total_seconds = int(hours)*3600 + int(mins)*60 + int(seconds)
-#     print(t, total_seconds)
-#     print(obj, type(obj))
-#     if(op == 'before'):
-#         result_time = obj -  timedelta(seconds=total_seconds)
-#         print("Notification Time: ", result_time)
-#     elif(op == 'during' or op == 'after'):
-#         result_time = obj +  timedelta(seconds=total_seconds)
-#         print("Notification Time: ", result_time)
-#     else:
-#         print('Unrecognized opcode!!!')
-
-#     tz = timezone('America/Los_Angeles')
-#     print(tz, type(tz))
-#     # result_time = tz.localize(result_time)
-
-#     result_time = result_time.astimezone(timezone('America/Los_Angeles'))
-
-# 	#result_time= result_time.replace(tzinfo=tz)
-#     print("Local Time", result_time)
-#     #backup = result_time
-# 	#result_time = result_time + datetime.timedelta(seconds=420)
-#     #result_time = result_time.replace(day = backup.day, month = backup.month, year = backup.year)
-#     print("UTC", result_time.astimezone(timezone('UTC')))
-#     return result_time.astimezone(timezone('UTC'))
-
-
-
-
-
-# def ManifestNotification_CRON():
-#     try:
-#         response = {}
-#         GRs = {}
-#         users = []
-#         ta = []
-#         conn = connect()
-#         print("In Notification CRON Function")
-        
-#         # USE THESE STATEMENTS TO CONFIRM NOTIFICATIONS TO THE PHONE ARE WORKING
-#         # print("Before Notification")
-#         # notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
-
-#         utc_time =datetime.now(tz=pytz.utc)
-#         print(utc_time)
-        
-#         # GET ALL GOALS AND ROUTINES
-#         GRquery = """
-#             SELECT * 
-#             FROM goals_routines
-#             WHERE is_displayed_today = 'True'
-#                     and is_available = 'True'
-#                     and is_complete = 'False';
-#             """
-#         GRs = execute(GRquery, 'get', conn)
-#         goal_routine_response = GRs['result']
-#         # print("GR Response: ", goal_routine_response)
-
-#         # GET ALL USERS AND TIMEZONES
-#         users_query = """
-#             SELECT user_unique_id, time_zone
-#             FROM users;
-#             """
-#         all_users = execute(users_query, 'get', conn)
-#         # print("All Users: ", all_users)
-
-#         # GET ALL TAS AND TIMEZONES
-#         tas_query = """
-#                 SELECT ta_unique_id, ta_time_zone
-#                 FROM ta_people;
-#             """
-#         all_ta = execute(tas_query, 'get', conn)
-#         # print("All TAs: ", all_ta)
-
-#         # PUT USERS INTO USER ARRAY
-#         for i in range(len(all_users['result'])):
-#             users.append(all_users['result'][i]['user_unique_id'])
-#             # print(users)
-
-#         # PUT TAS INTO TA ARRAY
-#         for i in range(len(all_ta['result'])):
-#             ta.append(all_ta['result'][i]['ta_unique_id'])
-#             # print(ta)
-
-#         # FOR EACH INCOMPLETE, ACTIVE GR CHECK THE NOTIFICATIONS
-#         # THERE IS PROBABLY A BETTER WAY TO DO THIS BY JOINING GR WITH NOTIFICATIONS AND GUIDS AND RETURNING EVERYTHING AT ONCE
-#         print("Incomplete, Active GRs: ", len(goal_routine_response))
-#         for i in range(len(goal_routine_response)):
-#             gr_id = goal_routine_response[i]['gr_unique_id']
-#             # print("\nNow Processing:")
-#             # print(i, gr_id)
-
-
-#             # Get all notifications of each goal and routine
-#             notifications_query = """
-#                     SELECT * 
-#                     FROM notifications 
-#                     WHERE gr_at_id = \'""" + gr_id + """\';
-#                 """
-#             res = execute(notifications_query, 'get', conn)
-#             # res = execute(
-#             #     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
-#             print(res)
-
-#             # STEP 2: INSERT TA AND USER GUID INTO THE GR TABLE
-#             # Get TA info if first notification is of TA
-#             # print(len(res['result']))
-#             if len(res['result']) > 0:
-#                 for j in range(len(res['result'])):
-#                     # print("\nJ counter: ", j)
-#                     # print(res['result'][j]['user_ta_id'][0])
-#                     if res['result'][j]['user_ta_id'][0] == '2' and res['result'][j]['user_ta_id'] in ta:
-#                         query1 = """SELECT ta_guid_device_id_notification FROM ta_people where ta_unique_id = \'""" + \
-#                             res['result'][j]['user_ta_id'] + """\';"""
-#                         items1 = execute(query1, 'get', conn)
-#                         # print(items1)
-#                         if len(items1['result']) > 0:
-#                             guid_response = items1['result']
-#                             GRs['result'][i]['notifications'] = list(
-#                                 res['result'])
-#                             GRs['result'][i]['notifications'][j]['guid'] = guid_response[0]['ta_guid_device_id_notification']
-
-#                     # Get User Info if first notification is of user
-#                     elif res['result'][j]['user_ta_id'][0] == '1' and res['result'][j]['user_ta_id'] in users:
-#                         query1 = """SELECT user_unique_id, cust_guid_device_id_notification FROM users where user_unique_id = \'""" + \
-#                             res['result'][j]['user_ta_id'] + """\';"""
-#                         items1 = execute(query1, 'get', conn)
-#                         # print(items1)
-#                         if len(items1['result']) > 0:
-#                             guid_response = items1['result']
-#                             GRs['result'][i]['notifications'] = list(
-#                                 res['result'])
-#                             GRs['result'][i]['notifications'][j]['guid'] = guid_response[0]['cust_guid_device_id_notification']
-
-#                             for j in range(len(all_users['result'])):
-#                                 if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
-#                                     GRs['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
-
-#         # print("\n")
-#         # print(GRs['result'], type(GRs['result']))
-        
-
-#         # # DEBUG PRINT STATEMENT TO SHOW GR ID WITH RESPECTIVE GUIDS
-#         # print("Incomplete, Active GRs With GUIDs: ", len(goal_routine_response))
-#         # for i in range(len(goal_routine_response)):
-#         #     gr_id = goal_routine_response[i]['gr_unique_id']
-#         #     print("\nNow With GUIDs:")
-#         #     print(i, gr_id)
-#         #     print(GRs['result'][i])
-
-#         print("\nTest 1")
-#         for d in GRs['result']:
-#             print("Test 3\n", d)
-#             if('notifications' in d):
-#                 print("Test 4")
-#                 print(d['gr_start_day_and_time'], type(d['gr_start_day_and_time']))
-#                 print(d['gr_end_day_and_time'], type(d['gr_end_day_and_time']))
-#                 print(d['is_displayed_today'], d['is_complete'])
-#             if(d['is_displayed_today'] == 'True' and d['is_complete'] == 'False'):
-
-
-
-#                 # START PROCESSING TIME
-#                 print('\nPROCESSING start_time')
-#                 print("Original: ", d['gr_start_day_and_time'], type(d['gr_start_day_and_time']))
-#                 # start_day_and_time_obj = datetime.strptime(d['gr_start_day_and_time'], '%m/%d/%Y, %I:%M:%S %p')
-#                 start_day_and_time_obj = datetime.strptime(d['gr_start_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
-#                 print("After formatting: ", start_day_and_time_obj)
-#                 # CALL changedate TO UPDATE ORIGINAL START DATE TO CURRENT DATE
-#                 start_day_and_time_obj =changedate(start_day_and_time_obj)
-#                 print("After Change Date: ", start_day_and_time_obj)
-
-#                 print('\nPROCESSING end_time')
-#                 print("Original: ", d['gr_end_day_and_time'], type(d['gr_end_day_and_time']))
-#                 end_day_and_time_obj = datetime.strptime(d['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
-#                 print("After formatting: ", end_day_and_time_obj)
-#                 end_day_and_time_obj = changedate(end_day_and_time_obj)
-#                 print("After Change Date: ", end_day_and_time_obj)
-
-#                 print("\nReplace seconds?")
-#                 start_day_and_time_obj = start_day_and_time_obj.replace(second = 0)
-#                 print("After Replace: ", start_day_and_time_obj)
-#                 end_day_and_time_obj = end_day_and_time_obj.replace(second = 0)
-#                 print("After Replace: ", end_day_and_time_obj)
-
-
-
-
-#                 print("\nStarting for loop")
-#                 for n in d['notifications']:
-#                     print(d['gr_unique_id'], n['before_is_enable'], n['during_is_enable'], n['after_is_enable'] )
-#                     if(n['before_is_enable'] == 'True'):
-#                         print('\nbefore_notification_time')
-#                         before_not_time = getnotificationtime('before', n['before_time'], start_day_and_time_obj)
-#                         print("BEFORE Notification Time in UTC: ", before_not_time)
-#                         # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
-
-#                         # print('\nbefore changedate')
-#                         # before_not_time = changedate(before_not_time)
-#                         # print(before_not_time)
-
-#                         print("\nUTC Time from above: ", utc_time)
-#                         time_diff= utc_time - before_not_time
-#                         print('time_diff:', time_diff, type(time_diff))
-#                         print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
-
-
-#                         # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
-#                         # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-#                         if(time_diff.total_seconds() < 30 and time_diff.total_seconds() > -30):
-#                             print("\nBEFORE Notification Criteria met")
-#                             for id in getGUID(n):
-#                             #id = getGUID(n)
-#                                 if (id != ''):
-#                                     notify(n['before_message'],id)
-#                                     # mycursor = mydb.cursor()
-
-#                                     # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
-#                                     # setNotification_query = """
-#                                     #         UPDATE notifications 
-#                                     #         SET before_is_set = 'True' 
-#                                     #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-#                                     #     """
-#                                     # sql = execute(setNotification_query, 'get', conn)
-                                    
-#                                     # sql = "UPDATE notifications SET before_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-                                    
-#                                     # mycursor.execute(sql)
-#                                     # mydb.commit()
-#                                     # f.write(n['before_message']+ ' ')
-#                                     # f.write(id+' ')
-#                                     # f.write(str(before_not_time)+ ' ')
-#                                     # f.write('\n')
-#                                     print("GUID Notification sent")
-#                                 print("BEFORE GUID notification complete", id)
-#                             print("All GUIDs processed")
-#                         print("BEFORE notification complete")
-#                         # print(n['before_time'])
-#                         # print(n['before_message'])
-                    
-#                         # print(utc_time)
-#                         # print(time_diff.total_seconds())
-#                         print('\n')
-
-
-#                     if(n['during_is_enable'] == 'True'):
-#                         print('\nduring_notification_time')
-#                         during_not_time = getnotificationtime('during', n['during_time'], start_day_and_time_obj)
-#                         print("DURING Notification Time in UTC: ", during_not_time)
-#                         # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
-                        
-#                         # print('\nduring changedate')
-#                         # during_not_time = changedate(during_not_time)
-#                         # print(during_not_time)
-
-#                         print("\nUTC Time from above: ", utc_time)
-#                         time_diff= utc_time - during_not_time
-#                         print('time_diff:', time_diff, type(time_diff))
-#                         print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
-                        
-#                         # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
-#                         # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-#                         if(time_diff.total_seconds() < 30 and time_diff.total_seconds() > -30):
-#                             print("\nDURING Notification Criteria met")
-#                             for id in getGUID(n):
-#                             #id = getGUID(n)
-#                                 if (id != ''):
-#                                     notify(n['during_message'],id)
-#                                     # mycursor = mydb.cursor()
-
-#                                     # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
-#                                     # setNotification_query = """
-#                                     #         UPDATE notifications 
-#                                     #         SET during_is_set = 'True' 
-#                                     #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-#                                     #     """
-#                                     # sql = execute(setNotification_query, 'get', conn)
-
-#                                     # sql = "UPDATE notifications SET during_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-
-#                                     # mycursor.execute(sql)
-#                                     # mydb.commit()
-#                                     # f.write(n['during_message']+ ' ')
-#                                     # f.write(id+ ' ')
-#                                     # f.write(str(during_not_time)+ ' ')
-#                                     # f.write('\n')
-#                                     print("GUID Notification sent")
-#                                 print("DURING GUID notification complete", id)
-#                             print("All GUIDs processed")
-#                         print("DURING notification complete")
-#                         # print(n['during_time'])
-#                         # print(n['during_message'])
-
-#                         # print(during_not_time)
-#                         # print(time_diff.total_seconds())
-#                         print('\n')
-
-                        
-#                     if(n['after_is_enable'] == 'True'):
-#                         print('\nafter_notification_time')
-#                         after_not_time = getnotificationtime('after', n['after_time'], end_day_and_time_obj)
-#                         print("AFTER Notification Time in UTC: ", after_not_time)
-#                         # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
-                        
-#                         # print('\nafter changedate')
-#                         # after_not_time = changedate(after_not_time)
-#                         # print(after_not_time)
-                        
-#                         print("\nUTC Time from above: ", utc_time)
-#                         time_diff= utc_time - after_not_time
-#                         print('time_diff:', time_diff, type(time_diff))
-#                         print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
-                        
-#                         # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
-#                         # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-#                         if(time_diff.total_seconds() < 30 and time_diff.total_seconds() > -30):
-#                             print("\nAFTER Notification Criteria met")
-#                             for id in getGUID(n):
-#                             #id = getGUID(n)
-#                                 if (id != ''):
-#                                     notify(n['after_message'],id)
-#                                     # mycursor = mydb.cursor()
-
-#                                     # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
-#                                     # setNotification_query = """
-#                                     #         UPDATE notifications 
-#                                     #         SET after_is_set = 'True' 
-#                                     #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-#                                     #     """
-#                                     # sql = execute(setNotification_query, 'get', conn)
-
-#                                     # sql = "UPDATE notifications SET after_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-
-#                                     # mycursor.execute(sql)
-#                                     # mydb.commit()
-#                                     # f.write(n['after_message']+ ' ')
-#                                     # f.write(id+' ')
-#                                     # f.write(str(after_not_time)+' ')
-#                                     # f.write('\n')
-#                                     print("GUID Notification sent")
-#                                 print("AFTER GUID notification complete", id)
-#                             print("All GUIDs processed")
-#                         print("AFTER notification complete")
-#                         # print(n['after_time'])
-#                         # print(n['after_message'])
-
-#                         # print(after_not_time)
-#                         # print(time_diff.total_seconds())
-#                         print('\n')	
-
-
-#         response['message'] = 'successful'
-#         response['result'] = GRs['result']
-
-#         return response, 200
-
-
-
-#     except:
-#         raise BadRequest('ManifestNotification_CRON Request failed, please try again later.')
-#     finally:
-#         disconnect(conn)
-
-
-# REWRITING THE NOTIFICATION CLASS
 
 def getGUID(guid):
+    # GET UNIQUE LIST OF GUIDS
     s = ''
-    print('inside getGUID')
-    print(guid)
+    # print('inside getGUID')
+    # print(guid)
     l = []
-    print("Initialize GUID List: ", l)
+    # print("Initialize GUID List: ", l)
     if 'guid' in guid:
         guid_list =guid.split(' ')
-        print("List after split: ", guid_list)
-        print("guid_list_len: ", len(guid_list))
+        # print("List after split: ", guid_list)
+        # print("guid_list_len: ", len(guid_list))
         if(len(guid_list)> 1):
             for i in range(len(guid_list)):
                 #if(guid_list[i]=="guid"):
                 if(re.search('guid', guid_list[i])):
                     s='guid_'+guid_list[i+1][1:-2]
-                    print("S: ", s)
+                    # print("S: ", s)
                     # CHECKS TO MAKE SURE THERE ARE ONLY UNIQUE GUIDS IN THE LIST
                     if s not in l:
                         l.append(s)
-                        print("Current List: ", l)
+                        # print("Current List: ", l)
                     s=''
-    print(l)
+    # print("Final List:   ", l)
     return l
 
 
@@ -6010,7 +5609,7 @@ def ProcessTime(time, time_zone):
 
 
 def ManifestNotification_CRON():
-
+    # CRON JOB FOR SENDING NOTIFICATIONS (COPIED FROM ManifestNotification_CLASS)
     from datetime import datetime
     from pytz import timezone
 
@@ -6041,14 +5640,14 @@ def ManifestNotification_CRON():
             """
         
         notifications = execute(notifications_query, 'get', conn)
-        print(len(notifications['result']))
+        # print(len(notifications['result']))
         # print(notifications)
 
         for n in notifications['result']:
 
             # NOTE:  CHECK is_available and is_displayed_today BEFORE PROCEEDING
 
-            print("\nNotification Info:", n['notification_id'])
+            # print("\nNotification Info:", n['notification_id'])
             if n['user_ta_id'][0] == '1':
                 guid = n['cust_guid_device_id_notification']
             else:
@@ -6122,7 +5721,7 @@ def ManifestNotification_CRON():
 # USE THIS CLASS FOR DEBUG PURPOSES AND THEN COPY OVER DEF - REMEMBER TO CHANGE DURATION TIMES
 class ManifestNotification_CLASS(Resource):
     def get(self):
-
+        # CRON JOB FOR SENDING NOTIFICATIONS (COPIED FROM ManifestNotification_CLASS)
         from datetime import datetime
         from pytz import timezone
 
@@ -6231,357 +5830,748 @@ class ManifestNotification_CLASS(Resource):
 
 
 
+class GRATIS(Resource):
+    # GET ALL GRATIS INFOMATION GIVEN USER ID
+    def __call__(self):
+        print("In GRATIS SELF CALL")
 
-
-
-
-
-
-
-
-# CREATING TEMPORARY CLASS FOR DEBUG PURPOSES
-
-class ManifestNotification_ORIGINAL(Resource):
-    def get(self):
+    def get(self, user_id):
+        print("In GRATIS")
+        response = {}
         try:
-            response = {}
-            GRs = {}
-            users = []
-            ta = []
-            conn = connect()
-            print("In Notification CRON Function")
-            
-            # USE THESE STATEMENTS TO CONFIRM NOTIFICATIONS TO THE PHONE ARE WORKING
-            # print("Before Notification")
-            # notify('before_message','guid_9d724100-ed7f-4f16-95f9-de060907c8d0')
 
-            utc_time =datetime.now(tz=pytz.utc)
-            print(utc_time)
-            
-            # GET ALL GOALS AND ROUTINES
-            GRquery = """
+            conn = connect()
+
+            # Get all goals and routines of the user
+            GR_query = """
                 SELECT * 
                 FROM goals_routines
-                WHERE is_displayed_today = 'True'
-                        and is_available = 'True'
-                        and is_complete = 'False';
+                WHERE user_id = \'""" + user_id + """\' AND is_available = 'True' AND is_displayed_today = 'True';
                 """
-            GRs = execute(GRquery, 'get', conn)
-            goal_routine_response = GRs['result']
-            # print("GR Response: ", goal_routine_response)
+            # print(GR_query)
+            GR = execute(GR_query, 'get', conn)
+            # print(GR)
 
-            # GET ALL USERS AND TIMEZONES
-            users_query = """
-                SELECT user_unique_id, time_zone
-                FROM users;
-                """
-            all_users = execute(users_query, 'get', conn)
-            # print("All Users: ", all_users)
+            # print("Number of Goals and Routines: ", len(GR['result']))
 
-            # GET ALL TAS AND TIMEZONES
-            tas_query = """
-                    SELECT ta_unique_id, ta_time_zone
-                    FROM ta_people;
-                """
-            all_ta = execute(tas_query, 'get', conn)
-            # print("All TAs: ", all_ta)
+            for i in range(len(GR['result'])):
+                gr_id = GR['result'][i]['gr_unique_id']
+                # print(gr_id)
 
-            # PUT USERS INTO USER ARRAY
-            for i in range(len(all_users['result'])):
-                users.append(all_users['result'][i]['user_unique_id'])
-                # print(users)
-
-            # PUT TAS INTO TA ARRAY
-            for i in range(len(all_ta['result'])):
-                ta.append(all_ta['result'][i]['ta_unique_id'])
-                # print(ta)
-
-            # FOR EACH INCOMPLETE, ACTIVE GR CHECK THE NOTIFICATIONS
-            # THERE IS PROBABLY A BETTER WAY TO DO THIS BY JOINING GR WITH NOTIFICATIONS AND GUIDS AND RETURNING EVERYTHING AT ONCE
-            print("Incomplete, Active GRs: ", len(goal_routine_response))
-            for i in range(len(goal_routine_response)):
-                gr_id = goal_routine_response[i]['gr_unique_id']
-                # print("\nNow Processing:")
-                # print(i, gr_id)
-
-
-                # Get all notifications of each goal and routine
-                notifications_query = """
-                        SELECT * 
-                        FROM notifications 
-                        WHERE gr_at_id = \'""" + gr_id + """\';
+                # Get all Actions and Tasks for a specific GR
+                AT_query = """
+                    SELECT * 
+                    FROM actions_tasks 
+                    WHERE goal_routine_id = \'""" + gr_id + """\';
                     """
-                
-                res = execute(notifications_query, 'get', conn)
-                # res = execute(
-                #     """Select * from notifications where gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
-                print(res)
 
-                # STEP 2: INSERT TA AND USER GUID INTO THE GR TABLE
-                # Get TA info if first notification is of TA
-                # print(len(res['result']))
-                if len(res['result']) > 0:
-                    for j in range(len(res['result'])):
-                        # print("\nJ counter: ", j)
-                        # print(res['result'][j]['user_ta_id'][0])
-                        if res['result'][j]['user_ta_id'][0] == '2' and res['result'][j]['user_ta_id'] in ta:
-                            query1 = """SELECT ta_guid_device_id_notification FROM ta_people where ta_unique_id = \'""" + \
-                                res['result'][j]['user_ta_id'] + """\';"""
-                            items1 = execute(query1, 'get', conn)
-                            # print(items1)
-                            if len(items1['result']) > 0:
-                                guid_response = items1['result']
-                                GRs['result'][i]['notifications'] = list(
-                                    res['result'])
-                                GRs['result'][i]['notifications'][j]['guid'] = guid_response[0]['ta_guid_device_id_notification']
+                # print(AT_query)
+                AT = execute(AT_query, 'get', conn)
+                # print(AT)
 
-                        # Get User Info if first notification is of user
-                        elif res['result'][j]['user_ta_id'][0] == '1' and res['result'][j]['user_ta_id'] in users:
-                            query1 = """SELECT user_unique_id, cust_guid_device_id_notification FROM users where user_unique_id = \'""" + \
-                                res['result'][j]['user_ta_id'] + """\';"""
-                            items1 = execute(query1, 'get', conn)
-                            # print(items1)
-                            if len(items1['result']) > 0:
-                                guid_response = items1['result']
-                                GRs['result'][i]['notifications'] = list(
-                                    res['result'])
-                                GRs['result'][i]['notifications'][j]['guid'] = guid_response[0]['cust_guid_device_id_notification']
+                if len(AT['result']) > 0:
+                    GR['result'][i]['actions'] = list(AT['result'])
+                    for j in range(len(AT['result'])):
+                        at_id = AT['result'][j]['at_unique_id']
+                        # print(at_id)
 
-                                for j in range(len(all_users['result'])):
-                                    if res['result'][0]['user_ta_id'] == all_users['result'][j]['user_unique_id']:
-                                        GRs['result'][i]['time_zone'] = all_users['result'][j]['time_zone']
+                        # Get all Instructions and Steps for a specific GR
+                        IS_query = """
+                            SELECT * 
+                            FROM instructions_steps
+                            WHERE at_id = \'""" + at_id + """\'
+                            ORDER BY is_sequence;
+                            """
 
-            # print("\n")
-            # print(GRs['result'], type(GRs['result']))
-            
+                        # print(IS_query)
+                        IS = execute(IS_query, 'get', conn)
+                        # print(IS)
 
-            # # DEBUG PRINT STATEMENT TO SHOW GR ID WITH RESPECTIVE GUIDS
-            # print("Incomplete, Active GRs With GUIDs: ", len(goal_routine_response))
-            # for i in range(len(goal_routine_response)):
-            #     gr_id = goal_routine_response[i]['gr_unique_id']
-            #     print("\nNow With GUIDs:")
-            #     print(i, gr_id)
-            #     print(GRs['result'][i])
+                        if len(IS['result']) > 0:
+                            GR['result'][i]['actions'][j]['instructions'] = list(IS['result'])
 
-            print("\nTest 1")
-            for d in GRs['result']:
-                print("Test 3\n", d)
-                if('notifications' in d):
-                    print("Test 4")
-                    print(d['gr_start_day_and_time'], type(d['gr_start_day_and_time']))
-                    print(d['gr_end_day_and_time'], type(d['gr_end_day_and_time']))
-                    print(d['is_displayed_today'], d['is_complete'])
-                if(d['is_displayed_today'] == 'True' and d['is_complete'] == 'False'):
+            # print("Response from GRATIS: ", GR['result'])
+            # response = GR['result']
+            response = GR['result']
 
-
-
-                    # START PROCESSING TIME
-                    print('\nPROCESSING start_time')
-                    print("Original: ", d['gr_start_day_and_time'], type(d['gr_start_day_and_time']))
-                    # start_day_and_time_obj = datetime.strptime(d['gr_start_day_and_time'], '%m/%d/%Y, %I:%M:%S %p')
-                    start_day_and_time_obj = datetime.strptime(d['gr_start_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
-                    print("After formatting: ", start_day_and_time_obj)
-                    # CALL changedate TO UPDATE ORIGINAL START DATE TO CURRENT DATE
-                    start_day_and_time_obj =changedate(start_day_and_time_obj)
-                    print("After Change Date: ", start_day_and_time_obj)
-
-                    print('\nPROCESSING end_time')
-                    print("Original: ", d['gr_end_day_and_time'], type(d['gr_end_day_and_time']))
-                    end_day_and_time_obj = datetime.strptime(d['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p')
-                    print("After formatting: ", end_day_and_time_obj)
-                    end_day_and_time_obj = changedate(end_day_and_time_obj)
-                    print("After Change Date: ", end_day_and_time_obj)
-
-                    print("\nReplace seconds?")
-                    start_day_and_time_obj = start_day_and_time_obj.replace(second = 0)
-                    print("After Replace: ", start_day_and_time_obj)
-                    end_day_and_time_obj = end_day_and_time_obj.replace(second = 0)
-                    print("After Replace: ", end_day_and_time_obj)
-
-
-
-
-                    print("\nStarting for loop")
-                    for n in d['notifications']:
-                        print(d['gr_unique_id'], n['before_is_enable'], n['during_is_enable'], n['after_is_enable'] )
-                        if(n['before_is_enable'] == 'True'):
-                            print('\nbefore_notification_time')
-                            before_not_time = getnotificationtime('before', n['before_time'], start_day_and_time_obj)
-                            print("BEFORE Notification Time in UTC: ", before_not_time)
-                            # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
-
-                            # print('\nbefore changedate')
-                            # before_not_time = changedate(before_not_time)
-                            # print(before_not_time)
-
-                            print("\nUTC Time from above: ", utc_time)
-                            time_diff= utc_time - before_not_time
-                            print('time_diff:', time_diff, type(time_diff))
-                            print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
-
-
-                            # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
-                            # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-                            if(time_diff.total_seconds() < 600 and time_diff.total_seconds() > -600):
-                                print("\nBEFORE Notification Criteria met")
-                                for id in getGUID(n):
-                                #id = getGUID(n)
-                                    if (id != ''):
-                                        notify(n['before_message'],id)
-                                        # mycursor = mydb.cursor()
-
-                                        # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
-                                        # setNotification_query = """
-                                        #         UPDATE notifications 
-                                        #         SET before_is_set = 'True' 
-                                        #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-                                        #     """
-                                        # sql = execute(setNotification_query, 'get', conn)
-                                        
-                                        # sql = "UPDATE notifications SET before_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-                                        
-                                        # mycursor.execute(sql)
-                                        # mydb.commit()
-                                        # f.write(n['before_message']+ ' ')
-                                        # f.write(id+' ')
-                                        # f.write(str(before_not_time)+ ' ')
-                                        # f.write('\n')
-                                        print("GUID Notification sent")
-                                    print("BEFORE GUID notification complete", id)
-                                print("All GUIDs processed")
-                            print("BEFORE notification complete")
-                            # print(n['before_time'])
-                            # print(n['before_message'])
-                        
-                            # print(utc_time)
-                            # print(time_diff.total_seconds())
-                            print('\n')
-
-
-                        if(n['during_is_enable'] == 'True'):
-                            print('\nduring_notification_time')
-                            during_not_time = getnotificationtime('during', n['during_time'], start_day_and_time_obj)
-                            print("DURING Notification Time in UTC: ", during_not_time)
-                            # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
-                            
-                            # print('\nduring changedate')
-                            # during_not_time = changedate(during_not_time)
-                            # print(during_not_time)
-
-                            print("\nUTC Time from above: ", utc_time)
-                            time_diff= utc_time - during_not_time
-                            print('time_diff:', time_diff, type(time_diff))
-                            print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
-                            
-                            # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
-                            # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-                            if(time_diff.total_seconds() < 600 and time_diff.total_seconds() > -600):
-                                print("\nDURING Notification Criteria met")
-                                for id in getGUID(n):
-                                #id = getGUID(n)
-                                    if (id != ''):
-                                        notify(n['during_message'],id)
-                                        # mycursor = mydb.cursor()
-
-                                        # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
-                                        # setNotification_query = """
-                                        #         UPDATE notifications 
-                                        #         SET during_is_set = 'True' 
-                                        #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-                                        #     """
-                                        # sql = execute(setNotification_query, 'get', conn)
-
-                                        # sql = "UPDATE notifications SET during_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-
-                                        # mycursor.execute(sql)
-                                        # mydb.commit()
-                                        # f.write(n['during_message']+ ' ')
-                                        # f.write(id+ ' ')
-                                        # f.write(str(during_not_time)+ ' ')
-                                        # f.write('\n')
-                                        print("GUID Notification sent")
-                                    print("DURING GUID notification complete", id)
-                                print("All GUIDs processed")
-                            print("DURING notification complete")
-                            # print(n['during_time'])
-                            # print(n['during_message'])
-
-                            # print(during_not_time)
-                            # print(time_diff.total_seconds())
-                            print('\n')
-
-                            
-                        if(n['after_is_enable'] == 'True'):
-                            print('\nafter_notification_time')
-                            after_not_time = getnotificationtime('after', n['after_time'], end_day_and_time_obj)
-                            print("AFTER Notification Time in UTC: ", after_not_time)
-                            # AT THIS POINT YOU HAVE THE NOTIFICATION TIME IN GMT
-                            
-                            # print('\nafter changedate')
-                            # after_not_time = changedate(after_not_time)
-                            # print(after_not_time)
-                            
-                            print("\nUTC Time from above: ", utc_time)
-                            time_diff= utc_time - after_not_time
-                            print('time_diff:', time_diff, type(time_diff))
-                            print('time_diff in seconds:', time_diff.total_seconds(), type(time_diff.total_seconds()))
-                            
-                            # CHECK IF TIME DIFFERENCE IS SMALL ENOUGH TO TRIGGER A NOTIFICATION
-                            # if(time_diff.total_seconds() < 10 and time_diff.total_seconds() > -10):
-                            if(time_diff.total_seconds() < 600 and time_diff.total_seconds() > -600):
-                                print("\nAFTER Notification Criteria met")
-                                for id in getGUID(n):
-                                #id = getGUID(n)
-                                    if (id != ''):
-                                        notify(n['after_message'],id)
-                                        # mycursor = mydb.cursor()
-
-                                        # NOT SURE WHY WE DO THIS. COMMENTING OUT FOR NOW
-                                        # setNotification_query = """
-                                        #         UPDATE notifications 
-                                        #         SET after_is_set = 'True' 
-                                        #         WHERE notification_id = \'""" + str(n['notification_id']) + """\';
-                                        #     """
-                                        # sql = execute(setNotification_query, 'get', conn)
-
-                                        # sql = "UPDATE notifications SET after_is_set = 'True' WHERE notification_id = '"+str(n['notification_id'])+"'"
-
-                                        # mycursor.execute(sql)
-                                        # mydb.commit()
-                                        # f.write(n['after_message']+ ' ')
-                                        # f.write(id+' ')
-                                        # f.write(str(after_not_time)+' ')
-                                        # f.write('\n')
-                                        print("GUID Notification sent")
-                                    print("AFTER GUID notification complete", id)
-                                print("All GUIDs processed")
-                            print("AFTER notification complete")
-                            # print(n['after_time'])
-                            # print(n['after_message'])
-
-                            # print(after_not_time)
-                            # print(time_diff.total_seconds())
-                            print('\n')	
-
-
-            response['message'] = 'successful'
-            response['result'] = GRs['result']
-
-            return response, 200
-
-
+            return response
 
         except:
-            raise BadRequest('ManifestNotification_CRON Request failed, please try again later.')
+            raise BadRequest('GRATIS Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+class GRATIS_History(Resource):
+    # GET ALL GRATIS INFOMATION GIVEN USER ID MAPPED TO FIT INTO HISTORY TABLE
+    def __call__(self):
+        print("\nIn HISTORY SELF CALL")
+
+    def get(self, user_id):
+        print("\nIn GRATIS_HISTORY")
+        response = {}
+        try:
+
+            conn = connect()
+
+            # Get all goals and routines of the user
+            GR_query = """
+                SELECT
+                    gr_unique_id AS routine,
+                    gr_title AS title,	
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "started"
+                        ELSE "not started"
+                    END AS status,
+                    is_available, 
+                    is_sublist_available,
+                    gr_photo AS photo, 
+                    gr_start_day_and_time AS start_day_and_time, 
+                    gr_end_day_and_time AS end_day_and_time
+                FROM manifest.goals_routines
+                WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
+                """
+            # print(GR_query)
+            GR = execute(GR_query, 'get', conn)
+            # print(GR)
+
+            # print("Number of Goals and Routines: ", len(GR['result']))
+
+            for i in range(len(GR['result'])):
+                gr_id = GR['result'][i]['routine']
+                # print(gr_id)
+
+                # Get all Actions and Tasks for a specific GR
+                AT_query = """
+                    SELECT
+                        at_unique_id AS action,
+                        at_title AS title,
+                        CASE
+                            WHEN is_complete = "True" THEN  "completed"
+                            WHEN is_in_progress = "True" THEN  "started"
+                            ELSE "not started"
+                        END AS status,
+                        is_available,
+                        is_sublist_available,
+                        at_photo AS photo
+                    FROM manifest.actions_tasks 
+                    WHERE goal_routine_id = \'""" + gr_id + """\';
+                    """
+                # print(AT_query)
+                AT = execute(AT_query, 'get', conn)
+                # print(AT)
+
+                if len(AT['result']) > 0:
+                    GR['result'][i]['actions'] = list(AT['result'])
+                    for j in range(len(AT['result'])):
+                        at_id = AT['result'][j]['action']
+                        # print(at_id)
+
+                        # Get all Instructions and Steps for a specific GR
+                        IS_query = """
+                            SELECT
+                                is_unique_id AS instruction, 
+                                is_title AS title,
+                                is_sequence, 
+                                is_available,
+                                CASE
+                                    WHEN is_complete = "True" THEN  "completed"
+                                    WHEN is_in_progress = "True" THEN  "started"
+                                    ELSE "not started"
+                                END AS status,
+                                is_photo AS photo
+                            FROM manifest.instructions_steps
+                            WHERE at_id = \'""" + at_id + """\'
+                            ORDER BY is_sequence;
+                            """
+                        # print(IS_query)
+                        IS = execute(IS_query, 'get', conn)
+                        # print(IS)
+
+                        if len(IS['result']) > 0:
+                            GR['result'][i]['actions'][j]['instructions'] = list(IS['result'])
+
+            # print("Response from GRATIS_History: ", GR['result'])
+            # response = GR['result']
+            response = GR['result']
+
+            return response
+
+        except:
+            raise BadRequest('GRATIS Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+class GRATIS_Reset(Resource):
+    # GET ALL GRATIS INFOMATION GIVEN USER ID
+    def __call__(self):
+        print("\nIn HISTORY SELF CALL")
+
+    def get(self, user_id):
+        print("\nIn HISTORY")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            # Get all goals and routines of the user
+            GR_query = """
+                SELECT
+                    gr_unique_id AS routine,
+                    gr_title AS title,	
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "started"
+                        ELSE "not started"
+                    END AS status,
+                    is_available, 
+                    is_sublist_available,
+                    gr_photo AS photo, 
+                    gr_start_day_and_time AS start_day_and_time, 
+                    gr_end_day_and_time AS end_day_and_time
+                FROM manifest.goals_routines
+                WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
+                """
+            # print(GR_query)
+            GR = execute(GR_query, 'get', conn)
+            # print(GR)
+
+            # print("Number of Goals and Routines: ", len(GR['result']))
+
+            for i in range(len(GR['result'])):
+                gr_id = GR['result'][i]['routine']
+                # print(gr_id)
+            response = GR['result']
+
+            return response
+
+        except:
+            raise BadRequest('GRATIS Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+# USE THIS CLASS FOR DEBUG PURPOSES AND THEN COPY OVER DEF
+class ManifestHistory_CLASS(Resource):
+    def get(self):
+        # CRON JOB FOR STORING NIGHTLY HISTORY (COPIED FROM ManifestNotification_CLASS)
+        from datetime import datetime
+        from pytz import timezone
+
+        try:
+            response = {}
+            conn = connect()
+            print("In History CRON Function")
+
+            # FIND CURRENT TIME FOR EACH USER
+            user_tz_query = """
+                    SELECT user_unique_id, time_zone
+                    FROM manifest.users; 
+            """
+            user_tz = execute(user_tz_query, "get", conn)
+            print(user_tz)
+
+            for u in user_tz['result']:
+                # GET TIME AND DATE FOR SPECIFIC USER
+                print("\nUser: ", u['user_unique_id'])
+                # CURRENT DATETIME IN THE USER OR TAS TIMEZONE
+                cur_datetime = datetime.now(pytz.timezone(u['time_zone']))
+                print("Current datetime: ", cur_datetime, type(cur_datetime))
+
+                # CURRENT TIME IN THE USER OR TAS TIMEZONE
+                cur_time = cur_datetime.time()
+                print("Current time:     ", cur_time, type(cur_time))
+
+                # CURRENT DATE IN THE USER OR TAS TIMEZONE IN DATETIME FORMAT
+                cur_date = cur_datetime.date()
+                print("Current date:     ", cur_date, type(cur_date))
+
+                # CURRENT DATE IN THE USER OR TAS TIMEZONE IN A SPECIFIC FORMAT
+                date_format = '%m/%d/%Y %H:%M:%S'
+                date = cur_datetime.strftime(date_format)
+                print("Current date in ", date_format, ": ", date, type(date))
+
+                # THRESHOLD TIME
+                threshold_time = datetime(2000, 1, 1, 7, 0, 0, 0).time()
+                print("Threshold time:   ", threshold_time, type(threshold_time))
+
+
+
+                # DETERMINE IF WE SHOULD UPDATE USER HISTORY BASED ON THRESHOLD TIME (IE BEFORE 1AM)
+                if cur_time < threshold_time:
+                    # TIME IS BEFORE THRESHOLD AND DATE AFFECTED IS YESTERDAY
+                    print("\nUpdate History")
+                    date_affected = cur_date - timedelta(days=1)
+                    print("Date affected: ", date_affected)
+
+                    # CAPTURE GRATIS SNAPSHOT
+                    getGRATIS_History = GRATIS_History.get(self, u['user_unique_id'])
+                    print("Return from GRATIS_History: ", getGRATIS_History)
+
+
+                    # MAP GRATIS DATA TO HISTORY FIELDS - CURRENTLY DONE IN GRATIS_History
+                
+
+                    # WRITE TO THE HISTORY TABLE
+                    print("\nStart Write to History Table")
+                    # CHECK IF THERE IS ALREADY A ROW IN THE HISTORY TABLE FOR THE SPECIFIC USER AND DATE AFFECTED
+                    history_query = """
+                        SELECT id 
+                        FROM manifest.history
+                        WHERE user_id = \'""" + u['user_unique_id'] + """\'
+                          AND date_affected = \'""" + str(date_affected) + """\';
+                        """
+                    currentGR = execute(history_query, 'get', conn)
+                    # print(currentGR)
+                    # print(currentGR['result'][0]['id'])
+
+                    # IF IT DOES NOT EXIST THEN INSERT INTO HISTORY TABLE
+                    if len(currentGR['result']) == 0:
+                        print("no info  ==>  Prepare to do INSERT")
+
+                        # GET NEW HISTORY ID
+                        NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+                        NewID = NewIDresponse['result'][0]['new_id']
+                        print("New History id:", NewID)
+
+                        query = """
+                            INSERT INTO manifest.history
+                            SET id = \'""" + NewID + """\',
+                                user_id = \'""" + u['user_unique_id'] + """\',
+                                date = \'""" + date + """\',
+                                details = \'""" + str(json.dumps(getGRATIS_History)) + """\',
+                                date_affected = \'""" + str(date_affected) + """\';
+                        """
+
+                        # print(query)
+                        # print("Before Insert execution")
+                        historyInsert = execute(query, 'post', conn)
+                        print(historyInsert)
+
+                    # IF IT DOES EXIST THEN UPDATE HISTORY TABLE
+                    else:
+                        print("info exists in CRON Job  ==>  Prepare to UPDATE", currentGR['result'][0]['id'])
+                        query = """
+                            UPDATE manifest.history
+                            SET id = \'""" + currentGR['result'][0]['id'] + """\',
+                                user_id = \'""" + u['user_unique_id'] + """\',
+                                date = \'""" + date + """\',
+                                details = \'""" + json.dumps(getGRATIS_History) + """\',
+                                date_affected = \'""" + str(date_affected) + """\'
+                            WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
+                        """
+
+                        # print(query)
+                        # print("Before Update execution: ", query)
+                        historyUpdate = execute(query, 'post', conn)
+                        print(historyUpdate)
+
+
+                
+                    # STEP 3: RESET ALL CURRENT GRATIS
+                    # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                    print("\nReset all Current GRATIS for user: ", u['user_unique_id'])
+
+                    # print("Current Date from above: ", cur_date)
+                    # current_week_day = cur_date.strftime('%A').lower()
+                    # print("Current Weekday: ", current_week_day)
+
+                    # GET CURRENT GRATIS
+                    getGRATIS = GRATIS.get(self, u['user_unique_id'])
+                    print(getGRATIS)
+
+                    # FOR REFERENCE, THIS IS WHAT WAS RETURNED FROM GRATIS_History - DOESN'T HAVE REPEAT INFO
+                    # print("\nAlready have:")
+                    # print(getGRATIS_History)
+
+
+                    print("\nNumber of Goals: ", len(getGRATIS))
+
+                    # NEED TO DETERMINE STATUS OF IS_DISPLAYED_TODAY FOR CURRENT DAY
+
+                    for goal in getGRATIS:
+                        print("\n", goal['gr_unique_id'])
+                        
+                        # NOT SURE I NEED ANY OF THESE GETS OR PRINTS
+                        # # RESET VARIABLES 
+                        # is_displayed_today = 'False'
+                        # print("Reset is_displayed_today to false: ", is_displayed_today)
+                        # repeat_ends_on = (datetime.min).date()
+                        # print("Repeat Ends On: ", repeat_ends_on)
+
+
+                        # # GET INFO FROM getGRATIS
+                        repeat = goal['repeat']
+                        print("\nRepeat:        ", repeat)
+                        repeat_type = goal['repeat_type']
+                        print("Repeat Type:   ", repeat_type)
+                        repeat_ends_on = goal['repeat_ends_on']
+                        print("Repeat End on: ", repeat_ends_on) 
+                        repeat_occurences = goal['repeat_occurences']
+                        print("Occurences:    ", repeat_occurences)
+                        repeat_every = goal['repeat_every']
+                        print("Repeat Every:  ", repeat_every)
+                        repeat_frequency = goal['repeat_frequency']
+                        print("Repeat Freq:   ", repeat_frequency)
+                        # repeat_week_days = json.loads(goal['repeat_week_days'])
+                        # print("Repeat Week Days: ", repeat_week_days)
+                        gr_datetime_started = goal['gr_datetime_started']
+                        print("GR Started:    ", gr_datetime_started)
+                        gr_datetime_completed = goal['gr_datetime_completed']
+                        print("GR Completed:  ", gr_datetime_completed)
+                        # gr_expected_completion_time = goal['gr_expected_completion_time']
+                        # print("Expected Completion Time: ", gr_expected_completion_time)
+                        # gr_completed = goal['gr_completed']
+                        # print("GR Completed: ", gr_completed)
+                        start_day = goal['gr_start_day_and_time']
+                        print("Start Day:     ", start_day, type(start_day))
+                        start_date = datetime.strptime(start_day, '%Y-%m-%d %I:%M:%S %p').date()
+                        print("Start Date:    ", start_date, type(start_date))
+
+                        
+
+                        
+                        # NO LONGER HAVE WEEK, MONTH OR YEAR REPEAT FUNCTIONALITY.  KEEP THIS CODE BECAUSE IT WORKED BEFORE
+                        # week_days_unsorted = []
+                        # occurence_dates = []
+                        # # print(1)
+
+                        # # SORT THROUGH REPEAT WEEKDAYS TO SEE WHICH ARE TRUE
+                        # for key in repeat_week_days.keys():
+                        #     print("Key = ", key)
+                        #     if repeat_week_days[key].lower() == 'true':
+                        #         if key.lower() == "monday":
+                        #             week_days_unsorted.append(1)
+                        #         if key.lower() == "tuesday":
+                        #             week_days_unsorted.append(2)
+                        #         if key.lower() == "wednesday":
+                        #             week_days_unsorted.append(3)
+                        #         if key.lower() == "thursday":
+                        #             week_days_unsorted.append(4)
+                        #         if key.lower() == "friday":
+                        #             week_days_unsorted.append(5)
+                        #         if key.lower() == "saturday":
+                        #             week_days_unsorted.append(6)
+                        #         if key.lower() == "sunday":
+                        #             week_days_unsorted.append(7)
+                        # week_days = sorted(week_days_unsorted)
+                        # print("Repeat Days: ", week_days)
+                        
+
+                        # print(current_week_day)
+                        # if current_week_day == "monday":
+                        #     current_week_day = 1
+                        # if current_week_day == "tuesday":
+                        #     current_week_day = 2
+                        # if current_week_day == "wednesday":
+                        #     current_week_day = 3
+                        # if current_week_day == "thursday":
+                        #     current_week_day = 4
+                        # if current_week_day == "friday":
+                        #     current_week_day = 5
+                        # if current_week_day == "saturday":
+                        #     current_week_day = 6
+                        # if current_week_day == "sunday":
+                        #     current_week_day = 7
+                        # print(current_week_day)
+
+                        # print("Easier option? Just shifted by 1 day")
+                        # print(cur_date.weekday())
+
+                        # IF NO REPEAT, IS_DISPLAYED_TODAY IS TRUE ONLY IF CURRENT DATE = START DATE
+                        if repeat.lower() == 'false':
+                            is_displayed_today = (start_date == cur_date)
+                            print("Is_Displayed_Today: ", is_displayed_today)
+
+                        # IF REPEAT
+                        else:
+
+                            # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
+                            if cur_date >= start_date:
+
+                                # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
+                                if repeat_type.lower() == 'occur':
+                                    print("\nIn if after")
+                                    if repeat_frequency.lower() == 'day':
+                                        repeat_occurences = repeat_occurences - 1
+                                        number_days = int(repeat_occurences) * int(repeat_every)
+                                        repeat_ends_on = start_date + timedelta(days=number_days)
+                                        # print("Repeat Ends on: ", repeat_ends_on, type(repeat_ends_on))
+                                        # if repeat_ends_on < cur_date:
+                                        #     is_displayed_today = 'False'
+                                        #     print("Is_Displayed_Today: ", is_displayed_today)
+                                        # else:
+                                        #     is_displayed_today = 'True'
+                                        #     print("Is_Displayed_Today: ", is_displayed_today)
+
+                                    # NO LONGER HAVE WEEK, MONTH OR YEAR REPEAT FUNCTIONALITY.  KEEP THIS CODE BECAUSE IT WORKED BEFORE
+                                    # elif goal['repeat_frequency'].lower() == 'week':
+                                    #     # print("in if if elif")
+                                    #     numberOfWeek = 0
+
+                                    #     init_date = start_date
+                                    #     start_day = init_date.isoweekday()
+                                    #     # print("Weekly")
+                                    #     result = []
+                                    #     for x in week_days:
+                                    #         if x < start_day:
+                                    #             result.append(x)
+                                    #     new_week = []
+                                    #     if len(result) > 0:
+                                    #         new_week = week_days[len(result):]
+                                    #         for day in result:
+                                    #             new_week.append(day)
+                                    #         week_days = new_week
+
+                                    #     for i in range(goal['repeat_occurences']):
+                                    #         if i < len(week_days):
+                                    #             dow = week_days[i]
+                                    #         if i >= len(week_days):
+                                    #             numberOfWeek = math.floor(
+                                    #                 i / len(week_days))
+                                    #             dow = week_days[i % len(week_days)]
+
+                                    #         new_date = init_date
+                                    #         today = new_date.isoweekday()
+                                    #         day_i_need = dow
+                                    #         if today <= day_i_need:
+                                    #             days = day_i_need - today
+                                    #             nextDayOfTheWeek = new_date + timedelta(days=days)
+                                    #         else:
+                                    #             new_date = new_date + relativedelta(weeks=1)
+                                    #             days = day_i_need - today
+                                    #             nextDayOfTheWeek = new_date + timedelta(days=-days)
+                                    #         add_weeks = numberOfWeek * int(goal['repeat_every'])
+                                    #         date = nextDayOfTheWeek + relativedelta(weeks=add_weeks)
+                                    #         occurence_dates.append(date)
+                                    #     # print("current", currentDate)
+                                    #     # print(occurence_dates)
+                                    #     if cur_date in occurence_dates:
+                                    #         is_displayed_today = True
+                                    #     # print(goal['gr_title'], is_displayed_today)
+                                    #     # print("P")
+                                        
+                                    # elif goal['repeat_frequency'].lower() == 'month':
+                                    #     # print("in if elif month")
+                                    #     # print("month")
+                                    #     repeat_occurences = goal['repeat_occurences'] - 1
+                                    #     repeat_every = goal['repeat_every']
+                                    #     end_month = int(
+                                    #         repeat_occurences) * int(repeat_every)
+                                    #     repeat_ends_on = start_date + relativedelta(months=end_month)
+                                    #     # print(repeat_ends_on)
+
+                                    # elif goal['repeat_frequency'].lower() == 'year':
+                                    #     # print("year")
+                                    #     repeat_occurences = goal['repeat_occurences']
+                                    #     repeat_every = goal['repeat_every']
+                                    #     end_year = int(repeat_occurences) * int(repeat_every)
+                                    #     repeat_ends_on = start_date + relativedelta(years=end_year)
+                                    #     # print(repeat_ends_on)
+
+                                # IF REPEAT NEVER ENDS
+                                elif repeat_type.lower() == 'never':
+                                    print("In if never ")
+                                    repeat_ends_on = cur_date
+                                    # print("Repeat Ends on: ", repeat_ends_on)
+                                    # is_displayed_today = 'True'
+                                    # print("Is_Displayed_Today: ", is_displayed_today)
+
+                                # IF REPEAT ENDS ON A SPECIFIC DAY
+                                elif repeat_type.lower() == 'on':
+                                    print("In if on ")
+                                    # print("in goal repeat ends on", goal['repeat_ends_on'])
+                                    # repeat_ends = goal['repeat_ends_on']
+                                    # print(repeat_ends)
+                                    # repeat_ends_on = repeat_ends[:24]
+                                    # print(repeat_ends_on)
+                                    #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+                                    repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
+                                    # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
+                                    # if repeat_ends_on < cur_date:
+                                    #     is_displayed_today = 'False'
+                                    #     print("Is_Displayed_Today: ", is_displayed_today)
+                                    # else:
+                                    #     is_displayed_today = 'True'
+                                    #     print("Is_Displayed_Today: ", is_displayed_today)
+
+                                print("\nRepeat End on: ", repeat_ends_on, type(repeat_ends_on))
+                                if repeat_ends_on < cur_date:
+                                    is_displayed_today = 'False'
+                                    print("Is_Displayed_Today: ", is_displayed_today)
+                                else:
+                                    is_displayed_today = 'True'
+                                    print("Is_Displayed_Today: ", is_displayed_today)
+
+                            
+                            # NO LONGER HAVE WEEK, MONTH OR YEAR REPEAT FUNCTIONALITY.  KEEP THIS CODE BECAUSE IT WORKED BEFORE
+                            # CHECK TO MAKE SURE CURRENT DATE IS BEFORE REPEAT END ON DATE
+                            # if cur_date <= repeat_ends_on:
+                            #     repeat_every = int(goal['repeat_every'])
+                            #     # print("\nRepeat Every: ", repeat_every)
+                            #     # print("Repeat Frequency: ", goal['repeat_frequency'])
+                            #     if goal['repeat_frequency'].lower() == 'day':
+                            #         epoch = dt.datetime.utcfromtimestamp(0).date()
+                            #         current_time = (
+                            #             cur_date - epoch).total_seconds() * 1000.0
+                            #         # print("Current time: ", current_time)
+                            #         start_time = (
+                            #             start_date - epoch).total_seconds() * 1000.0
+                            #         # print("Start time: ", start_time)
+                            #         # THIS STATEMENT DETERMINES IF IS_DISPLAYED IS TRUE OR FALSE
+                            #         is_displayed_today = (math.floor(
+                            #             (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
+                            #         # print("is_displayed_today: ", is_displayed_today)
+
+                            #         # print(goal['gr_title'], is_displayed_today)
+
+                            #     if goal['repeat_frequency'].lower() == 'week':
+                            #         if current_week_day in week_days:
+                            #             epoch = dt.datetime.utcfromtimestamp(0).date()
+                            #             current_time = (
+                            #                 cur_date - epoch).total_seconds() * 1000.0
+                            #             start_time = (
+                            #                 start_date - epoch).total_seconds() * 1000.0
+                            #             is_displayed_today = (math.floor(
+                            #                 (current_time - start_time)/(7*24*3600*1000)) % repeat_every) == 0
+                                    
+                            #     if goal['repeat_frequency'].lower() == 'month':
+                            #         is_displayed_today = currentDate.day == start_date.day and (
+                            #             (currentDate.year - start_date.year) * 12 + currentDate.month - start_date.month) % repeat_every == 0
+                                    
+                            #         # print(goal['gr_title'], is_displayed_today)
+
+                            #     if goal['repeat_frequency'].lower() == 'year':
+                            #         is_displayed_today = currentDate.day == start_date.day and currentDate.month == start_date.month and (
+                            #             currentDate.year - start_date.year) % repeat_every == 0
+                                    
+                                    # print(goal['gr_title'], is_displayed_today)
+
+
+                        # UPDATE GRATIS
+                        print("\nGetting Ready to update GRATIS for: ", goal['gr_unique_id'], type(goal['gr_unique_id']))
+                        # print(str(is_displayed_today).title(), type(str(is_displayed_today).title()))
+                        # print(goal['gr_unique_id'], type(goal['gr_unique_id']))
+
+                        # UPDATE GOALS AND ROUTINES
+                        print("Update GR")
+                        updateGRquery = """
+                            UPDATE goals_routines
+                            SET is_in_progress = \'""" + 'False'+"""\'
+                            , is_complete = \'""" + 'False'+"""\'
+                            , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
+                            WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';
+                        """
+                        # print(updateGRquery)
+                        updateGR = execute(updateGRquery, 'post', conn)
+                        print(updateGR)
+
+
+                        # UPDATE ACTIONS AND TASKS
+                        print("Update AT")
+                        updateATquery = """
+                            UPDATE actions_tasks
+                            SET is_in_progress = \'""" + 'False'+"""\'
+                            , is_complete = \'""" + 'False'+"""\'
+                            WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
+                        """
+                        # print(updateATquery)
+                        updateAT = execute(updateATquery, 'post', conn)
+                        print(updateAT)
+
+
+                        # UPDATE INSTRUCTIONS AND STEPS
+                        print("Update IS")
+                        getATquery = """
+                            SELECT * 
+                            FROM actions_tasks 
+                            WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
+                        """
+                        # print(getATquery)
+                        actions_task_response = execute(getATquery, 'get', conn)
+                        print(actions_task_response, type(actions_task_response))
+
+
+                        print(actions_task_response['result'], type(actions_task_response['result']))
+                        print("Length: ", len(actions_task_response['result']))
+                        # print("AT length: ", len(actions_task_response['result']))
+                        if len(actions_task_response['result']) > 0:
+                            for i in range(len(actions_task_response['result'])):
+                                print(i)
+                                print(actions_task_response['result'][i]['at_unique_id'], type (actions_task_response['result'][i]['at_unique_id']))
+                                updateISquery = """
+                                    UPDATE instructions_steps
+                                    SET is_in_progress = \'""" + 'False'+"""\'
+                                    , is_complete = \'""" + 'False'+"""\'
+                                    WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';
+                                """
+                                # print(updateISquery)
+                                updateIS = execute(updateISquery, 'post', conn)
+                                print(updateIS)
+                        print("finished Reset for Goal: ", goal['gr_unique_id'] )     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+                else:
+                    # TIME IS AFTER THRESHOLD AND DATE AFFECTED IS CURRENT DATE
+                    date_affected = cur_datetime.date()
+
+
+            response = user_tz
+            
+
+            # CAPTURE GRATIS SNAPSHOT
+
+            # DETERMINE DATE AFFECTED
+
+            # STORE SNAPSHOT
+        
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
         finally:
             disconnect(conn)
 
 
 
+        
+
 
 
 class TimeFunction(Resource):
-    
+    # EXERCISE IN MANIPULATING TIME
+    # THESE FUNCTIONS ARE NOT USED IN THE PROGRAM
 
     def get(self):
         from pytz import timezone
@@ -9462,20 +9452,15 @@ class UpdateVersionNumber(Resource):
 # Make sure port number is unused (i.e. don't use numbers 0-1023)
 
 # GET requests
-api.add_resource(
-    GoalsRoutines, '/api/v2/getgoalsandroutines/<string:user_id>')  # working
+api.add_resource(GoalsRoutines, '/api/v2/getgoalsandroutines/<string:user_id>')  # working
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')  # working
 api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working
-api.add_resource(ActionsInstructions,
-                 '/api/v2/actionsInstructions/<string:gr_id>')  # working
-api.add_resource(
-    ActionsTasks, '/api/v2/actionsTasks/<string:goal_routine_id>')  # working
-api.add_resource(InstructionsAndSteps,
-                 '/api/v2/instructionsSteps/<string:action_task_id>')  # working
+api.add_resource(ActionsInstructions,'/api/v2/actionsInstructions/<string:gr_id>')  # working
+api.add_resource(ActionsTasks, '/api/v2/actionsTasks/<string:goal_routine_id>')  # working
+api.add_resource(InstructionsAndSteps,'/api/v2/instructionsSteps/<string:action_task_id>')  # working
 
 
-api.add_resource(TodayGoalsRoutines,
-                 '/api/v2/todaygoalsandroutines/<string:user_id>')
+api.add_resource(TodayGoalsRoutines,'/api/v2/todaygoalsandroutines/<string:user_id>')
 
 
 
@@ -9518,6 +9503,9 @@ api.add_resource(TodayGR, '/api/v2/todayGR')
 
 
 api.add_resource(ManifestNotification_CLASS, '/api/v2/ManifestNotification_CLASS')
+api.add_resource(ManifestHistory_CLASS, '/api/v2/ManifestHistory_CLASS')
+api.add_resource(GRATIS, '/api/v2/GRATIS/<string:user_id>')
+api.add_resource(GRATIS_History, '/api/v2/GRATIS_History/<string:user_id>')
 
 
 api.add_resource(GetNotifications, '/api/v2/getNotifications')  # working
