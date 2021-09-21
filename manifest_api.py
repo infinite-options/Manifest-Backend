@@ -5574,7 +5574,7 @@ class Notifications(Resource):
 def notify(msg,tag):
     # print(msg,tag)
     #return
-    isDebug = True
+    # isDebug = True
 	#hub = AzureNotificationHub("Endpoint=sb://serving-fresh-notification-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Yy/PhzWba6vmrM8geyHmKTVQPocwrDVcVlqAiokvHe4=", "Serving-Fresh-Notification-Hub", isDebug)
     # hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7o7LFe8Oz6FZUQQ/gaNgqSfdN4Ckp6FCVCm3xuVg=", "Manifest-Notification-Hub", isDebug)
     hub = AzureNotificationHub(NOTIFICATION_HUB_KEY, NOTIFICATION_HUB_NAME, isDebug)
