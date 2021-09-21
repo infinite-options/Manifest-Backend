@@ -663,6 +663,37 @@ class AddNewGR(Resource):
                 if repeat_week_days[key] == "Saturday":
                     dict_week_days["saturday"] = "True"
 
+            # DETERMINE SETTING FOR IS_DISPLAYED_TODAY
+            user_tz_query = """
+                    SELECT user_unique_id, time_zone
+                    FROM manifest.users
+                    WHERE user_unique_id = \'""" + str(user_id) + """\'; 
+                """
+            user_tz = execute(user_tz_query, "get", conn)
+            print(user_tz)
+
+            
+            # GET TIME AND DATE FOR SPECIFIC USER
+            user = user_tz['result'][0]['user_unique_id']
+            print("\nUser: ", user)
+            # CURRENT DATETIME IN THE USER OR TAS TIMEZONE
+            cur_datetime = datetime.now(pytz.timezone(user_tz['result'][0]['time_zone']))
+            print("Current datetime: ", cur_datetime, type(cur_datetime))
+
+            # CURRENT DATE IN THE USER OR TAS TIMEZONE IN DATETIME FORMAT
+            cur_date = cur_datetime.date()
+            print("Current date:     ", cur_date, type(cur_date))
+
+            # CONVERT START DATE INPUT INTO DATE TIME FORMAT
+            print("start_day_and_time", start_day_and_time, type(start_day_and_time))
+            start_date = datetime.strptime(start_day_and_time, '%Y-%m-%d %I:%M:%S %p').date()
+            print("start_date", start_date, type(start_date))
+
+            is_displayed_today = (start_date == cur_date)
+            print("Is_Displayed_Today: ", is_displayed_today)
+
+
+
             # New Goal/Routine ID
             query = ["CALL get_gr_id;"]
             new_gr_id_response = execute(query[0],  'get', conn)
