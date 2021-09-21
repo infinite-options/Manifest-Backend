@@ -23,7 +23,7 @@ import urllib.request
 import base64
 from oauth2client import GOOGLE_REVOKE_URI, GOOGLE_TOKEN_URI, client
 from io import BytesIO
-from pytz import timezone
+from pytz import timezone as ptz
 import pytz
 from dateutil.relativedelta import relativedelta
 import math
@@ -54,7 +54,7 @@ import stripe
 import binascii
 from datetime import datetime
 import datetime as dt
-from datetime import timezone
+from datetime import timezone as dtz
 import time
 
 from NotificationHub import AzureNotification
@@ -842,6 +842,7 @@ class AddNewGR(Resource):
 # Update Goal/Routine of a user
 class UpdateGR(Resource):
     def post(self):
+        print("In Update Goal/Routine")
         response = {}
         items = {}
         try:
@@ -905,6 +906,7 @@ class UpdateGR(Resource):
             icon_type = request.form.get('type')
             description = 'Other'
 
+            print("Received Input")
             for i, char in enumerate(gr_title):
                 if char == "'":
                     gr_title = gr_title[:i+1] + "'" + gr_title[i+1:]
@@ -927,6 +929,37 @@ class UpdateGR(Resource):
                     dict_week_days["Friday"] = "True"
                 if repeat_week_days[key] == "Saturday":
                     dict_week_days["Saturday"] = "True"
+            
+
+            # DETERMINE SETTING FOR IS_DISPLAYED_TODAY
+            user_tz_query = """
+                    SELECT user_unique_id, time_zone
+                    FROM manifest.users
+                    WHERE user_unique_id = \'""" + str(user_id) + """\'; 
+                """
+            user_tz = execute(user_tz_query, "get", conn)
+            print(user_tz)
+
+            
+            # GET TIME AND DATE FOR SPECIFIC USER
+            user = user_tz['result'][0]['user_unique_id']
+            print("\nUser: ", user)
+            # CURRENT DATETIME IN THE USER OR TAS TIMEZONE
+            cur_datetime = datetime.now(pytz.timezone(user_tz['result'][0]['time_zone']))
+            print("Current datetime: ", cur_datetime, type(cur_datetime))
+
+            # CURRENT DATE IN THE USER OR TAS TIMEZONE IN DATETIME FORMAT
+            cur_date = cur_datetime.date()
+            print("Current date:     ", cur_date, type(cur_date))
+
+            # CONVERT START DATE INPUT INTO DATE TIME FORMAT
+            print("start_day_and_time", start_day_and_time, type(start_day_and_time))
+            start_date = datetime.strptime(start_day_and_time, '%Y-%m-%d %I:%M:%S %p').date()
+            print("start_date", start_date, type(start_date))
+
+            is_displayed_today = (start_date == cur_date)
+            print("Is_Displayed_Today: ", is_displayed_today)
+
 
             if not photo:
 
