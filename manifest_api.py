@@ -57,8 +57,8 @@ import datetime as dt
 from datetime import timezone as dtz
 import time
 
-from NotificationHub import AzureNotification
-from NotificationHub import AzureNotificationHub
+# from NotificationHub import AzureNotification
+# from NotificationHub import AzureNotificationHub
 
 # from env_file import RDS_PW, S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
 s3 = boto3.client('s3')
@@ -110,12 +110,14 @@ def getNow(): return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
 
 
 # NOTIFICATIONS
+from NotificationHub import AzureNotification
+from NotificationHub import AzureNotificationHub
 # from NotificationHub import Notification
 # from NotificationHub import NotificationHub
-# # For Push notification
-# isDebug = False
-# NOTIFICATION_HUB_KEY = os.environ.get('NOTIFICATION_HUB_KEY')
-# NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME')
+# For Push notification
+isDebug = False
+NOTIFICATION_HUB_KEY = os.environ.get('NOTIFICATION_HUB_KEY')
+NOTIFICATION_HUB_NAME = os.environ.get('NOTIFICATION_HUB_NAME')
 
 # Twilio settings
 # from twilio.rest import Client
@@ -5574,7 +5576,8 @@ def notify(msg,tag):
     #return
     isDebug = True
 	#hub = AzureNotificationHub("Endpoint=sb://serving-fresh-notification-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Yy/PhzWba6vmrM8geyHmKTVQPocwrDVcVlqAiokvHe4=", "Serving-Fresh-Notification-Hub", isDebug)
-    hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7o7LFe8Oz6FZUQQ/gaNgqSfdN4Ckp6FCVCm3xuVg=", "Manifest-Notification-Hub", isDebug)
+    # hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7o7LFe8Oz6FZUQQ/gaNgqSfdN4Ckp6FCVCm3xuVg=", "Manifest-Notification-Hub", isDebug)
+    hub = NotificationHub(NOTIFICATION_HUB_KEY, NOTIFICATION_HUB_NAME, isDebug)
 
     # APPLE NOTIFICATIONS
 	#wns_payload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"}}"
