@@ -5237,11 +5237,13 @@ class AboutMe(Resource):
                                     LIMIT 1;""", 'get', conn)
 
             progress_list = progress['result']
+            # print(progress_list)
 
             if len(progress_list) > 0:
                 first_date = progress_list[0]['datetime_gmt']
             else:
                 first_date = ''
+            # print(first_date)
 
             # returns important people
             query = """ SELECT ta_people_id
@@ -5261,6 +5263,7 @@ class AboutMe(Resource):
                             WHERE important = 'TRUE' and user_uid = \'""" + user_id + """\';"""
 
             items1 = execute(query, 'get', conn)
+            # print(items1)
 
             # returns users information
             items = execute("""SELECT user_have_pic
@@ -5286,13 +5289,14 @@ class AboutMe(Resource):
 
             items['result'][0]['datetime'] = first_date
 
-            # COmbining the data resulted form both queries
+            # Combining the data resulted form both queries
             if len(items1['result']) > 0:
                 response['result'] = items['result'] + items1['result']
             else:
                 items1['result'] = [
                     {"important_people": "no important people"}]
                 response['result'] = items['result'] + items1['result']
+            # print(response['result'])
 
             response['message'] = 'successful'
             return response, 200
