@@ -5696,13 +5696,16 @@ def ManifestNotification_CRON():
                     gr.gr_title, is_available, is_complete, is_in_progress, is_displayed_today, is_persistent, gr_start_day_and_time, gr_end_day_and_time,
                     u.time_zone, cust_guid_device_id_notification,
                     ta.ta_guid_device_id_notification
-                FROM manifest_mylife.notifications n
-                LEFT JOIN manifest_mylife.goals_routines gr
+                FROM manifest.notifications n
+                LEFT JOIN manifest.goals_routines gr
                     ON gr_at_id = gr_unique_id
-                LEFT JOIN manifest_mylife.users u
+                LEFT JOIN manifest.users u
                     ON user_id = user_unique_id
-                LEFT JOIN manifest_mylife.ta_people ta
-                    ON user_ta_id = ta_unique_id;
+                LEFT JOIN manifest.ta_people ta
+                    ON user_ta_id = ta_unique_id
+                WHERE is_complete != 'True' 
+                    AND is_available = 'True'
+                    AND is_displayed_today = "True";
             """
         
         notifications = execute(notifications_query, 'get', conn)
@@ -5808,13 +5811,16 @@ class ManifestNotification_CLASS(Resource):
                         gr.gr_title, is_available, is_complete, is_in_progress, is_displayed_today, is_persistent, gr_start_day_and_time, gr_end_day_and_time,
                         u.time_zone, cust_guid_device_id_notification,
                         ta.ta_guid_device_id_notification
-                    FROM manifest_mylife.notifications n
-                    LEFT JOIN manifest_mylife.goals_routines gr
+                    FROM manifest.notifications n
+                    LEFT JOIN manifest.goals_routines gr
                         ON gr_at_id = gr_unique_id
-                    LEFT JOIN manifest_mylife.users u
+                    LEFT JOIN manifest.users u
                         ON user_id = user_unique_id
-                    LEFT JOIN manifest_mylife.ta_people ta
-                        ON user_ta_id = ta_unique_id;
+                    LEFT JOIN manifest.ta_people ta
+                        ON user_ta_id = ta_unique_id
+                    WHERE is_complete != 'True' 
+                        AND is_available = 'True'
+                        AND is_displayed_today = "True";
                 """
             
             notifications = execute(notifications_query, 'get', conn)

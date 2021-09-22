@@ -57,12 +57,9 @@ import datetime as dt
 from datetime import timezone as dtz
 import time
 
-# from NotificationHub import AzureNotification
-# from NotificationHub import AzureNotificationHub
 
 # from env_file import RDS_PW, S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
 s3 = boto3.client('s3')
-
 
 
 app = Flask(__name__)
@@ -80,9 +77,9 @@ app.config['DEBUG'] = True
 app.config['MAIL_SERVER'] = 'smtp.mydomain.com'
 app.config['MAIL_PORT'] = 465
 
-app.config['MAIL_USERNAME'] = 'ptydtesting@gmail.com'
-app.config['MAIL_PASSWORD'] = 'ptydtesting06282020'
-app.config['MAIL_DEFAULT_SENDER'] = 'ptydtesting@gmail.com'
+app.config['MAIL_USERNAME'] = 'support@manifestmy.space'
+app.config['MAIL_PASSWORD'] = 'Support4MySpace'
+app.config['MAIL_DEFAULT_SENDER'] = 'support@manifestmy.space'
 
 
 app.config['MAIL_USE_TLS'] = False
@@ -5240,11 +5237,13 @@ class AboutMe(Resource):
                                     LIMIT 1;""", 'get', conn)
 
             progress_list = progress['result']
+            # print(progress_list)
 
             if len(progress_list) > 0:
                 first_date = progress_list[0]['datetime_gmt']
             else:
                 first_date = ''
+            # print(first_date)
 
             # returns important people
             query = """ SELECT ta_people_id
@@ -5288,14 +5287,16 @@ class AboutMe(Resource):
                             WHERE user_unique_id = \'""" + user_id + """\';""", 'get', conn)
 
             items['result'][0]['datetime'] = first_date
+            # print(items1)
 
-            # COmbining the data resulted form both queries
+            # Combining the data resulted form both queries
             if len(items1['result']) > 0:
                 response['result'] = items['result'] + items1['result']
             else:
                 items1['result'] = [
                     {"important_people": "no important people"}]
                 response['result'] = items['result'] + items1['result']
+            # print(response['result'])
 
             response['message'] = 'successful'
             return response, 200
@@ -5573,10 +5574,7 @@ class Notifications(Resource):
 
 def notify(msg,tag):
     # print(msg,tag)
-    #return
-    # isDebug = True
-	#hub = AzureNotificationHub("Endpoint=sb://serving-fresh-notification-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=Yy/PhzWba6vmrM8geyHmKTVQPocwrDVcVlqAiokvHe4=", "Serving-Fresh-Notification-Hub", isDebug)
-    # hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7o7LFe8Oz6FZUQQ/gaNgqSfdN4Ckp6FCVCm3xuVg=", "Manifest-Notification-Hub", isDebug)
+    # hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7...m3xuVg=", "Manifest-Notification-Hub", isDebug)
     hub = AzureNotificationHub(NOTIFICATION_HUB_KEY, NOTIFICATION_HUB_NAME, isDebug)
 
     # APPLE NOTIFICATIONS
@@ -5704,7 +5702,10 @@ def ManifestNotification_CRON():
                 LEFT JOIN manifest.users u
                     ON user_id = user_unique_id
                 LEFT JOIN manifest.ta_people ta
-                    ON user_ta_id = ta_unique_id;
+                    ON user_ta_id = ta_unique_id
+                WHERE is_complete != 'True' 
+                    AND is_available = 'True'
+                    AND is_displayed_today = "True";
             """
         
         notifications = execute(notifications_query, 'get', conn)
@@ -5816,7 +5817,10 @@ class ManifestNotification_CLASS(Resource):
                     LEFT JOIN manifest.users u
                         ON user_id = user_unique_id
                     LEFT JOIN manifest.ta_people ta
-                        ON user_ta_id = ta_unique_id;
+                        ON user_ta_id = ta_unique_id
+                    WHERE is_complete != 'True' 
+                        AND is_available = 'True'
+                        AND is_displayed_today = "True";
                 """
             
             notifications = execute(notifications_query, 'get', conn)
