@@ -6106,7 +6106,7 @@ def ManifestHistory_CRON():
             print("Current date in ", date_format, ": ", date, type(date))
 
             # THRESHOLD TIME
-            threshold_time = datetime(2000, 1, 1, 12, 0, 0, 0).time()
+            threshold_time = datetime(2000, 1, 1, 1, 0, 0, 0).time()
             print("Threshold time:   ", threshold_time, type(threshold_time))
 
 

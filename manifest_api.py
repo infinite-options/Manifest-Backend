@@ -175,8 +175,6 @@ def disconnect(conn):
         print("Could not properly disconnect from MySQL database. (API v2)")
         raise Exception("Failure disconnecting from MySQL database. (API v2)")
 
-
-
 # Execute an SQL command (API v2)
 # Set cmd parameter to 'get' or 'post'
 # Set conn parameter to connection object
@@ -5785,8 +5783,6 @@ def ManifestNotification_CRON():
     finally:
         disconnect(conn)
 
-
-
 # USE THIS CLASS FOR DEBUG PURPOSES AND THEN COPY OVER DEF - REMEMBER TO CHANGE DURATION TIMES
 class ManifestNotification_CLASS(Resource):
     def get(self):
@@ -5899,6 +5895,8 @@ class ManifestNotification_CLASS(Resource):
             raise BadRequest('ManifestNotification_CRON Request failed, please try again later.')
         finally:
             disconnect(conn)
+
+
 
 def GRATIS(user_id):
     # GET ALL GRATIS INFOMATION GIVEN USER ID
@@ -6106,7 +6104,7 @@ def ManifestHistory_CRON():
             print("Current date in ", date_format, ": ", date, type(date))
 
             # THRESHOLD TIME
-            threshold_time = datetime(2000, 1, 1, 12, 0, 0, 0).time()
+            threshold_time = datetime(2000, 1, 1, 1, 0, 0, 0).time()
             print("Threshold time:   ", threshold_time, type(threshold_time))
 
 
@@ -6369,8 +6367,6 @@ def ManifestHistory_CRON():
         raise BadRequest('Request failed, please try again later.')
     finally:
         disconnect(conn)
-
-
 
 # USE THIS CLASS FOR DEBUG PURPOSES AND THEN COPY OVER DEF
 class ManifestHistory_CLASS(Resource):
