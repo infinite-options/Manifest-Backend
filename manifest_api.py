@@ -4257,7 +4257,7 @@ class Login(Resource):
                 execute("""INSERT INTO relationship
                            SET id = \'""" + NewRelationID + """\',
                                r_timestamp = \'""" + timestamp + """\',
-                               ta_people_id = \'""" + '100-000040' + """\',
+                               ta_people_id = \'""" + '200-000016' + """\',
                                user_uid = \'""" + new_user_id + """\',
                                relation_type = \'""" + 'advisor' + """\',
                                ta_have_pic = \'""" + 'False' + """\',
@@ -4275,7 +4275,7 @@ class Login(Resource):
 
 
                 items['message'] = 'User Not Found. New User Created.'
-                items['code'] = 404
+                items['code'] = 200
                 return items
 
 
