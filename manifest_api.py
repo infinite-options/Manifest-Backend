@@ -4172,8 +4172,11 @@ class Login(Resource):
         try:
             conn = connect()
             data = request.get_json(force=True)
+            timestamp = getNow()
 
             email = data['email']
+            user_first_name = data['user_first_name']
+            user_last_name = data['user_last_name']
             social_id = data['social_id']
             # password = data.get('password')
             refresh_token = data.get('mobile_refresh_token')
@@ -4228,61 +4231,61 @@ class Login(Resource):
                 
                 
                 # CREATE NEW ACCOUNT HERE
-                # print("Account not found. Creating new account")
-                # user_id_response = execute("CAll get_user_id;", 'get', conn)
-                # new_user_id = user_id_response['result'][0]['new_id']
+                print("Account not found. Creating new account")
+                user_id_response = execute("CAll get_user_id;", 'get', conn)
+                new_user_id = user_id_response['result'][0]['new_id']
 
-                # execute("""INSERT INTO users
-                #            SET user_unique_id = \'""" + new_user_id + """\',
-                #                user_timestamp = \'""" + timestamp + """\',
-                #                user_email_id = \'""" + email + """\',
-                #                user_first_name = \'""" + first_name + """\',
-                #                user_last_name = \'""" + last_name + """\',
-                #                google_auth_token = \'""" + google_auth_token + """\',
-                #                google_refresh_token = \'""" + google_refresh_token + """\',
-                #                time_zone = \'""" + time_zone + """\',
-                #                user_have_pic = \'""" + 'False' + """\',
-                #                user_picture = \'""" + '' + """\',
-                #                user_social_media = \'""" + 'GOOGLE' + """\',
-                #                new_account = \'""" + 'True' + """\',
-                #                cust_guid_device_id_notification = \'""" + 'null' + """\';""", 'post', conn)
+                execute("""INSERT INTO users
+                           SET user_unique_id = \'""" + new_user_id + """\',
+                               user_timestamp = \'""" + timestamp + """\',
+                               user_email_id = \'""" + email + """\',
+                               user_first_name = \'""" + user_first_name + """\',
+                               user_last_name = \'""" + user_last_name + """\',
+                               google_auth_token = \'""" + access_token + """\',
+                               google_refresh_token = \'""" + refresh_token + """\',
+                               time_zone = \'""" + time_zone + """\',
+                               user_have_pic = \'""" + 'False' + """\',
+                               user_picture = \'""" + '' + """\',
+                               user_social_media = \'""" + 'GOOGLE' + """\',
+                               new_account = \'""" + 'True' + """\',
+                               cust_guid_device_id_notification = \'""" + 'null' + """\';""", 'post', conn)
 
-                # NewRelationIDresponse = execute(
-                #     "Call get_relation_id;", 'get', conn)
-                # NewRelationID = NewRelationIDresponse['result'][0]['new_id']
-                # execute("""INSERT INTO relationship
-                #            SET id = \'""" + NewRelationID + """\',
-                #                r_timestamp = \'""" + timestamp + """\',
-                #                ta_people_id = \'""" + ta_people_id + """\',
-                #                user_uid = \'""" + new_user_id + """\',
-                #                relation_type = \'""" + 'advisor' + """\',
-                #                ta_have_pic = \'""" + 'False' + """\',
-                #                ta_picture = \'""" + '' + """\',
-                #                important = \'""" + 'True' + """\',
-                #                advisor = \'""" + str(1) + """\';""", 'post', conn) 
+                NewRelationIDresponse = execute(
+                    "Call get_relation_id;", 'get', conn)
+                NewRelationID = NewRelationIDresponse['result'][0]['new_id']
+                execute("""INSERT INTO relationship
+                           SET id = \'""" + NewRelationID + """\',
+                               r_timestamp = \'""" + timestamp + """\',
+                               ta_people_id = \'""" + '100-000040' + """\',
+                               user_uid = \'""" + new_user_id + """\',
+                               relation_type = \'""" + 'advisor' + """\',
+                               ta_have_pic = \'""" + 'False' + """\',
+                               ta_picture = \'""" + '' + """\',
+                               important = \'""" + 'True' + """\',
+                               advisor = \'""" + str(1) + """\';""", 'post', conn) 
 
-                # response['message'] = 'successful'
-                # response['result'] = new_user_id
-
-
-                # # QUERY DB TO GET USER INFO
-                # query = "SELECT * from users WHERE user_email_id = \'" + email + "\';"
-                # items = execute(query, 'get', conn)
+                response['message'] = 'successful'
+                response['result'] = new_user_id
 
 
-                # items['message'] = 'User Not Found. New User Created.'
-                # items['code'] = 404
-                # return items
+                # QUERY DB TO GET USER INFO
+                query = "SELECT * from users WHERE user_email_id = \'" + email + "\';"
+                items = execute(query, 'get', conn)
 
 
-
-
-
-
-                items['message'] = 'User Not Found. Please signup'
-                items['result'] = ''
+                items['message'] = 'User Not Found. New User Created.'
                 items['code'] = 404
                 return items
+
+
+
+
+
+
+                # items['message'] = 'User Not Found. Please signup'
+                # items['result'] = ''
+                # items['code'] = 404
+                # return items
             else:
                 print(items['result'])
                 print('sc: ', items['result'][0]['user_social_media'])
