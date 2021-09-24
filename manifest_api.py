@@ -2458,7 +2458,7 @@ class CopyGR(Resource):
 #                                 if actions['result'][j]['is_in_progress'].lower() == 'true':
 #                                     action_history[j]['status'] = 'in_progress'
 #                                 elif actions['result'][j]['is_complete'].lower() == 'true':
-#                                     action_history[j]['status'] = 'complete'
+#                                     action_history[j]['status'] = 'completed'
 #                                 else:
 #                                     action_history[j]['status'] = 'not started'
 
@@ -2492,7 +2492,7 @@ class CopyGR(Resource):
 #                                         if instructions['result'][k]['is_in_progress'].lower() == 'true':
 #                                             instruction_history[k]['status'] = 'in_progress'
 #                                         elif instructions['result'][k]['is_complete'].lower() == 'true':
-#                                             instruction_history[k]['status'] = 'complete'
+#                                             instruction_history[k]['status'] = 'completed'
 #                                         else:
 #                                             instruction_history[k]['status'] = 'not started'
 
@@ -4241,12 +4241,13 @@ class Login(Resource):
                                user_email_id = \'""" + email + """\',
                                user_first_name = \'""" + user_first_name + """\',
                                user_last_name = \'""" + user_last_name + """\',
-                               google_auth_token = \'""" + access_token + """\',
-                               google_refresh_token = \'""" + refresh_token + """\',
+                               social_id = \'""" + social_id + """\',
+                               mobile_auth_token = \'""" + access_token + """\',
+                               mobile_refresh_token = \'""" + refresh_token + """\',
                                time_zone = \'""" + time_zone + """\',
                                user_have_pic = \'""" + 'False' + """\',
                                user_picture = \'""" + '' + """\',
-                               user_social_media = \'""" + 'GOOGLE' + """\',
+                               user_social_media = \'""" + signup_platform + """\',
                                new_account = \'""" + 'True' + """\',
                                cust_guid_device_id_notification = \'""" + 'null' + """\';""", 'post', conn)
 
