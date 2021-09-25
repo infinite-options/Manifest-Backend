@@ -3316,6 +3316,31 @@ class UpdateTime(Resource):
             disconnect(conn)
 
 # Update time and time zone
+class UpdateTimeZone(Resource):
+    def post(self, user_id):
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+            data = request.get_json(force=True)
+            time_zone = data['time_zone']
+
+            execute(""" UPDATE users
+                        SET 
+                        time_zone = \'""" + time_zone + """\'
+                        WHERE user_unique_id = \'""" + user_id + """\';""", 'post', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)            
+
+
 class ResetGR(Resource):
     def post(self, gr_id):
         response = {}
@@ -6132,6 +6157,107 @@ def GRATIS_History(user_id):
         disconnect(conn)
 
 
+class GRATIS_History_CLASS(Resource):
+    def get (self, user_id):
+        # GET ALL GRATIS INFOMATION GIVEN USER ID MAPPED TO FIT INTO HISTORY TABLE
+        print("\nIn GRATIS_HISTORY")
+        response = {}
+        try:
+
+            conn = connect()
+
+            # Get all goals and routines of the user
+            GR_query = """
+                SELECT
+                    gr_unique_id AS routine,
+                    gr_title AS title,	
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "started"
+                        ELSE "not started"
+                    END AS status,
+                    is_available, 
+                    is_sublist_available,
+                    gr_photo AS photo, 
+                    gr_start_day_and_time AS start_day_and_time, 
+                    gr_end_day_and_time AS end_day_and_time
+                FROM manifest.goals_routines
+                WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
+                """
+            # print(GR_query)
+            GR = execute(GR_query, 'get', conn)
+            # print(GR)
+
+            # print("Number of Goals and Routines: ", len(GR['result']))
+
+            for i in range(len(GR['result'])):
+                gr_id = GR['result'][i]['routine']
+                # print(gr_id)
+
+                # Get all Actions and Tasks for a specific GR
+                AT_query = """
+                    SELECT
+                        at_unique_id AS action,
+                        at_title AS title,
+                        CASE
+                            WHEN is_complete = "True" THEN  "completed"
+                            WHEN is_in_progress = "True" THEN  "started"
+                            ELSE "not started"
+                        END AS status,
+                        is_available,
+                        is_sublist_available,
+                        at_photo AS photo
+                    FROM manifest.actions_tasks 
+                    WHERE goal_routine_id = \'""" + gr_id + """\';
+                    """
+                # print(AT_query)
+                AT = execute(AT_query, 'get', conn)
+                # print(AT)
+
+                if len(AT['result']) > 0:
+                    GR['result'][i]['actions'] = list(AT['result'])
+                    for j in range(len(AT['result'])):
+                        at_id = AT['result'][j]['action']
+                        # print(at_id)
+
+                        # Get all Instructions and Steps for a specific GR
+                        IS_query = """
+                            SELECT
+                                is_unique_id AS instruction, 
+                                is_title AS title,
+                                is_sequence, 
+                                is_available,
+                                CASE
+                                    WHEN is_complete = "True" THEN  "completed"
+                                    WHEN is_in_progress = "True" THEN  "started"
+                                    ELSE "not started"
+                                END AS status,
+                                is_photo AS photo
+                            FROM manifest.instructions_steps
+                            WHERE at_id = \'""" + at_id + """\'
+                            ORDER BY is_sequence;
+                            """
+                        # print(IS_query)
+                        IS = execute(IS_query, 'get', conn)
+                        # print(IS)
+
+                        if len(IS['result']) > 0:
+                            GR['result'][i]['actions'][j]['instructions'] = list(IS['result'])
+
+            # print("Response from GRATIS_History: ", GR['result'])
+            # response = GR['result']
+            response = GR['result']
+
+            return response
+
+        except:
+            raise BadRequest('GRATIS Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+
+
 def ManifestHistory_CRON():
     # CRON JOB FOR STORING NIGHTLY HISTORY (COPIED FROM ManifestNotification_CLASS)
     from datetime import datetime
@@ -7275,10 +7401,11 @@ api.add_resource(RoutineHistory, '/api/v2/routineHistory/<string:user_id>')
 api.add_resource(TodayGR, '/api/v2/todayGR')
 
 
+
 api.add_resource(ManifestNotification_CLASS, '/api/v2/ManifestNotification_CLASS')
 api.add_resource(ManifestHistory_CLASS, '/api/v2/ManifestHistory_CLASS')
 # api.add_resource(GRATIS, '/api/v2/GRATIS/<string:user_id>')
-# api.add_resource(GRATIS_History, '/api/v2/GRATIS_History/<string:user_id>')
+api.add_resource(GRATIS_History_CLASS, '/api/v2/GRATIS_History_CLASS/<string:user_id>')
 
 
 # api.add_resource(GetNotifications, '/api/v2/getNotifications')  # working
@@ -7307,6 +7434,7 @@ api.add_resource(DeleteGR, '/api/v2/deleteGR')  # working
 api.add_resource(CreateNewPeople, '/api/v2/addPeople')  # working
 api.add_resource(DeletePeople, '/api/v2/deletePeople')
 api.add_resource(UpdateTime, '/api/v2/updateTime/<user_id>')
+api.add_resource(UpdateTimeZone, '/api/v2/updateTimeZone/<user_id>')
 api.add_resource(NewTA, '/api/v2/addNewTA')  # working
 api.add_resource(TASocialSignUP, '/api/v2/addNewSocialTA')  # working
 api.add_resource(CreateNewUser, '/api/v2/addNewUser')  # working
