@@ -5950,7 +5950,9 @@ class ManifestNotification_CLASS(Resource):
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
+                                    # print("About to send before notification", n['before_message'],id)
                                     notify(n['before_message'],id)
+                                    # print("Sent before notification", n['before_message'],id)
 
 
                 if n['during_is_enable'].lower() == 'true':
@@ -5965,7 +5967,9 @@ class ManifestNotification_CLASS(Resource):
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
+                                    # print("About to send during notification", n['during_message'],id)
                                     notify(n['during_message'],id)
+                                    # print("Sent during notification", n['during_message'],id)
 
 
                 if n['after_is_enable'].lower() == 'true':
@@ -5980,7 +5984,9 @@ class ManifestNotification_CLASS(Resource):
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
+                                    # print("About to send after notification", n['after_message'],id)
                                     notify(n['after_message'],id)
+                                    # print("Sent after notification", n['after_message'],id)
 
             return response, 200
 
@@ -6074,7 +6080,7 @@ def GRATIS_History(user_id):
                 gr_title AS title,	
                 CASE
                     WHEN is_complete = "True" THEN  "completed"
-                    WHEN is_in_progress = "True" THEN  "started"
+                    WHEN is_in_progress = "True" THEN  "in_progress"
                     ELSE "not started"
                 END AS status,
                 is_available, 
@@ -6102,7 +6108,7 @@ def GRATIS_History(user_id):
                     at_title AS title,
                     CASE
                         WHEN is_complete = "True" THEN  "completed"
-                        WHEN is_in_progress = "True" THEN  "started"
+                        WHEN is_in_progress = "True" THEN  "in_progress"
                         ELSE "not started"
                     END AS status,
                     is_available,
@@ -6130,7 +6136,7 @@ def GRATIS_History(user_id):
                             is_available,
                             CASE
                                 WHEN is_complete = "True" THEN  "completed"
-                                WHEN is_in_progress = "True" THEN  "started"
+                                WHEN is_in_progress = "True" THEN  "in_progress"
                                 ELSE "not started"
                             END AS status,
                             is_photo AS photo
@@ -6173,7 +6179,7 @@ class GRATIS_History_CLASS(Resource):
                     gr_title AS title,	
                     CASE
                         WHEN is_complete = "True" THEN  "completed"
-                        WHEN is_in_progress = "True" THEN  "started"
+                        WHEN is_in_progress = "True" THEN  "in_progress"
                         ELSE "not started"
                     END AS status,
                     is_available, 
@@ -6201,7 +6207,7 @@ class GRATIS_History_CLASS(Resource):
                         at_title AS title,
                         CASE
                             WHEN is_complete = "True" THEN  "completed"
-                            WHEN is_in_progress = "True" THEN  "started"
+                            WHEN is_in_progress = "True" THEN  "in_progress"
                             ELSE "not started"
                         END AS status,
                         is_available,
@@ -6229,7 +6235,7 @@ class GRATIS_History_CLASS(Resource):
                                 is_available,
                                 CASE
                                     WHEN is_complete = "True" THEN  "completed"
-                                    WHEN is_in_progress = "True" THEN  "started"
+                                    WHEN is_in_progress = "True" THEN  "in_progress"
                                     ELSE "not started"
                                 END AS status,
                                 is_photo AS photo
