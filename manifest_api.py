@@ -4856,9 +4856,9 @@ class GetHistoryDate(Resource):
         try:
             conn = connect()
 
-            print("before Function call")
-            TodayGoalsRoutines.post(self, user_id)
-            print("after Function call")
+            # print("before Function call")
+            # TodayGoalsRoutines.post(self, user_id)
+            # print("after Function call")
 
             items = execute("""SELECT * FROM history where user_id = \'""" + user_id +
                             """\' AND date_affected = \'""" + date_affected + """\' ;""", 'get', conn)
