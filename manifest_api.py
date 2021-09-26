@@ -4861,7 +4861,7 @@ class GetHistoryDate(Resource):
             # print("after Function call")
 
             print("before Function call")
-            ManifestHistory_CLASS.get(self, user_id)
+            ManifestHistory_CLASS.get(self)
             print("after Function call")
 
             items = execute("""SELECT * FROM history where user_id = \'""" + user_id +
