@@ -2291,7 +2291,7 @@ class CopyGR(Resource):
             disconnect(conn)
 
 # NOT USED?
-class TodayGoalsRoutines(Resource):
+class TodayGoalsRoutines_OLD(Resource):
     def __call__(self):
         print("In Call")
 
@@ -6878,11 +6878,318 @@ class ManifestHistory_CLASS(Resource):
         finally:
             disconnect(conn)
 
+# REWRITE TODAYGOALSROUTINES BASED ON MANIFESTHISTORY ENDPOINT
+class TodayGoalsRoutines(Resource):
+    def post(self, user_id):
+        # CRON JOB FOR STORING NIGHTLY HISTORY (COPIED FROM ManifestNotification_CLASS)
+        from datetime import datetime
+        from pytz import timezone
 
+        try:
+            response = {}
+            conn = connect()
+            print("In History CRON Function")
+
+            # FIND CURRENT TIME FOR EACH USER
+            user_tz_query = """
+                    SELECT user_unique_id, time_zone
+                    FROM manifest.users
+                    WHERE user_unique_id = \'""" + user_id + """\'; 
+            """
+            user_tz = execute(user_tz_query, "get", conn)
+            print(user_tz)
+
+            for u in user_tz['result']:
+                # GET TIME AND DATE FOR SPECIFIC USER
+                user = u['user_unique_id']
+                print("\nUser: ", user)
+                # CURRENT DATETIME IN THE USER OR TAS TIMEZONE
+                cur_datetime = datetime.now(pytz.timezone(u['time_zone']))
+                print("Current datetime: ", cur_datetime, type(cur_datetime))
+
+                # CURRENT TIME IN THE USER OR TAS TIMEZONE
+                cur_time = cur_datetime.time()
+                print("Current time:     ", cur_time, type(cur_time))
+
+                # CURRENT DATE IN THE USER OR TAS TIMEZONE IN DATETIME FORMAT
+                cur_date = cur_datetime.date()
+                print("Current date:     ", cur_date, type(cur_date))
+
+                # CURRENT DATE IN THE USER OR TAS TIMEZONE IN A SPECIFIC FORMAT
+                date_format = '%Y-%m-%d %H:%M:%S'
+                date = cur_datetime.strftime(date_format)
+                print("Current date in ", date_format, ": ", date, type(date))
+
+                # # THRESHOLD TIME
+                # threshold_time = datetime(2000, 1, 1, 12, 0, 0, 0).time()
+                # print("Threshold time:   ", threshold_time, type(threshold_time))
+
+
+
+                # # DETERMINE IF WE SHOULD UPDATE USER HISTORY BASED ON THRESHOLD TIME (IE BEFORE 1AM)
+                # if cur_time < threshold_time:
+                #     # TIME IS BEFORE THRESHOLD AND DATE AFFECTED IS YESTERDAY
+                #     print("\nUpdate History")
+                #     date_affected = cur_date - timedelta(days=1)
+                #     print("Date affected: ", date_affected)
+
+                # else:
+                #     # TIME IS AFTER THRESHOLD AND DATE AFFECTED IS CURRENT DATE
+                date_affected = cur_datetime.date()
+
+                # CAPTURE GRATIS SNAPSHOT
+                getGRATIS_History = GRATIS_History(user)
+                print("Return from GRATIS_History: ", getGRATIS_History)
+
+
+                # MAP GRATIS DATA TO HISTORY FIELDS - CURRENTLY DONE IN GRATIS_History
+                
+
+                # WRITE TO THE HISTORY TABLE
+                print("\nStart Write to History Table")
+                # CHECK IF THERE IS ALREADY A ROW IN THE HISTORY TABLE FOR THE SPECIFIC USER AND DATE AFFECTED
+                history_query = """
+                    SELECT id 
+                    FROM manifest.history
+                    WHERE user_id = \'""" + user + """\'
+                        AND date_affected = \'""" + str(date_affected) + """\';
+                    """
+                currentGR = execute(history_query, 'get', conn)
+                # print(currentGR)
+                # print(currentGR['result'][0]['id'])
+
+                # IF IT DOES NOT EXIST THEN INSERT INTO HISTORY TABLE
+                if len(currentGR['result']) == 0:
+                    print("no info  ==>  Prepare to do INSERT")
+
+                    # GET NEW HISTORY ID
+                    NewIDresponse = execute("CALL get_history_id;",  'get', conn)
+                    NewID = NewIDresponse['result'][0]['new_id']
+                    print("New History id:", NewID)
+
+                    query = """
+                        INSERT INTO manifest.history
+                        SET id = \'""" + NewID + """\',
+                            user_id = \'""" + user + """\',
+                            date = \'""" + date + """\',
+                            details = \'""" + str(json.dumps(getGRATIS_History)) + """\',
+                            date_affected = \'""" + str(date_affected) + """\';
+                    """
+
+                    # print(query)
+                    # print("Before Insert execution")
+                    historyInsert = execute(query, 'post', conn)
+                    print(historyInsert)
+                    response = historyInsert
+
+                # IF IT DOES EXIST THEN UPDATE HISTORY TABLE
+                else:
+                    print("info exists in CRON Job  ==>  Prepare to UPDATE", currentGR['result'][0]['id'])
+                    query = """
+                        UPDATE manifest.history
+                        SET id = \'""" + currentGR['result'][0]['id'] + """\',
+                            user_id = \'""" + user + """\',
+                            date = \'""" + date + """\',
+                            details = \'""" + json.dumps(getGRATIS_History) + """\',
+                            date_affected = \'""" + str(date_affected) + """\'
+                        WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
+                    """
+
+                    # print(query)
+                    # print("Before Update execution: ", query)
+                    historyUpdate = execute(query, 'post', conn)
+                    print(historyUpdate)
+                    response = historyUpdate
+
+                # NO NEED TO RESET ANYTHING IN THIS FUNCTION.  CRON JOB TAKES CARE OF THIS
+                # # STEP 3: RESET ALL CURRENT GRATIS
+                # # print("RESET all GRATIS Info")
+                # print("\nReset all Current GRATIS for user: ", user)
+
+                # # GET CURRENT GRATIS
+                # getGRATIS = GRATIS(user)
+                # print(getGRATIS)
+
+                # # FOR REFERENCE, THIS IS WHAT WAS RETURNED FROM GRATIS_History - DOESN'T HAVE REPEAT INFO
+                # # print("\nAlready have:")
+                # # print(getGRATIS_History)
+
+
+                # print("\nNumber of Goals: ", len(getGRATIS))
+
+                # # NEED TO DETERMINE STATUS OF IS_DISPLAYED_TODAY FOR CURRENT DAY
+
+                # for goal in getGRATIS:
+                #     print("\n", goal['gr_unique_id'])
+                    
+                #     # GET INFO FROM getGRATIS
+                #     repeat = goal['repeat']
+                #     print("\nRepeat:        ", repeat)
+                #     repeat_type = goal['repeat_type']
+                #     print("Repeat Type:   ", repeat_type)
+                #     repeat_ends_on = goal['repeat_ends_on']
+                #     print("Repeat End on: ", repeat_ends_on) 
+                #     repeat_occurences = goal['repeat_occurences']
+                #     print("Occurences:    ", repeat_occurences)
+                #     repeat_every = goal['repeat_every']
+                #     print("Repeat Every:  ", repeat_every)
+                #     repeat_frequency = goal['repeat_frequency']
+                #     print("Repeat Freq:   ", repeat_frequency)
+                #     # repeat_week_days = json.loads(goal['repeat_week_days'])
+                #     # print("Repeat Week Days: ", repeat_week_days)
+                #     gr_datetime_started = goal['gr_datetime_started']
+                #     print("GR Started:    ", gr_datetime_started)
+                #     gr_datetime_completed = goal['gr_datetime_completed']
+                #     print("GR Completed:  ", gr_datetime_completed)
+                #     # gr_expected_completion_time = goal['gr_expected_completion_time']
+                #     # print("Expected Completion Time: ", gr_expected_completion_time)
+                #     # gr_completed = goal['gr_completed']
+                #     # print("GR Completed: ", gr_completed)
+                #     start_day = goal['gr_start_day_and_time']
+                #     print("Start Day:     ", start_day, type(start_day))
+                #     start_date = datetime.strptime(start_day, '%Y-%m-%d %I:%M:%S %p').date()
+                #     print("Start Date:    ", start_date, type(start_date))
+
+                    
+
+                #     # IF NO REPEAT, IS_DISPLAYED_TODAY IS TRUE ONLY IF CURRENT DATE = START DATE
+                #     if repeat.lower() == 'false':
+                #         is_displayed_today = (start_date == cur_date)
+                #         print("Is_Displayed_Today: ", is_displayed_today)
+
+                #     # IF REPEAT
+                #     else:
+
+                #         # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
+                #         if cur_date >= start_date:
+
+                #             # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
+                #             if repeat_type.lower() == 'occur':
+                #                 print("\nIn if after")
+                #                 if repeat_frequency.lower() == 'day':
+                #                     repeat_occurences = repeat_occurences - 1
+                #                     number_days = int(repeat_occurences) * int(repeat_every)
+                #                     repeat_ends_on = start_date + timedelta(days=number_days)
+                #                     # print("Repeat Ends on: ", repeat_ends_on, type(repeat_ends_on))
+                #                     # if repeat_ends_on < cur_date:
+                #                     #     is_displayed_today = 'False'
+                #                     #     print("Is_Displayed_Today: ", is_displayed_today)
+                #                     # else:
+                #                     #     is_displayed_today = 'True'
+                #                     #     print("Is_Displayed_Today: ", is_displayed_today)
+
+                                
+
+                #             # IF REPEAT NEVER ENDS
+                #             elif repeat_type.lower() == 'never':
+                #                 print("In if never ")
+                #                 repeat_ends_on = cur_date
+                #                 # print("Repeat Ends on: ", repeat_ends_on)
+                #                 # is_displayed_today = 'True'
+                #                 # print("Is_Displayed_Today: ", is_displayed_today)
+
+                #             # IF REPEAT ENDS ON A SPECIFIC DAY
+                #             elif repeat_type.lower() == 'on':
+                #                 print("In if on ")
+                #                 # print("in goal repeat ends on", goal['repeat_ends_on'])
+                #                 # repeat_ends = goal['repeat_ends_on']
+                #                 # print(repeat_ends)
+                #                 # repeat_ends_on = repeat_ends[:24]
+                #                 # print(repeat_ends_on)
+                #                 #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+                #                 repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
+                #                 # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
+                #                 # if repeat_ends_on < cur_date:
+                #                 #     is_displayed_today = 'False'
+                #                 #     print("Is_Displayed_Today: ", is_displayed_today)
+                #                 # else:
+                #                 #     is_displayed_today = 'True'
+                #                 #     print("Is_Displayed_Today: ", is_displayed_today)
+
+                #             print("\nRepeat End on: ", repeat_ends_on, type(repeat_ends_on))
+                #             if repeat_ends_on < cur_date:
+                #                 is_displayed_today = 'False'
+                #                 print("Is_Displayed_Today: ", is_displayed_today)
+                #             else:
+                #                 is_displayed_today = 'True'
+                #                 print("Is_Displayed_Today: ", is_displayed_today)
+
+
+
+                #     # UPDATE GRATIS
+                #     print("\nGetting Ready to update GRATIS for: ", goal['gr_unique_id'], type(goal['gr_unique_id']))
+                #     # print(str(is_displayed_today).title(), type(str(is_displayed_today).title()))
+                #     # print(goal['gr_unique_id'], type(goal['gr_unique_id']))
+
+                #     # UPDATE GOALS AND ROUTINES
+                #     print("Update GR")
+                #     updateGRquery = """
+                #         UPDATE goals_routines
+                #         SET is_in_progress = \'""" + 'False'+"""\'
+                #         , is_complete = \'""" + 'False'+"""\'
+                #         , is_displayed_today = \'""" + str(is_displayed_today).title()+"""\'
+                #         WHERE gr_unique_id = \'"""+goal['gr_unique_id']+"""\';
+                #     """
+                #     # print(updateGRquery)
+                #     updateGR = execute(updateGRquery, 'post', conn)
+                #     print(updateGR)
+
+
+                #     # UPDATE ACTIONS AND TASKS
+                #     print("Update AT")
+                #     updateATquery = """
+                #         UPDATE actions_tasks
+                #         SET is_in_progress = \'""" + 'False'+"""\'
+                #         , is_complete = \'""" + 'False'+"""\'
+                #         WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
+                #     """
+                #     # print(updateATquery)
+                #     updateAT = execute(updateATquery, 'post', conn)
+                #     print(updateAT)
+
+
+                #     # UPDATE INSTRUCTIONS AND STEPS
+                #     print("Update IS")
+                #     getATquery = """
+                #         SELECT * 
+                #         FROM actions_tasks 
+                #         WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
+                #     """
+                #     # print(getATquery)
+                #     actions_task_response = execute(getATquery, 'get', conn)
+                #     print(actions_task_response, type(actions_task_response))
+
+
+                #     print(actions_task_response['result'], type(actions_task_response['result']))
+                #     print("Length: ", len(actions_task_response['result']))
+                #     # print("AT length: ", len(actions_task_response['result']))
+                #     if len(actions_task_response['result']) > 0:
+                #         for i in range(len(actions_task_response['result'])):
+                #             print(i)
+                #             print(actions_task_response['result'][i]['at_unique_id'], type (actions_task_response['result'][i]['at_unique_id']))
+                #             updateISquery = """
+                #                 UPDATE instructions_steps
+                #                 SET is_in_progress = \'""" + 'False'+"""\'
+                #                 , is_complete = \'""" + 'False'+"""\'
+                #                 WHERE at_id = \'"""+actions_task_response['result'][i]['at_unique_id']+"""\';
+                #             """
+                #             # print(updateISquery)
+                #             updateIS = execute(updateISquery, 'post', conn)
+                #             print(updateIS)
+                #     print("finished Reset for Goal: ", goal['gr_unique_id'] ) 
+
+            # response = user_tz
+        
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
 
 class TimeFunction(Resource):
     # EXERCISE IN MANIPULATING TIME
     # THESE FUNCTIONS ARE NOT USED IN THE PROGRAM
+    # NOTE IT SEEMS SAFARI AND FIREFOX USE THE YYYY/MM/DD HH:MM:DD PM FORMAT
 
     def get(self):
         from pytz import timezone
