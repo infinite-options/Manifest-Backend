@@ -321,6 +321,7 @@ def helper_icon_img(url):
 # Returns all Goals and Routines
 class GoalsRoutines(Resource):
     def get(self, user_id):
+        print("In GoalsRoutines")
         response = {}
         items = {}
         try:
@@ -354,6 +355,7 @@ class GoalsRoutines(Resource):
 # Returns Goals with actions/tasks and instructions/steps
 class GAI(Resource):
     def get(self, user_id):
+        print("In GAI")
         response = {}
         items = {}
         try:
@@ -422,6 +424,7 @@ class RTS(Resource):
         print("In RTS")
 
     def get(self, user_id):
+        print("In RTS")
         response = {}
         items = {}
         try:
@@ -489,6 +492,7 @@ class RTS(Resource):
 # Returns Goals with actions/tasks and instructions/steps
 class ActionsInstructions(Resource):
     def get(self, gr_id):
+        print("In ActionsInstructions")
         response = {}
         items = {}
         try:
@@ -522,6 +526,7 @@ class ActionsInstructions(Resource):
 # Returns Actions and Tasks of a Particular goal/routine
 class ActionsTasks(Resource):
     def get(self, goal_routine_id):
+        print("In ActionsTasks")
         response = {}
         items = {}
 
@@ -545,6 +550,7 @@ class ActionsTasks(Resource):
 
 class InstructionsAndSteps(Resource):
     def get(self, action_task_id):
+        print("In InstructionsAndSteps")
         response = {}
         items = {}
 
@@ -1401,6 +1407,7 @@ class AddNewIS(Resource):
 
 class UpdateIS(Resource):
     def post(self):
+        print("In UpdateIS")
         response = {}
         items = {}
 
@@ -1483,6 +1490,7 @@ class UpdateIS(Resource):
 
 class UpdateAT(Resource):
     def post(self):
+        print("In UpdateAT")
         response = {}
         items = {}
 
@@ -1589,6 +1597,7 @@ class UpdateAT(Resource):
 # Delete Goal/Routine
 class DeleteGR(Resource):
     def post(self):
+        print("In DeleteGR")
         response = {}
         items = {}
 
@@ -1630,6 +1639,7 @@ class DeleteGR(Resource):
 # Delete Action/Task
 class DeleteAT(Resource):
     def post(self):
+        print("In DeleteAT")
         response = {}
         items = {}
 
@@ -1667,6 +1677,7 @@ class DeleteAT(Resource):
 
 class DeleteIS(Resource):
     def post(self):
+        print("In DeleteIS")
         response = {}
         items = {}
 
@@ -1708,6 +1719,7 @@ class DeleteIS(Resource):
 
 class TodayGR(Resource):
     def get(self):
+        print("In TodayGR")
         items = {}
         response = {}
         try:
@@ -2030,9 +2042,9 @@ class TodayGR(Resource):
 
 class CopyGR(Resource):
     def post(self):
+        print("In copyGR ")
         response = {}
         items = {}
-        print("In copy GR")
         try:
             print("In try block")
             conn = connect()
@@ -2640,6 +2652,7 @@ class CopyGR(Resource):
 
 # Returns all users of a TA
 class AllUsers(Resource):
+    print("In All Users")
     def get(self, email_id):
         response = {}
         items = {}
@@ -2675,6 +2688,7 @@ class AllUsers(Resource):
 # Returns all TA that doesn't belong to the user
 class ListAllTA(Resource):
     def get(self, user_id):
+        print("In ListAllTA")
         response = {}
         items = {}
 
@@ -2757,6 +2771,7 @@ class ListAllTA(Resource):
 # Returns all TA that doesn't belong to the user
 class ListAllTAForCopy(Resource):
     def get(self):
+        print("In ListAllTAForCopy")
         response = {}
         items = {}
 
@@ -2805,6 +2820,7 @@ class ListAllTAForCopy(Resource):
 
 class ListAllUsersForCopy(Resource):
     def get(self):
+        print("In ListAllUsersForCopy")
         response = {}
         items = {}
 
@@ -2842,6 +2858,7 @@ class ListAllUsersForCopy(Resource):
 # Add another TA for a user
 class AnotherTAAccess(Resource):
     def post(self):
+        print("In AnotherTAAccess")
         response = {}
         items = {}
 
@@ -2884,6 +2901,7 @@ class AnotherTAAccess(Resource):
 # Returns ALl People of a user
 class ListAllPeople(Resource):
     def get(self, user_id):
+        print("In ListAllPeople")
         response = {}
         items = {}
 
@@ -2924,9 +2942,9 @@ class ListAllPeople(Resource):
 # Add new people
 class CreateNewPeople(Resource):
     def post(self):
+        print("In CreateNewPeople")
         response = {}
         items = {}
-        print("In create new People")
         try:
             conn = connect()
             ts = getNow()
@@ -3057,6 +3075,7 @@ class CreateNewPeople(Resource):
 
 class UserTADetails(Resource):
     def get(self):
+        print("In USerTADetails")
         response = {}
 
         try:
@@ -3140,6 +3159,7 @@ class UserTADetails(Resource):
 # Delete Important people
 class DeletePeople(Resource):
     def post(self):
+        print("In DeletePeople")
         response = {}
         items = {}
 
@@ -3165,6 +3185,7 @@ class DeletePeople(Resource):
 # Delete User
 class DeleteUser(Resource):
     def post(self):
+        print("In Delete User")
         response = {}
         items = {}
 
@@ -3217,6 +3238,7 @@ class DeleteUser(Resource):
 # Returns Time information
 class TimeSettings(Resource):
     def get(self, user_id):
+        print("In TimeSettings")
         response = {}
         items = {}
 
@@ -3247,6 +3269,7 @@ class TimeSettings(Resource):
 
 class UpdateTime(Resource):
     def post(self, user_id):
+        print("In UpdateTime")
         response = {}
         items = {}
 
@@ -3284,6 +3307,7 @@ class UpdateTime(Resource):
 # Update time and time zone
 class UpdateTimeZone(Resource):
     def post(self, user_id):
+        print("In UpdateTimeZone")
         response = {}
         items = {}
 
@@ -3309,6 +3333,7 @@ class UpdateTimeZone(Resource):
 
 class ResetGR(Resource):
     def post(self, gr_id):
+        print("In ResetGR")
         response = {}
         items = {}
 
@@ -3352,6 +3377,7 @@ class ResetGR(Resource):
 # New TA signup
 class NewTA(Resource):
     def post(self):
+        print("In NewTA")
         response = {}
         items = {}
 
@@ -3421,6 +3447,7 @@ class NewTA(Resource):
 # TA social sign up
 class TASocialSignUP(Resource):
     def post(self):
+        print("In TASocialSignup")
         response = {}
         items = {}
 
@@ -3469,6 +3496,7 @@ class TASocialSignUP(Resource):
 # Existing TA login
 class TALogin(Resource):
     def get(self, email_id, password):
+        print("In TALogin")
         response = {}
         items = {}
 
@@ -3516,6 +3544,7 @@ class TALogin(Resource):
 # TA social login
 class TASocialLogin(Resource):
     def get(self, email_id):
+        print("In TASocialLogin")
         response = {}
         items = {}
 
@@ -3624,6 +3653,7 @@ class CreateNewUser(Resource):
 # Creating new user
 class ExistingUser(Resource):
     def post(self):
+        print("In ExistingUser")
         response = {}
         items = {}
         timestamp = getNow()
@@ -3674,6 +3704,7 @@ class ExistingUser(Resource):
 # Update new user
 class UpdateAboutMe(Resource):
     def post(self):
+        print("In UpdateAboutMe")
         response = {}
         items = {}
         print("In about me")
@@ -3778,6 +3809,7 @@ class UpdateAboutMe(Resource):
 # Update new user
 class UpdateAboutMe2(Resource):
     def post(self):
+        print("In UpdateAboutMe2")
         response = {}
         items = {}
 
@@ -3873,6 +3905,7 @@ class UpdateAboutMe2(Resource):
 # Update new user
 class UpdatePeople(Resource):
     def post(self):
+        print("In UpdatePeople")
         response = {}
         items = {}
 
@@ -4014,6 +4047,7 @@ class UpdatePeople(Resource):
 # Update new user
 class UpdateNameTimeZone(Resource):
     def post(self):
+        print("In UpdateNameTimeZone")
         response = {}
         items = {}
 
@@ -4075,6 +4109,7 @@ class UpdateNameTimeZone(Resource):
 # User login
 class UserLogin(Resource):
     def get(self, email_id):
+        print("In UserLogin")
         response = {}
         items = {}
 
@@ -4106,6 +4141,7 @@ class UserLogin(Resource):
 # User login
 class GetEmailId(Resource):
     def get(self, user_id):
+        print("In GetEmailID")
         response = {}
         items = {}
 
@@ -4129,6 +4165,7 @@ class GetEmailId(Resource):
 # returns users token
 class Usertoken(Resource):
     def get(self, user_id=None):
+        print("In Usertoken")
         response = {}
         items = {}
 
@@ -4159,6 +4196,7 @@ class Usertoken(Resource):
 # CHECK THAT THIS IS ONLY USED FOR MOBILE LOGIN
 class Login(Resource):
     def post(self):
+        print("In Login")
         response = {}
         try:
             conn = connect()
@@ -4317,6 +4355,7 @@ class Login(Resource):
 
 class AccessRefresh(Resource):
     def post(self):
+        print("In AccessRefresh")
         response = {}
         items = {}
         try:
@@ -4342,7 +4381,7 @@ class AccessRefresh(Resource):
 
 class GoogleCalenderEvents(Resource):
     def post(self):
-
+        print("In Google Calender Events")
         try:
             conn = connect()
             data = request.get_json(force=True)
@@ -4458,6 +4497,7 @@ class GoogleCalenderEvents(Resource):
 # Add coordinates
 class AddCoordinates(Resource):
     def post(self):
+        print("In AddCoordinates")
         response = {}
         items = {}
 
@@ -4491,6 +4531,7 @@ class AddCoordinates(Resource):
 # Add new Goal/Routine of a user
 class UpdateGRWatchMobile(Resource):
     def post(self):
+        print("In UpdateGRWatchMobile")
         response = {}
         items = {}
 
@@ -4543,6 +4584,7 @@ class UpdateGRWatchMobile(Resource):
 
 class UpdateATWatchMobile(Resource):
     def post(self):
+        print("In UpdateATWatchMobile")
         response = {}
         items = {}
 
@@ -4595,6 +4637,7 @@ class UpdateATWatchMobile(Resource):
 
 class UpdateISWatchMobile(Resource):
     def post(self):
+        print("In UpdateISWatchMobile")
         response = {}
         items = {}
 
@@ -4628,6 +4671,7 @@ class UpdateISWatchMobile(Resource):
 
 class GetIconsHygiene(Resource):
     def get(self):
+        print("In GetIcons Hygiene")
         response = {}
         try:
             print("GetIconsHygiene")
@@ -4648,6 +4692,7 @@ class GetIconsHygiene(Resource):
 
 class GetIconsClothing(Resource):
     def get(self):
+        print("In GetIconsClothing")
         response = {}
         try:
             print("GetIconsClothing")
@@ -4668,6 +4713,7 @@ class GetIconsClothing(Resource):
 
 class GetIconsFood(Resource):
     def get(self):
+        print("In GetIconsFood")
         response = {}
         try:
             print("GetIconsFood")
@@ -4688,9 +4734,10 @@ class GetIconsFood(Resource):
 
 class GetIconsActivities(Resource):
     def get(self):
+        print("In GetIconsActivities")
         response = {}
         try:
-            print("GetIconsActivities")
+            
             conn = connect()
 
             items = execute(
@@ -4750,7 +4797,7 @@ class GetPeopleImages(Resource):
     def get(self, ta_id):
         response = {}
         try:
-            print("GetPeopleImages")
+            print("In GetPeopleImages")
             conn = connect()
 
             items = execute(
@@ -4768,6 +4815,7 @@ class GetPeopleImages(Resource):
 
 class UploadIcons(Resource):
     def post(self):
+        print("In UpdateIcons")
         response = {}
         try:
             conn = connect()
@@ -4796,6 +4844,7 @@ class UploadIcons(Resource):
 # USED BY WEB TO GET HISTORY
 class GetHistory(Resource):
     def get(self, user_id):
+        print("In GetHistory")
         response = {}
         try:
             conn = connect()
@@ -4818,6 +4867,7 @@ class GetHistory(Resource):
 # USED BY MOBILE TO GET HISTORY
 class GetHistoryDate(Resource):
     def get(self, user_id, date_affected):
+        print("In GetHistoryDate")
         response = {}
         try:
             conn = connect()
@@ -5001,6 +5051,7 @@ class GetHistoryDate(Resource):
 # USED IN MOBILE FOR GOAL PAGE
 class GoalHistory(Resource):
     def get(self, user_id):
+        print("In GoalHistory")
         response = {}
         try:
             conn = connect()
@@ -5077,6 +5128,7 @@ class GoalHistory(Resource):
 # USED IN MOBILE FOR ROUTINE PAGE
 class RoutineHistory(Resource):
     def get(self, user_id):
+        print("In RoutineHistory")
         response = {}
         try:
             conn = connect()
@@ -5151,6 +5203,7 @@ class RoutineHistory(Resource):
 # USED IN MOBILE FOR PROGRESS PAGE
 class Progress(Resource):
     def get(self, user_id):
+        print("In Progress")
         response = {}
         res = {}
         try:
@@ -5283,6 +5336,7 @@ class Progress(Resource):
 # Returns About me information
 class AboutMe(Resource):
     def get(self, user_id):
+        print("In About Me")
         response = {}
         items = {}
 
@@ -5365,6 +5419,7 @@ class AboutMe(Resource):
 
 class Motivation(Resource):
     def get(self, user_id):
+        print("In Motivation")
         response = {}
         try:
             conn = connect()
@@ -5386,6 +5441,7 @@ class Motivation(Resource):
 
 class Happy(Resource):
     def get(self, user_id):
+        print("In Happy")
         response = {}
         try:
             conn = connect()
@@ -5406,6 +5462,7 @@ class Happy(Resource):
 
 class Feelings(Resource):
     def get(self, user_id):
+        print("In Feelings")
         response = {}
         try:
             conn = connect()
@@ -5423,6 +5480,7 @@ class Feelings(Resource):
 
 class Important(Resource):
     def get(self, user_id):
+        print("In Important")
         response = {}
         try:
             conn = connect()
@@ -5444,6 +5502,7 @@ class Important(Resource):
 # Update About me information
 class UpdateMotivation(Resource):
     def post(self):
+        print("In UpdateMotivation")
         response = {}
         items = {}
 
@@ -5480,6 +5539,7 @@ class UpdateMotivation(Resource):
 
 class UpdateHappy(Resource):
     def post(self):
+        print("In UpdateHappy")
         response = {}
         items = {}
 
@@ -5516,6 +5576,7 @@ class UpdateHappy(Resource):
 
 class UpdateImportant(Resource):
     def post(self):
+        print("In UpdateImportant")
         response = {}
         items = {}
 
@@ -5552,6 +5613,7 @@ class UpdateImportant(Resource):
 
 class UpdateFeelings(Resource):
     def post(self):
+        print("In UpdateFeelings")
         response = {}
         items = {}
 
@@ -5578,6 +5640,7 @@ class UpdateFeelings(Resource):
 
 class AboutHistory(Resource):
     def post(self):
+        print("In AboutHistory")
         response = {}
         try:
             conn = connect()
@@ -5630,6 +5693,7 @@ class AboutHistory(Resource):
 # NOTIFICATION CRON JOB FUNCTIONS AND SUBFUCTIONS
 
 def notify(msg,tag):
+    print("In Notify")
     # print(msg,tag)
     # hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7...m3xuVg=", "Manifest-Notification-Hub", isDebug)
     hub = AzureNotificationHub(NOTIFICATION_HUB_KEY, NOTIFICATION_HUB_NAME, isDebug)
@@ -5661,6 +5725,7 @@ def notify(msg,tag):
     
 
 def getGUID(guid):
+    print("In getGUID")
     # GET UNIQUE LIST OF GUIDS
     s = ''
     # print('inside getGUID')
@@ -5687,6 +5752,7 @@ def getGUID(guid):
 
 
 def ProcessDuration(duration):
+    print("In ProcessDuration")
     # PROVIDE A DURATION IN 00:00:00 FORMAT AND RETURN TOTAL SECONDS
 
     # print("\nIn Process Duration")
@@ -5699,6 +5765,7 @@ def ProcessDuration(duration):
     
 
 def ProcessTime(time, time_zone):
+    print("In ProcessTime")
     # PROVIDE A DATETIME AND TIMEZONE AND RETURN THE UPDATED DATETIME IN UTC
     from datetime import datetime
     from pytz import timezone
@@ -5732,6 +5799,7 @@ def ProcessTime(time, time_zone):
 
 
 def ManifestNotification_CRON():
+    print("In ManifestNotification_CRON")
     # CRON JOB FOR SENDING NOTIFICATIONS (COPIED FROM ManifestNotification_CLASS)
     from datetime import datetime
     from pytz import timezone
@@ -5845,6 +5913,7 @@ def ManifestNotification_CRON():
 # USE THIS CLASS FOR DEBUG PURPOSES AND THEN COPY OVER DEF - REMEMBER TO CHANGE DURATION TIMES
 class ManifestNotification_CLASS(Resource):
     def get(self):
+        print("In ManifestNotification_CLASS")
         # CRON JOB FOR SENDING NOTIFICATIONS (COPIED FROM ManifestNotification_CLASS)
         from datetime import datetime
         from pytz import timezone
@@ -6231,6 +6300,7 @@ class GRATIS_History_CLASS(Resource):
 
 
 def ManifestHistory_CRON():
+    print("In ManifestHistory_CRON")
     # CRON JOB FOR STORING NIGHTLY HISTORY (COPIED FROM ManifestNotification_CLASS)
     from datetime import datetime
     from pytz import timezone
@@ -6537,6 +6607,7 @@ def ManifestHistory_CRON():
 # USE THIS CLASS FOR DEBUG PURPOSES AND THEN COPY OVER DEF
 class ManifestHistory_CLASS(Resource):
     def get(self):
+        print("In ManifestHistory_CLASS")
         # CRON JOB FOR STORING NIGHTLY HISTORY (COPIED FROM ManifestNotification_CLASS)
         from datetime import datetime
         from pytz import timezone
@@ -6843,6 +6914,7 @@ class ManifestHistory_CLASS(Resource):
 # REWRITE TODAYGOALSROUTINES BASED ON MANIFESTHISTORY ENDPOINT
 class TodayGoalsRoutines(Resource):
     def post(self, user_id):
+        print("In TodayGoalsRoutines")
         # CRON JOB FOR STORING NIGHTLY HISTORY (COPIED FROM ManifestNotification_CLASS)
         from datetime import datetime
         from pytz import timezone
@@ -6961,6 +7033,7 @@ class TimeFunction(Resource):
     # NOTE IT SEEMS SAFARI AND FIREFOX USE THE YYYY/MM/DD HH:MM:DD PM FORMAT
 
     def get(self):
+        print("In TimeFunction")
         from pytz import timezone
         response = {}
         try:
@@ -7043,6 +7116,7 @@ class TimeFunction(Resource):
 
 class Calender(Resource):
     def get(self, user_id):
+        print("In Calendar")
         response = {}
         try:
             conn = connect()
@@ -7244,7 +7318,7 @@ class Calender(Resource):
 class update_guid_notification(Resource):
 
     def post(self, action):
-        print("In Update GUID", action)
+        print("In Update GUID Notification", action)
         response = {}
         items = {}
 
@@ -7377,6 +7451,7 @@ class update_guid_notification(Resource):
 # Returns Mobile app version number
 class GetVersionNumber(Resource):
     def get(self):
+        print("In GetVersionNumber")
         response = {}
         items = {}
         try:
@@ -7400,6 +7475,7 @@ class GetVersionNumber(Resource):
 # Updates Mobile app version number
 class UpdateVersionNumber(Resource):
     def post(self):
+        print("In UpdateVersionNumber")
         response = {}
         items = {}
         try:
