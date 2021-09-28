@@ -5752,7 +5752,7 @@ def getGUID(guid):
 
 
 def ProcessDuration(duration):
-    print("In ProcessDuration")
+    # print("In ProcessDuration")
     # PROVIDE A DURATION IN 00:00:00 FORMAT AND RETURN TOTAL SECONDS
 
     # print("\nIn Process Duration")
@@ -5765,7 +5765,7 @@ def ProcessDuration(duration):
     
 
 def ProcessTime(time, time_zone):
-    print("In ProcessTime")
+    # print("In ProcessTime")
     # PROVIDE A DATETIME AND TIMEZONE AND RETURN THE UPDATED DATETIME IN UTC
     from datetime import datetime
     from pytz import timezone
