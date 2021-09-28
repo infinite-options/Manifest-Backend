@@ -899,8 +899,7 @@ class UpdateGR(Resource):
             photo = request.files.get('photo')
             photo_url = request.form.get('photo_url')
             repeat = request.form.get('repeat')
-            # repeat_ends = request.form.get('repeat_type')
-            repeat_type = request.form.get('repeat_type')
+            repeat_ends = request.form.get('repeat_type')
             repeat_ends_on = request.form.get('repeat_ends_on')
             repeat_every = request.form.get('repeat_every')
             repeat_frequency = request.form.get('repeat_frequency')
@@ -1004,6 +1003,7 @@ class UpdateGR(Resource):
                 # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
                 if cur_date >= start_date:
 
+                    repeat_type = repeat_ends
                     # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
                     if repeat_type.lower() == 'occur':
                         print("\nIn if after")
@@ -1055,9 +1055,9 @@ class UpdateGR(Resource):
                         is_displayed_today = 'True'
                         print("Is_Displayed_Today: ", is_displayed_today)
 
-
+            print(photo)
             if not photo:
-
+                print("not photo")
                 query = """UPDATE goals_routines
                                 SET gr_title = \'""" + gr_title + """\'
                                     ,is_available = \'""" + str(is_available).title() + """\'
@@ -1071,8 +1071,8 @@ class UpdateGR(Resource):
                                     ,gr_datetime_started = \'""" + datetime_started + """\'
                                     ,gr_datetime_completed = \'""" + datetime_completed + """\'
                                     ,`repeat` = \'""" + str(repeat).title() + """\'
-                                    ,repeat_type = \'""" + repeat_type + """\'
-                                    ,repeat_ends_on = \'""" + repeat_ends_on + """\'
+                                    ,repeat_type = \'""" + str(repeat_ends).title() + """\'
+                                    ,repeat_ends_on = \'""" + str(repeat_ends_on) + """\'
                                     ,repeat_every = \'""" + str(repeat_every) + """\'
                                     ,repeat_week_days = \'""" + json.dumps(dict_week_days) + """\'
                                     ,repeat_frequency = \'""" + repeat_frequency + """\'
@@ -1082,7 +1082,7 @@ class UpdateGR(Resource):
                             WHERE gr_unique_id = \'""" + id + """\';"""
 
             else:
-
+                print("photo")
                 gr_picture = helper_upload_img(photo)
 
                 # Update G/R to database
@@ -1100,8 +1100,8 @@ class UpdateGR(Resource):
                                     ,gr_datetime_started = \'""" + datetime_started + """\'
                                     ,gr_datetime_completed = \'""" + datetime_completed + """\'
                                     ,`repeat` = \'""" + str(repeat).title() + """\'
-                                    ,repeat_type = \'""" + repeat_type + """\'
-                                    ,repeat_ends_on = \'""" + repeat_ends_on + """\'
+                                    ,repeat_type = \'""" + str(repeat_ends).title() + """\'
+                                    ,repeat_ends_on = \'""" + str(repeat_ends_on) + """\'
                                     ,repeat_week_days = \'""" + json.dumps(dict_week_days) + """\'
                                     ,repeat_every = \'""" + str(repeat_every) + """\'
                                     ,repeat_frequency = \'""" + repeat_frequency + """\'
