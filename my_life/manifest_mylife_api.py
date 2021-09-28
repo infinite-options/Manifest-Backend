@@ -418,76 +418,76 @@ class GAI(Resource):
         finally:
             disconnect(conn)
 
-# Returns Routines with actions/tasks and instructions/steps
-class RTS(Resource):
-    def __call__(self):
-        print("In RTS")
+# Returns Routines with actions/tasks and instructions/steps - NOT USED
+# class RTS(Resource):
+#     def __call__(self):
+#         print("In RTS")
 
-    def get(self, user_id):
-        print("In RTS")
-        response = {}
-        items = {}
-        try:
+#     def get(self, user_id):
+#         print("In RTS")
+#         response = {}
+#         items = {}
+#         try:
 
-            conn = connect()
+#             conn = connect()
 
-            # Get all goals and routines of the user
-            query = """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + \
-                """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';"""
+#             # Get all goals and routines of the user
+#             query = """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + \
+#                 """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';"""
 
-            items = execute(query, 'get', conn)
-            print(items)
-            goal_routine_response = items['result']
+#             items = execute(query, 'get', conn)
+#             print(items)
+#             goal_routine_response = items['result']
 
-            print("Number of Routines: ", len(goal_routine_response))
-            if len(goal_routine_response) == 0:
-                response['message'] = 'No Routines'
-                return response
+#             print("Number of Routines: ", len(goal_routine_response))
+#             if len(goal_routine_response) == 0:
+#                 response['message'] = 'No Routines'
+#                 return response
 
-            else:
-                print("In else clause")
-                for routine in goal_routine_response:
-                    time = []
-                    time = routine['gr_start_day_and_time'].split(' ')
-                    print(time, type(time))
-                    print(time[1], time[2])
-                    routine['start_time'] = str(time[1] + time[2])
-                    print("Routine: ", routine)
+#             else:
+#                 print("In else clause")
+#                 for routine in goal_routine_response:
+#                     time = []
+#                     time = routine['gr_start_day_and_time'].split(' ')
+#                     print(time, type(time))
+#                     print(time[1], time[2])
+#                     routine['start_time'] = str(time[1] + time[2])
+#                     print("Routine: ", routine)
 
 
-                goal_routine_response.sort(key=lambda x: x['start_time'])
+#                 goal_routine_response.sort(key=lambda x: x['start_time'])
 
-                for routine in goal_routine_response:
-                    del routine['start_time']
+#                 for routine in goal_routine_response:
+#                     del routine['start_time']
 
-                print("\nBefore for loop: ", len(goal_routine_response))
-                for i in range(len(goal_routine_response)):
-                    gr_id = goal_routine_response[i]['gr_unique_id']
-                    res_actions = execute(
-                        """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
+#                 print("\nBefore for loop: ", len(goal_routine_response))
+#                 for i in range(len(goal_routine_response)):
+#                     gr_id = goal_routine_response[i]['gr_unique_id']
+#                     res_actions = execute(
+#                         """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
 
-                    items['result'][i]['actions_tasks'] = list(
-                        res_actions['result'])
+#                     items['result'][i]['actions_tasks'] = list(
+#                         res_actions['result'])
 
-                    if len(res_actions['result']) > 0:
-                        action_response = res_actions['result']
-                        for j in range(len(action_response)):
-                            print(action_response[j]['at_unique_id'])
-                            res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
-                                              action_response[j]['at_unique_id'] + """\' ORDER BY is_sequence;""", 'get', conn)
-                            print(res_ins)
-                            items['result'][i]['actions_tasks'][j]['instructions_steps'] = list(
-                                res_ins['result'])
+#                     if len(res_actions['result']) > 0:
+#                         action_response = res_actions['result']
+#                         for j in range(len(action_response)):
+#                             print(action_response[j]['at_unique_id'])
+#                             res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
+#                                               action_response[j]['at_unique_id'] + """\' ORDER BY is_sequence;""", 'get', conn)
+#                             print(res_ins)
+#                             items['result'][i]['actions_tasks'][j]['instructions_steps'] = list(
+#                                 res_ins['result'])
 
-                response['message'] = 'successful'
-                response['result'] = items['result']
+#                 response['message'] = 'successful'
+#                 response['result'] = items['result']
 
-                return response, 200
-        except:
-            raise BadRequest(
-                'Get Routines Request failed, please try again later.')
-        finally:
-            disconnect(conn)
+#                 return response, 200
+#         except:
+#             raise BadRequest(
+#                 'Get Routines Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
 
 # Returns Goals with actions/tasks and instructions/steps
 class ActionsInstructions(Resource):
@@ -1787,329 +1787,329 @@ class DeleteIS(Resource):
         finally:
             disconnect(conn)
 
+# TODAY GR NOT USED
+# class TodayGR(Resource):
+#     def get(self):
+#         print("In TodayGR")
+#         items = {}
+#         response = {}
+#         try:
+#             conn = connect()
+#             theday = dt.date.today()
 
-class TodayGR(Resource):
-    def get(self):
-        print("In TodayGR")
-        items = {}
-        response = {}
-        try:
-            conn = connect()
-            theday = dt.date.today()
+#             cur_date = theday
+#             cur_week = cur_date.isocalendar()[1]
+#             cur_month = cur_date.month
+#             cur_year = cur_date.year
+#             listGR = []
 
-            cur_date = theday
-            cur_week = cur_date.isocalendar()[1]
-            cur_month = cur_date.month
-            cur_year = cur_date.year
-            listGR = []
+#             # For never and day frequency
+#             query = ["""SELECT gr_title
+#                             , user_id
+#                             , gr_unique_id
+#                             , gr_start_day_and_time
+#                             , repeat_frequency
+#                             , repeat_every
+#                             , `repeat`
+#                             , repeat_type
+#                             , repeat_occurences
+#                             , repeat_ends_on
+#                              from goals_routines;"""]
 
-            # For never and day frequency
-            query = ["""SELECT gr_title
-                            , user_id
-                            , gr_unique_id
-                            , gr_start_day_and_time
-                            , repeat_frequency
-                            , repeat_every
-                            , `repeat`
-                            , repeat_type
-                            , repeat_occurences
-                            , repeat_ends_on
-                             from goals_routines;"""]
+#             grResponse = execute(query[0], 'get', conn)
 
-            grResponse = execute(query[0], 'get', conn)
+#             for i in range(len(grResponse['result'])):
+#                 if (grResponse['result'][i]['repeat']).lower() == 'true':
+#                     if (grResponse['result'][i]['repeat_type']).lower() == 'never':
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'day':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             new_date = datetime_object
+#                             while(new_date <= cur_date):
+#                                 if(new_date == cur_date):
+#                                     listGR.append(
+#                                         grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     timedelta(
+#                                         days=grResponse['result'][i]['repeat_every'])
+#                         # For never and week frequency
 
-            for i in range(len(grResponse['result'])):
-                if (grResponse['result'][i]['repeat']).lower() == 'true':
-                    if (grResponse['result'][i]['repeat_type']).lower() == 'never':
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'day':
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            new_date = datetime_object
-                            while(new_date <= cur_date):
-                                if(new_date == cur_date):
-                                    listGR.append(
-                                        grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    timedelta(
-                                        days=grResponse['result'][i]['repeat_every'])
-                        # For never and week frequency
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'week':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             start_week = datetime_object.isocalendar()[1]
+#                             new_week = start_week
+#                             new_date = datetime_object
+#                             while(new_date <= cur_date):
+#                                 if (new_week - start_week) == int(grResponse['result'][i]['repeat_every']):
+#                                     start_week = new_week
+#                                     if (new_week == cur_week):
+#                                         listGR.append(
+#                                             grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     timedelta(
+#                                         weeks=grResponse['result'][i]['repeat_every'])
+#                                 new_week = new_date.isocalendar()[1]
 
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'week':
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            start_week = datetime_object.isocalendar()[1]
-                            new_week = start_week
-                            new_date = datetime_object
-                            while(new_date <= cur_date):
-                                if (new_week - start_week) == int(grResponse['result'][i]['repeat_every']):
-                                    start_week = new_week
-                                    if (new_week == cur_week):
-                                        listGR.append(
-                                            grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    timedelta(
-                                        weeks=grResponse['result'][i]['repeat_every'])
-                                new_week = new_date.isocalendar()[1]
+#                         # For never and month frequency
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'month':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             start_month = datetime_object.month
+#                             new_month = start_month
+#                             new_date = datetime_object
+#                             while(new_date <= cur_date):
+#                                 if (new_month - start_month) == int(grResponse['result'][i]['repeat_every']):
+#                                     start_month = new_month
+#                                     if new_date == cur_date:
+#                                         listGR.append(
+#                                             grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     relativedelta(months=int(
+#                                         grResponse['result'][i]['repeat_every']))
+#                                 new_month = new_date.month
 
-                        # For never and month frequency
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'month':
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            start_month = datetime_object.month
-                            new_month = start_month
-                            new_date = datetime_object
-                            while(new_date <= cur_date):
-                                if (new_month - start_month) == int(grResponse['result'][i]['repeat_every']):
-                                    start_month = new_month
-                                    if new_date == cur_date:
-                                        listGR.append(
-                                            grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    relativedelta(months=int(
-                                        grResponse['result'][i]['repeat_every']))
-                                new_month = new_date.month
+#                         # For never and year frequency
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'year':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             start_year = datetime_object.year
+#                             new_year = start_year
+#                             new_date = datetime_object
+#                             while(new_date <= cur_date):
+#                                 if (new_year - start_year) == int(grResponse['result'][i]['repeat_every']):
+#                                     start_year = new_year
+#                                     if cur_date == new_date:
+#                                         listGR.append(
+#                                             grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     relativedelta(
+#                                         years=grResponse['result'][i]['repeat_every'])
+#                                 new_year = new_date.year
+#                             print(listGR)
 
-                        # For never and year frequency
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'year':
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            start_year = datetime_object.year
-                            new_year = start_year
-                            new_date = datetime_object
-                            while(new_date <= cur_date):
-                                if (new_year - start_year) == int(grResponse['result'][i]['repeat_every']):
-                                    start_year = new_year
-                                    if cur_date == new_date:
-                                        listGR.append(
-                                            grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    relativedelta(
-                                        years=grResponse['result'][i]['repeat_every'])
-                                new_year = new_date.year
-                            print(listGR)
+#                     # For after and day frequency
+#                     if (grResponse['result'][i]['repeat_type']).lower() == 'after':
 
-                    # For after and day frequency
-                    if (grResponse['result'][i]['repeat_type']).lower() == 'after':
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'day':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             new_date = datetime_object
+#                             occurence = 1
+#                             while new_date <= cur_date and occurence <= int(grResponse['result'][i]['repeat_occurences']):
+#                                 if(new_date == cur_date):
+#                                     listGR.append(
+#                                         grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     timedelta(
+#                                         days=grResponse['result'][i]['repeat_every'])
+#                                 occurence += 1
 
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'day':
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            new_date = datetime_object
-                            occurence = 1
-                            while new_date <= cur_date and occurence <= int(grResponse['result'][i]['repeat_occurences']):
-                                if(new_date == cur_date):
-                                    listGR.append(
-                                        grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    timedelta(
-                                        days=grResponse['result'][i]['repeat_every'])
-                                occurence += 1
+#                         # # For after and week frequency
+#                         # if (grResponse['result'][i]['repeat_frequency']).lower() == 'week':
 
-                        # # For after and week frequency
-                        # if (grResponse['result'][i]['repeat_frequency']).lower() == 'week':
+#                         #     datetime_str = grResponse['result'][i]['start_day_and_time']
+#                         #     datetime_str = datetime_str.replace(",", "")
+#                         #     datetime_object = datetime.strptime(datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
+#                         #     start_week = datetime_object.isocalendar()[1]
+#                         #     new_week = start_week
+#                         #     new_date = datetime_object
+#                         #     occurence = 1
+#                         #     while new_date <= cur_date and occurence <= int(grResponse['result'][i]['repeat_occurences']):
+#                         #         if (new_week - start_week) == int(grResponse5['result'][i]['repeat_every']):
+#                         #             start_week = new_week
+#                         #             occurence += 1
+#                         #             if (new_week == cur_week):
+#                         #                 listGR.append(grResponse['result'][i]['gr_unique_id'])
+#                         #         new_date = new_date + timedelta(weeks=grResponse['result'][i]['repeat_every'])
+#                         #         new_week = new_date.isocalendar()[1]
 
-                        #     datetime_str = grResponse['result'][i]['start_day_and_time']
-                        #     datetime_str = datetime_str.replace(",", "")
-                        #     datetime_object = datetime.strptime(datetime_str, '%m/%d/%Y %I:%M:%S %p').date()
-                        #     start_week = datetime_object.isocalendar()[1]
-                        #     new_week = start_week
-                        #     new_date = datetime_object
-                        #     occurence = 1
-                        #     while new_date <= cur_date and occurence <= int(grResponse['result'][i]['repeat_occurences']):
-                        #         if (new_week - start_week) == int(grResponse5['result'][i]['repeat_every']):
-                        #             start_week = new_week
-                        #             occurence += 1
-                        #             if (new_week == cur_week):
-                        #                 listGR.append(grResponse['result'][i]['gr_unique_id'])
-                        #         new_date = new_date + timedelta(weeks=grResponse['result'][i]['repeat_every'])
-                        #         new_week = new_date.isocalendar()[1]
+#                         # For after and month frequency
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'month':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             start_month = datetime_object.month
+#                             new_month = start_week
+#                             new_date = datetime_object
+#                             occurence = 1
+#                             while new_date <= cur_date and occurence <= int(grResponse['result'][i]['repeat_occurences']):
+#                                 if (new_month - start_month) == int(grResponse['result'][i]['repeat_every']):
+#                                     start_month = new_month
+#                                     occurence += 1
+#                                     if new_date == cur_date:
+#                                         listGR.append(
+#                                             grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     relativedelta(
+#                                         months=grResponse['result'][i]['repeat_every'])
+#                                 new_month = new_date.month
 
-                        # For after and month frequency
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'month':
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            start_month = datetime_object.month
-                            new_month = start_week
-                            new_date = datetime_object
-                            occurence = 1
-                            while new_date <= cur_date and occurence <= int(grResponse['result'][i]['repeat_occurences']):
-                                if (new_month - start_month) == int(grResponse['result'][i]['repeat_every']):
-                                    start_month = new_month
-                                    occurence += 1
-                                    if new_date == cur_date:
-                                        listGR.append(
-                                            grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    relativedelta(
-                                        months=grResponse['result'][i]['repeat_every'])
-                                new_month = new_date.month
+#                         # For after and year frequency
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'year':
 
-                        # For after and year frequency
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'year':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             start_year = datetime_object.year
+#                             new_year = start_year
+#                             new_date = datetime_object
+#                             occurence = 1
+#                             while(new_date <= cur_date) and occurence <= int(grResponse['result'][i]['repeat_occurences']):
+#                                 if (new_year - start_year) == int(grResponse['result'][i]['repeat_every']):
+#                                     start_year = new_year
+#                                     occurence += 1
+#                                     if new_date == cur_date:
+#                                         listGR.append(
+#                                             grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     relativedelta(
+#                                         years=grResponse['result'][i]['repeat_every'])
+#                                 new_year = new_date.year
 
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            start_year = datetime_object.year
-                            new_year = start_year
-                            new_date = datetime_object
-                            occurence = 1
-                            while(new_date <= cur_date) and occurence <= int(grResponse['result'][i]['repeat_occurences']):
-                                if (new_year - start_year) == int(grResponse['result'][i]['repeat_every']):
-                                    start_year = new_year
-                                    occurence += 1
-                                    if new_date == cur_date:
-                                        listGR.append(
-                                            grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    relativedelta(
-                                        years=grResponse['result'][i]['repeat_every'])
-                                new_year = new_date.year
+#                     if (grResponse['result'][i]['repeat_type']).lower() == 'on':
+#                         # For on and day frequency
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'day':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             end_datetime = grResponse['result'][i]['repeat_ends_on']
+#                             end_datetime = end_datetime.replace(
+#                                 " GMT-0700 (Pacific Daylight Time)", "")
+#                             end_datetime_object = datetime.strptime(
+#                                 end_datetime, "%a %b %d %Y %H:%M:%S").date()
+#                             new_date = datetime_object
 
-                    if (grResponse['result'][i]['repeat_type']).lower() == 'on':
-                        # For on and day frequency
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'day':
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            end_datetime = grResponse['result'][i]['repeat_ends_on']
-                            end_datetime = end_datetime.replace(
-                                " GMT-0700 (Pacific Daylight Time)", "")
-                            end_datetime_object = datetime.strptime(
-                                end_datetime, "%a %b %d %Y %H:%M:%S").date()
-                            new_date = datetime_object
+#                             while(new_date <= cur_date and cur_date <= end_datetime_object):
+#                                 if(new_date == cur_date):
+#                                     listGR.append(
+#                                         grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     timedelta(
+#                                         days=grResponse['result'][i]['repeat_every'])
 
-                            while(new_date <= cur_date and cur_date <= end_datetime_object):
-                                if(new_date == cur_date):
-                                    listGR.append(
-                                        grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    timedelta(
-                                        days=grResponse['result'][i]['repeat_every'])
+#                         # For on and week frequency
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'week':
 
-                        # For on and week frequency
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'week':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             end_datetime = grResponse['result'][i]['repeat_ends_on']
+#                             end_datetime = end_datetime.replace(
+#                                 " GMT-0700 (Pacific Daylight Time)", "")
+#                             end_datetime_object = datetime.strptime(
+#                                 end_datetime, "%a %b %d %Y %H:%M:%S").date()
+#                             start_week = datetime_object.isocalendar()[1]
+#                             new_week = start_week
+#                             new_date = datetime_object
+#                             occurence = 1
+#                             while(new_date <= cur_date and cur_date <= end_datetime_object):
+#                                 if (new_week - start_week) == int(grResponse['result'][i]['repeat_every']):
+#                                     start_week = new_week
+#                                     occurence += 1
+#                                     if (new_week == cur_week):
+#                                         listGR.append(
+#                                             grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     timedelta(
+#                                         weeks=grResponse['result'][i]['repeat_every'])
+#                                 new_week = new_date.isocalendar()[1]
 
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            end_datetime = grResponse['result'][i]['repeat_ends_on']
-                            end_datetime = end_datetime.replace(
-                                " GMT-0700 (Pacific Daylight Time)", "")
-                            end_datetime_object = datetime.strptime(
-                                end_datetime, "%a %b %d %Y %H:%M:%S").date()
-                            start_week = datetime_object.isocalendar()[1]
-                            new_week = start_week
-                            new_date = datetime_object
-                            occurence = 1
-                            while(new_date <= cur_date and cur_date <= end_datetime_object):
-                                if (new_week - start_week) == int(grResponse['result'][i]['repeat_every']):
-                                    start_week = new_week
-                                    occurence += 1
-                                    if (new_week == cur_week):
-                                        listGR.append(
-                                            grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    timedelta(
-                                        weeks=grResponse['result'][i]['repeat_every'])
-                                new_week = new_date.isocalendar()[1]
+#                         # For on and month frequency
 
-                        # For on and month frequency
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'month':
 
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'month':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             end_datetime = grResponse['result'][i]['repeat_ends_on']
+#                             end_datetime = end_datetime.replace(
+#                                 " GMT-0700 (Pacific Daylight Time)", "")
+#                             end_datetime_object = datetime.strptime(
+#                                 end_datetime, "%a %b %d %Y %H:%M:%S").date()
+#                             start_month = datetime_object.month
+#                             new_month = start_week
+#                             new_date = datetime_object
+#                             while(new_date <= cur_date and cur_date <= end_datetime):
+#                                 if (new_month - start_month) == int(grResponse['result'][i]['repeat_every']):
+#                                     start_month = new_month
+#                                     if new_date == cur_date:
+#                                         listGR.append(
+#                                             grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     relativedelta(
+#                                         months=grResponse['result'][i]['repeat_every'])
+#                                 new_month = new_date.month
 
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            end_datetime = grResponse['result'][i]['repeat_ends_on']
-                            end_datetime = end_datetime.replace(
-                                " GMT-0700 (Pacific Daylight Time)", "")
-                            end_datetime_object = datetime.strptime(
-                                end_datetime, "%a %b %d %Y %H:%M:%S").date()
-                            start_month = datetime_object.month
-                            new_month = start_week
-                            new_date = datetime_object
-                            while(new_date <= cur_date and cur_date <= end_datetime):
-                                if (new_month - start_month) == int(grResponse['result'][i]['repeat_every']):
-                                    start_month = new_month
-                                    if new_date == cur_date:
-                                        listGR.append(
-                                            grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    relativedelta(
-                                        months=grResponse['result'][i]['repeat_every'])
-                                new_month = new_date.month
+#                         # For on and year frequency
 
-                        # For on and year frequency
+#                         if (grResponse['result'][i]['repeat_frequency']).lower() == 'year':
 
-                        if (grResponse['result'][i]['repeat_frequency']).lower() == 'year':
+#                             datetime_str = grResponse['result'][i]['start_day_and_time']
+#                             datetime_str = datetime_str.replace(",", "")
+#                             datetime_object = datetime.strptime(
+#                                 datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                             end_datetime = grResponse['result'][i]['repeat_ends_on']
+#                             end_datetime = end_datetime.replace(
+#                                 " GMT-0700 (Pacific Daylight Time)", "")
+#                             end_datetime_object = datetime.strptime(
+#                                 end_datetime, "%a %b %d %Y %H:%M:%S").date()
+#                             start_year = datetime_object.year
+#                             new_year = start_year
+#                             new_date = datetime_object
+#                             while(new_date <= cur_date and cur_date <= end_datetime_object):
+#                                 if (new_year - start_year) == int(grResponse['result'][i]['repeat_every']):
+#                                     start_year = new_year
+#                                     if cur_date == new_date:
+#                                         listGR.append(
+#                                             grResponse['result'][i]['gr_unique_id'])
+#                                 new_date = new_date + \
+#                                     relativedelta(
+#                                         years=grResponse['result'][i]['repeat_every'])
+#                                 new_year = new_date.year
 
-                            datetime_str = grResponse['result'][i]['start_day_and_time']
-                            datetime_str = datetime_str.replace(",", "")
-                            datetime_object = datetime.strptime(
-                                datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                            end_datetime = grResponse['result'][i]['repeat_ends_on']
-                            end_datetime = end_datetime.replace(
-                                " GMT-0700 (Pacific Daylight Time)", "")
-                            end_datetime_object = datetime.strptime(
-                                end_datetime, "%a %b %d %Y %H:%M:%S").date()
-                            start_year = datetime_object.year
-                            new_year = start_year
-                            new_date = datetime_object
-                            while(new_date <= cur_date and cur_date <= end_datetime_object):
-                                if (new_year - start_year) == int(grResponse['result'][i]['repeat_every']):
-                                    start_year = new_year
-                                    if cur_date == new_date:
-                                        listGR.append(
-                                            grResponse['result'][i]['gr_unique_id'])
-                                new_date = new_date + \
-                                    relativedelta(
-                                        years=grResponse['result'][i]['repeat_every'])
-                                new_year = new_date.year
+#                 else:
+#                     datetime_str = grResponse['result'][i]['start_day_and_time']
+#                     print(grResponse['result'][i])
+#                     datetime_str = datetime_str.replace(",", "")
+#                     datetime_object = datetime.strptime(
+#                         datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
+#                     print(datetime_object)
+#                     if(datetime_object == cur_date):
+#                         listGR.append(grResponse['result'][i]['gr_unique_id'])
 
-                else:
-                    datetime_str = grResponse['result'][i]['start_day_and_time']
-                    print(grResponse['result'][i])
-                    datetime_str = datetime_str.replace(",", "")
-                    datetime_object = datetime.strptime(
-                        datetime_str, '%Y-%m-%d %I:%M:%S %p').date()
-                    print(datetime_object)
-                    if(datetime_object == cur_date):
-                        listGR.append(grResponse['result'][i]['gr_unique_id'])
+#             i = len(query) - 1
 
-            i = len(query) - 1
+#             for id_gr in listGR:
 
-            for id_gr in listGR:
+#                 query.append(
+#                     """SELECT * FROM goals_routines WHERE gr_unique_id = \'""" + id_gr + """\';""")
+#                 i += 1
+#                 new_item = (execute(query[i], 'get', conn))['result']
 
-                query.append(
-                    """SELECT * FROM goals_routines WHERE gr_unique_id = \'""" + id_gr + """\';""")
-                i += 1
-                new_item = (execute(query[i], 'get', conn))['result']
+#                 items.update({id_gr: new_item})
 
-                items.update({id_gr: new_item})
-
-            response['result'] = items
-            return response, 200
-        except:
-            raise BadRequest('Request failed, please try again later.')
-        finally:
-            disconnect(conn)
+#             response['result'] = items
+#             return response, 200
+#         except:
+#             raise BadRequest('Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
 
 class CopyGR(Resource):
     def post(self):
@@ -4177,37 +4177,37 @@ class UpdateNameTimeZone(Resource):
         finally:
             disconnect(conn)
 
-# User login
-class UserLogin(Resource):
-    def get(self, email_id):
-        print("In UserLogin")
-        response = {}
-        items = {}
+# User login - Not USED
+# class UserLogin(Resource):
+#     def get(self, email_id):
+#         print("In UserLogin")
+#         response = {}
+#         items = {}
 
-        try:
-            conn = connect()
+#         try:
+#             conn = connect()
 
-            temp = False
-            emails = execute(
-                """SELECT user_unique_id, user_email_id from users;""", 'get', conn)
-            for i in range(len(emails['result'])):
-                email = emails['result'][i]['user_email_id']
-                if email == email_id:
-                    temp = True
-                    user_unique_id = emails['result'][i]['user_unique_id']
-            if temp == True:
+#             temp = False
+#             emails = execute(
+#                 """SELECT user_unique_id, user_email_id from users;""", 'get', conn)
+#             for i in range(len(emails['result'])):
+#                 email = emails['result'][i]['user_email_id']
+#                 if email == email_id:
+#                     temp = True
+#                     user_unique_id = emails['result'][i]['user_unique_id']
+#             if temp == True:
 
-                response['result'] = user_unique_id
+#                 response['result'] = user_unique_id
 
-            if temp == False:
-                response['result'] = False
-                response['message'] = 'Email ID doesnt exist'
+#             if temp == False:
+#                 response['result'] = False
+#                 response['message'] = 'Email ID doesnt exist'
 
-            return response, 200
-        except:
-            raise BadRequest('Request failed, please try again later.')
-        finally:
-            disconnect(conn)
+#             return response, 200
+#         except:
+#             raise BadRequest('Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
 
 # User login
 class GetEmailId(Resource):
@@ -4233,36 +4233,36 @@ class GetEmailId(Resource):
         finally:
             disconnect(conn)
 
-# returns users token
-class Usertoken(Resource):
-    def get(self, user_id=None):
-        print("In Usertoken")
-        response = {}
-        items = {}
+# returns users token - NOT USED
+# class Usertoken(Resource):
+#     def get(self, user_id=None):
+#         print("In Usertoken")
+#         response = {}
+#         items = {}
 
-        try:
-            conn = connect()
-            query = None
+#         try:
+#             conn = connect()
+#             query = None
 
-            query = """SELECT user_unique_id
-                                , user_email_id
-                                , google_auth_token
-                                , google_refresh_token
-                        FROM
-                        users WHERE user_unique_id = \'""" + user_id + """\';"""
+#             query = """SELECT user_unique_id
+#                                 , user_email_id
+#                                 , google_auth_token
+#                                 , google_refresh_token
+#                         FROM
+#                         users WHERE user_unique_id = \'""" + user_id + """\';"""
 
-            items = execute(query, 'get', conn)
-            print(items)
-            response['message'] = 'successful'
-            response['email_id'] = items['result'][0]['user_email_id']
-            response['google_auth_token'] = items['result'][0]['google_auth_token']
-            response['google_refresh_token'] = items['result'][0]['google_refresh_token']
+#             items = execute(query, 'get', conn)
+#             print(items)
+#             response['message'] = 'successful'
+#             response['email_id'] = items['result'][0]['user_email_id']
+#             response['google_auth_token'] = items['result'][0]['google_auth_token']
+#             response['google_refresh_token'] = items['result'][0]['google_refresh_token']
 
-            return response, 200
-        except:
-            raise BadRequest('Request failed, please try again later.')
-        finally:
-            disconnect(conn)
+#             return response, 200
+#         except:
+#             raise BadRequest('Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
 
 # CHECK THAT THIS IS ONLY USED FOR MOBILE LOGIN
 class Login(Resource):
@@ -7584,12 +7584,12 @@ class UpdateVersionNumber(Resource):
 # Make sure port number is unused (i.e. don't use numbers 0-1023)
 
 # GET requests
-api.add_resource(GoalsRoutines, '/api/v2/getgoalsandroutines/<string:user_id>')  # working
-api.add_resource(GAI, '/api/v2/gai/<string:user_id>')  # working
-api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working
+api.add_resource(GoalsRoutines, '/api/v2/getgoalsandroutines/<string:user_id>')  # working 092821
+api.add_resource(GAI, '/api/v2/gai/<string:user_id>')  # working Mobile only 092821
+# api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
 api.add_resource(ActionsInstructions,'/api/v2/actionsInstructions/<string:gr_id>')  # working
-api.add_resource(ActionsTasks, '/api/v2/actionsTasks/<string:goal_routine_id>')  # working
-api.add_resource(InstructionsAndSteps,'/api/v2/instructionsSteps/<string:action_task_id>')  # working
+api.add_resource(ActionsTasks, '/api/v2/actionsTasks/<string:goal_routine_id>')  # working 092821
+api.add_resource(InstructionsAndSteps,'/api/v2/instructionsSteps/<string:action_task_id>')  # working 092821
 
 
 # api.add_resource(TodayGoalsRoutines,'/api/v2/todaygoalsandroutines/<string:user_id>')
@@ -7597,23 +7597,23 @@ api.add_resource(InstructionsAndSteps,'/api/v2/instructionsSteps/<string:action_
 
 
 
-api.add_resource(AboutMe, '/api/v2/aboutme/<string:user_id>')  # working
-api.add_resource(TimeSettings, '/api/v2/timeSettings/<string:user_id>')  # working
+api.add_resource(AboutMe, '/api/v2/aboutme/<string:user_id>')  # working 092821
+api.add_resource(TimeSettings, '/api/v2/timeSettings/<string:user_id>')  # working Mobile only 092821
 
-api.add_resource(ListAllTA, '/api/v2/listAllTA/<string:user_id>')  # working
-api.add_resource(ListAllTAForCopy, '/api/v2/listAllTAForCopy')  # working
-api.add_resource(ListAllUsersForCopy, '/api/v2/listAllUsersForCopy')  # working
+api.add_resource(ListAllTA, '/api/v2/listAllTA/<string:user_id>')  # working 092821
+api.add_resource(ListAllTAForCopy, '/api/v2/listAllTAForCopy')  # working 092821
+api.add_resource(ListAllUsersForCopy, '/api/v2/listAllUsersForCopy')  # working 092821
 
-api.add_resource(ListAllPeople, '/api/v2/listPeople/<string:user_id>')  # working
+api.add_resource(ListAllPeople, '/api/v2/listPeople/<string:user_id>')  # working  092821
 
 
 
-api.add_resource(AllUsers, '/api/v2/usersOfTA/<string:email_id>')  # working
-api.add_resource(TALogin, '/api/v2/loginTA/<string:email_id>/<string:password>')  # working
-api.add_resource(TASocialLogin, '/api/v2/loginSocialTA/<string:email_id>')  # working
-api.add_resource(Usertoken, '/api/v2/usersToken/<string:user_id>')  # working
-api.add_resource(UserLogin, '/api/v2/userLogin/<string:email_id>')  # working
-api.add_resource(GetEmailId, '/api/v2/getEmailId/<string:user_id>')  # working
+api.add_resource(AllUsers, '/api/v2/usersOfTA/<string:email_id>')  # working  092821
+api.add_resource(TALogin, '/api/v2/loginTA/<string:email_id>/<string:password>')  # working 092821
+api.add_resource(TASocialLogin, '/api/v2/loginSocialTA/<string:email_id>')  # working 092821
+# api.add_resource(Usertoken, '/api/v2/usersToken/<string:user_id>')  # NOT USED
+# api.add_resource(UserLogin, '/api/v2/userLogin/<string:email_id>')  # NOT USED
+api.add_resource(GetEmailId, '/api/v2/getEmailId/<string:user_id>')  # working MOBILE ONLY 092821
 # api.add_resource(CurrentStatus, '/api/v2/currentStatus/<string:user_id>')  # working
 api.add_resource(GoogleCalenderEvents, '/api/v2/calenderEvents')
 api.add_resource(GetIconsHygiene, '/api/v2/getIconsHygiene')
@@ -7623,47 +7623,47 @@ api.add_resource(GetIconsActivities, '/api/v2/getIconsActivities')
 api.add_resource(GetIconsOther, '/api/v2/getIconsOther')
 api.add_resource(GetImages, '/api/v2/getImages/<string:user_id>')
 api.add_resource(GetPeopleImages, '/api/v2/getPeopleImages/<string:ta_id>')
-api.add_resource(GetHistory, '/api/v2/getHistory/<string:user_id>')
-api.add_resource(GetHistoryDate, '/api/v2/getHistoryDate/<string:user_id>,<string:date_affected>')
-api.add_resource(GoalHistory, '/api/v2/goalHistory/<string:user_id>')
+api.add_resource(GetHistory, '/api/v2/getHistory/<string:user_id>') # working 092821
+api.add_resource(GetHistoryDate, '/api/v2/getHistoryDate/<string:user_id>,<string:date_affected>') # working Mobile only 092821
+api.add_resource(GoalHistory, '/api/v2/goalHistory/<string:user_id>') # working Mobile only 092821
 # api.add_resource(ParticularGoalHistory, '/api/v2/particularGoalHistory/<string:user_id>')
-api.add_resource(RoutineHistory, '/api/v2/routineHistory/<string:user_id>')
+api.add_resource(RoutineHistory, '/api/v2/routineHistory/<string:user_id>') # working Mobile only 092821
 # api.add_resource(GoalRoutineHistory, '/api/v2/goalRoutineHistory/<string:user_id>')
 # api.add_resource(GetUserAndTime, '/api/v2/getUserAndTime')
 # api.add_resource(Notifications, '/api/v2/notifications')
-api.add_resource(TodayGR, '/api/v2/todayGR')
+# api.add_resource(TodayGR, '/api/v2/todayGR') # NOT USED
 
 
 
-api.add_resource(ManifestNotification_CLASS, '/api/v2/ManifestNotification_CLASS')
-api.add_resource(ManifestHistory_CLASS, '/api/v2/ManifestHistory_CLASS')
+api.add_resource(ManifestNotification_CLASS, '/api/v2/ManifestNotification_CLASS') # working Testing only 092821
+api.add_resource(ManifestHistory_CLASS, '/api/v2/ManifestHistory_CLASS') # working Testing only 092821
 # api.add_resource(GRATIS, '/api/v2/GRATIS/<string:user_id>')
-api.add_resource(GRATIS_History_CLASS, '/api/v2/GRATIS_History_CLASS/<string:user_id>')
+api.add_resource(GRATIS_History_CLASS, '/api/v2/GRATIS_History_CLASS/<string:user_id>') # working Testing only 092821
 
 
 # api.add_resource(GetNotifications, '/api/v2/getNotifications')  # working
 api.add_resource(Calender, '/api/v2/calender/<string:user_id>')  # working
-api.add_resource(Motivation, '/api/v2/motivation/<string:user_id>')  # working
-api.add_resource(Happy, '/api/v2/happy/<string:user_id>')  # working
-api.add_resource(Important, '/api/v2/important/<string:user_id>')  # working
+api.add_resource(Motivation, '/api/v2/motivation/<string:user_id>')  # working  092821
+api.add_resource(Happy, '/api/v2/happy/<string:user_id>')  # working  092821
+api.add_resource(Important, '/api/v2/important/<string:user_id>')  # working  092821
 api.add_resource(Feelings, '/api/v2/feelings/<string:user_id>')  # working
 api.add_resource(UserTADetails, '/api/v2/userTADetails')  # working
 api.add_resource(Progress, '/api/v2/progress/<string:user_id>')  # working
 api.add_resource(GetVersionNumber, '/api/v2/getVersionNumber')  # working
 
 # POST requests
-api.add_resource(AnotherTAAccess, '/api/v2/anotherTAAccess')  # working
-api.add_resource(AddNewAT, '/api/v2/addAT')  # working
-api.add_resource(AddNewIS, '/api/v2/addIS')  # working
-api.add_resource(AddNewGR, '/api/v2/addGR')  # working
-api.add_resource(UpdateGR, '/api/v2/updateGR')  # working
-api.add_resource(UpdateAT, '/api/v2/updateAT')  # working
-api.add_resource(UpdateIS, '/api/v2/updateIS')  # working
+api.add_resource(AnotherTAAccess, '/api/v2/anotherTAAccess')  # working  092821
+api.add_resource(AddNewAT, '/api/v2/addAT')  # working 092721
+api.add_resource(AddNewIS, '/api/v2/addIS')  # working 092721
+api.add_resource(AddNewGR, '/api/v2/addGR')  # working 092721
+api.add_resource(UpdateGR, '/api/v2/updateGR')  # working 092721
+api.add_resource(UpdateAT, '/api/v2/updateAT')  # working 092821
+api.add_resource(UpdateIS, '/api/v2/updateIS')  # working 092821
 
-api.add_resource(DeleteAT, '/api/v2/deleteAT')
-api.add_resource(DeleteIS, '/api/v2/deleteIS')
+api.add_resource(DeleteAT, '/api/v2/deleteAT')  # working 092821
+api.add_resource(DeleteIS, '/api/v2/deleteIS')  # working 092821
 
-api.add_resource(DeleteGR, '/api/v2/deleteGR')  # working
+api.add_resource(DeleteGR, '/api/v2/deleteGR')  # working092821
 api.add_resource(CreateNewPeople, '/api/v2/addPeople')  # working
 api.add_resource(DeletePeople, '/api/v2/deletePeople')
 api.add_resource(UpdateTime, '/api/v2/updateTime/<user_id>')
@@ -7673,10 +7673,10 @@ api.add_resource(TASocialSignUP, '/api/v2/addNewSocialTA')  # working
 api.add_resource(CreateNewUser, '/api/v2/addNewUser')  # working
 api.add_resource(UpdateAboutMe, '/api/v2/updateAboutMe')
 api.add_resource(UpdateNameTimeZone, '/api/v2/updateNewUser')
-api.add_resource(AddCoordinates, '/api/v2/addCoordinates')
-api.add_resource(UpdateGRWatchMobile, '/api/v2/udpateGRWatchMobile')
-api.add_resource(UpdateATWatchMobile, '/api/v2/updateATWatchMobile')
-api.add_resource(UpdateISWatchMobile, '/api/v2/updateISWatchMobile')
+api.add_resource(AddCoordinates, '/api/v2/addCoordinates') # working Mobile only 092821
+api.add_resource(UpdateGRWatchMobile, '/api/v2/udpateGRWatchMobile') # working Mobile only 092821
+api.add_resource(UpdateATWatchMobile, '/api/v2/updateATWatchMobile') # working Mobile only 092821
+api.add_resource(UpdateISWatchMobile, '/api/v2/updateISWatchMobile') # working Mobile only 092821
 
 api.add_resource(Login, '/api/v2/login')
 api.add_resource(AccessRefresh, '/api/v2/updateAccessRefresh')
