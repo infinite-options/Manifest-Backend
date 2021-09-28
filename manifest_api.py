@@ -938,6 +938,14 @@ class UpdateGR(Resource):
             icon_type = request.form.get('type')
             description = 'Other'
 
+            print("repeat", repeat, type(repeat))
+            print("repeat_ends", repeat_ends, type(repeat_ends))
+            print("repeat_ends_on", repeat_ends_on, type(repeat_ends_on))
+            print("repeat_every", repeat_every, type(repeat_every))
+            print("repeat_frequency", repeat_frequency, type(repeat_frequency))
+            print("repeat_occurences", repeat_occurences, type(repeat_occurences))
+            print("repeat_week_days", repeat_week_days, type(repeat_week_days))
+
             print("Received Input")
             for i, char in enumerate(gr_title):
                 if char == "'":
@@ -1008,7 +1016,7 @@ class UpdateGR(Resource):
                     if repeat_type.lower() == 'occur':
                         print("\nIn if after")
                         if repeat_frequency.lower() == 'day':
-                            repeat_occurences = repeat_occurences - 1
+                            repeat_occurences = int(repeat_occurences) - 1
                             number_days = int(repeat_occurences) * int(repeat_every)
                             repeat_ends_on = start_date + timedelta(days=number_days)
                             # print("Repeat Ends on: ", repeat_ends_on, type(repeat_ends_on))
@@ -6850,7 +6858,7 @@ class ManifestHistory_CLASS(Resource):
                                 if repeat_type.lower() == 'occur':
                                     print("\nIn if after")
                                     if repeat_frequency.lower() == 'day':
-                                        repeat_occurences = repeat_occurences - 1
+                                        repeat_occurences = int(repeat_occurences) - 1
                                         number_days = int(repeat_occurences) * int(repeat_every)
                                         repeat_ends_on = start_date + timedelta(days=number_days)
                                         # print("Repeat Ends on: ", repeat_ends_on, type(repeat_ends_on))
