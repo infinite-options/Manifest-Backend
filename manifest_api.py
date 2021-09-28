@@ -899,7 +899,8 @@ class UpdateGR(Resource):
             photo = request.files.get('photo')
             photo_url = request.form.get('photo_url')
             repeat = request.form.get('repeat')
-            repeat_ends = request.form.get('repeat_type')
+            # repeat_ends = request.form.get('repeat_type')
+            repeat_type = request.form.get('repeat_type')
             repeat_ends_on = request.form.get('repeat_ends_on')
             repeat_every = request.form.get('repeat_every')
             repeat_frequency = request.form.get('repeat_frequency')
@@ -989,8 +990,70 @@ class UpdateGR(Resource):
             start_date = datetime.strptime(start_day_and_time, '%Y-%m-%d %I:%M:%S %p').date()
             print("start_date", start_date, type(start_date))
 
-            is_displayed_today = (start_date == cur_date)
-            print("Is_Displayed_Today: ", is_displayed_today)
+            # is_displayed_today = (start_date == cur_date)
+            # print("Is_Displayed_Today: ", is_displayed_today)
+
+            # IF NO REPEAT, IS_DISPLAYED_TODAY IS TRUE ONLY IF CURRENT DATE = START DATE
+            if repeat.lower() == 'false':
+                is_displayed_today = (start_date == cur_date)
+                print("Is_Displayed_Today: ", is_displayed_today)
+
+            # IF REPEAT
+            else:
+
+                # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
+                if cur_date >= start_date:
+
+                    # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
+                    if repeat_type.lower() == 'occur':
+                        print("\nIn if after")
+                        if repeat_frequency.lower() == 'day':
+                            repeat_occurences = repeat_occurences - 1
+                            number_days = int(repeat_occurences) * int(repeat_every)
+                            repeat_ends_on = start_date + timedelta(days=number_days)
+                            # print("Repeat Ends on: ", repeat_ends_on, type(repeat_ends_on))
+                            # if repeat_ends_on < cur_date:
+                            #     is_displayed_today = 'False'
+                            #     print("Is_Displayed_Today: ", is_displayed_today)
+                            # else:
+                            #     is_displayed_today = 'True'
+                            #     print("Is_Displayed_Today: ", is_displayed_today)
+
+                        
+
+                    # IF REPEAT NEVER ENDS
+                    elif repeat_type.lower() == 'never':
+                        print("In if never ")
+                        repeat_ends_on = cur_date
+                        # print("Repeat Ends on: ", repeat_ends_on)
+                        # is_displayed_today = 'True'
+                        # print("Is_Displayed_Today: ", is_displayed_today)
+
+                    # IF REPEAT ENDS ON A SPECIFIC DAY
+                    elif repeat_type.lower() == 'on':
+                        print("In if on ")
+                        # print("in goal repeat ends on", goal['repeat_ends_on'])
+                        # repeat_ends = goal['repeat_ends_on']
+                        # print(repeat_ends)
+                        # repeat_ends_on = repeat_ends[:24]
+                        # print(repeat_ends_on)
+                        #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+                        repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
+                        # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
+                        # if repeat_ends_on < cur_date:
+                        #     is_displayed_today = 'False'
+                        #     print("Is_Displayed_Today: ", is_displayed_today)
+                        # else:
+                        #     is_displayed_today = 'True'
+                        #     print("Is_Displayed_Today: ", is_displayed_today)
+
+                    print("\nRepeat End on: ", repeat_ends_on, type(repeat_ends_on))
+                    if repeat_ends_on < cur_date:
+                        is_displayed_today = 'False'
+                        print("Is_Displayed_Today: ", is_displayed_today)
+                    else:
+                        is_displayed_today = 'True'
+                        print("Is_Displayed_Today: ", is_displayed_today)
 
 
             if not photo:
@@ -1008,7 +1071,7 @@ class UpdateGR(Resource):
                                     ,gr_datetime_started = \'""" + datetime_started + """\'
                                     ,gr_datetime_completed = \'""" + datetime_completed + """\'
                                     ,`repeat` = \'""" + str(repeat).title() + """\'
-                                    ,repeat_type = \'""" + repeat_ends + """\'
+                                    ,repeat_type = \'""" + repeat_type + """\'
                                     ,repeat_ends_on = \'""" + repeat_ends_on + """\'
                                     ,repeat_every = \'""" + str(repeat_every) + """\'
                                     ,repeat_week_days = \'""" + json.dumps(dict_week_days) + """\'
@@ -1037,7 +1100,7 @@ class UpdateGR(Resource):
                                     ,gr_datetime_started = \'""" + datetime_started + """\'
                                     ,gr_datetime_completed = \'""" + datetime_completed + """\'
                                     ,`repeat` = \'""" + str(repeat).title() + """\'
-                                    ,repeat_type = \'""" + repeat_ends + """\'
+                                    ,repeat_type = \'""" + repeat_type + """\'
                                     ,repeat_ends_on = \'""" + repeat_ends_on + """\'
                                     ,repeat_week_days = \'""" + json.dumps(dict_week_days) + """\'
                                     ,repeat_every = \'""" + str(repeat_every) + """\'
@@ -2652,8 +2715,8 @@ class CopyGR(Resource):
 
 # Returns all users of a TA
 class AllUsers(Resource):
-    print("In All Users")
     def get(self, email_id):
+        print("In All Users")
         response = {}
         items = {}
 
