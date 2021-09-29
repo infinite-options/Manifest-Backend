@@ -702,8 +702,10 @@ class AddNewGR(Resource):
             print(new_gr_id)
 
             # If picture is a link and not a file uploaded
+            print(photo)
             if not photo:
                 # Add G/R to database
+                print("not photo")
                 query.append("""
                     INSERT INTO goals_routines
                     SET gr_unique_id = \'""" + new_gr_id + """\',
@@ -735,7 +737,7 @@ class AddNewGR(Resource):
 
             # If a new picture is uploaded
             else:
-
+                print("photo")
                 gr_picture = helper_upload_img(photo)
 
                 query.append("""
@@ -750,7 +752,7 @@ class AddNewGR(Resource):
                         is_persistent = \'""" + str(is_persistent).title() + """\',
                         is_sublist_available = \'""" + 'False' + """\',
                         is_timed = \'""" + str(is_timed).title() + """\',
-                        gr_photo = \'""" + gr_picture + """\'
+                        gr_photo = \'""" + gr_picture + """\',
                         `repeat` = \'""" + str(repeat).title() + """\',
                         repeat_type = \'""" + str(repeat_ends).title() + """\',
                         repeat_ends_on = \'""" + repeat_ends_on + """\',
@@ -764,8 +766,9 @@ class AddNewGR(Resource):
                         gr_end_day_and_time = \'""" + end_day_and_time + """\',
                         gr_expected_completion_time = \'""" + expected_completion_time + """\'
                         ;""")
-
+                print("Before query")
                 # if the type of picture uploaded is icon then add it to icon table
+                print("Icon type: ", icon_type)
                 if icon_type == 'icon':
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
@@ -813,7 +816,8 @@ class AddNewGR(Resource):
                     #                 , \'""" + user_id + """\');""", 'post', conn)
 
                 execute(query[1], 'post', conn)
-
+                print(query[1])
+                print("after query execute")
             # New Notification ID
             new_notification_id_response = execute(
                 "CALL get_notification_id;",  'get', conn)
