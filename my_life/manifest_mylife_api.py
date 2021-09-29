@@ -4034,12 +4034,11 @@ class UpdatePeople(Resource):
                             WHERE ta_people_id = \'""" + ta_people_id + """\' 
                             and user_uid = \'""" + user_id + """\';""", 'get', conn)
 
-            people_picture_url = ""
-
+            
             if not people_pic:
                 print("if not")
                 if len(relationResponse['result']) > 0:
-                    print("if not if")
+                    print("if not photo")
                     items = execute("""UPDATE  relationship
                                     SET 
                                         r_timestamp = \'""" + timestamp + """\'
@@ -4072,23 +4071,23 @@ class UpdatePeople(Resource):
                 people_picture_url = helper_upload_img(people_pic)
                 print("Else")
                 if len(relationResponse['result']) > 0:
-
-                    items = execute("""UPDATE  relationship
-                                    SET 
-                                        r_timestamp = \'""" + timestamp + """\'
-                                        , relation_type = \'""" + people_relationship + """\'
-                                        , ta_have_pic =  \'""" + str(people_have_pic).title() + """\'
-                                        , ta_picture = \'""" + people_picture_url + """\'
-                                        , important = \'""" + str(people_important).title() + """\'
-                                        , advisor = \'""" + advisor + """\'
-                                    WHERE ta_people_id = \'""" + ta_people_id + """\' 
-                                    and user_uid = \'""" + user_id + """\' ;""", 'post', conn)
+                    print('NewRelationID', people_picture_url)
+                    query = """UPDATE relationship
+                                SET r_timestamp = \'""" + timestamp + """\'
+                                ,relation_type = \'""" + people_relationship + """\'
+                                ,ta_have_pic =  \'""" + str(people_have_pic).title() + """\'
+                                ,ta_picture = \'""" + people_picture_url + """\'
+                                ,important = \'""" + str(people_important).title() + """\'
+                                ,advisor = \'""" + str(advisor).title() + """\'
+                                WHERE ta_people_id = \'""" + ta_people_id + """\' 
+                                    and user_uid = \'""" + user_id + """\' ;"""
+                    execute(query,'post',conn)
 
                 if len(relationResponse['result']) == 0:
                     NewRelationIDresponse = execute(
                         "Call get_relation_id;", 'get', conn)
                     NewRelationID = NewRelationIDresponse['result'][0]['new_id']
-
+                    print('NewRelationID', NewRelationID)
                     execute("""INSERT INTO relationship
                                SET id = \'""" + NewRelationID + """\',
                                    ta_people_id = \'""" + ta_people_id + """\',
