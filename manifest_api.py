@@ -5928,61 +5928,65 @@ def ManifestNotification_CRON():
             else:
                 guid = n['ta_guid_device_id_notification']
             # print(guid, type(guid))
-            # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
-            time_zone = n['time_zone']
-            # print(time_zone, type(time_zone))
-            start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
-            # print("FUNCTION RETURNS: ", start_time)
+            # Check if guid is NONE.  Skip Notifications if no guid
+            if guid != None:
+                
+                # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
-            end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
-            # print("FUNCTION RETURNS: ", end_time)
+                time_zone = n['time_zone']
+                # print(time_zone, type(time_zone))
+                start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
+                # print("FUNCTION RETURNS: ", start_time)
 
-            # CALCULATE TIME DIFFERENCE VS UTC
-            # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
-            if n['before_is_enable'].lower() == 'true':
-                # print(n['before_is_enable'], n['before_time'], type(n['before_time']))
-                notification_time = start_time - timedelta(seconds=ProcessDuration(n['before_time']))
-                # print("Notification Time: ", notification_time)
-                notification_time_diff = cur_UTC - notification_time
-                # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                    # print("\nBEFORE Notification Criteria met")
-                    for id in getGUID(guid):
-                        #id = getGUID(n)
-                            if (id != ''):
-                                notify(n['before_message'],id)
+                end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
+                # print("FUNCTION RETURNS: ", end_time)
 
-
-            if n['during_is_enable'].lower() == 'true':
-                # print(n['during_is_enable'], n['during_time'], type(n['during_time']))
-                notification_time = start_time + timedelta(seconds=ProcessDuration(n['during_time']))
-                # print("Notification Time: ", notification_time)
-                notification_time_diff = cur_UTC - notification_time
-                # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                    # print("\nDURING Notification Criteria met")
-                    for id in getGUID(guid):
-                        #id = getGUID(n)
-                            if (id != ''):
-                                notify(n['during_message'],id)
+                # CALCULATE TIME DIFFERENCE VS UTC
+                # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+                if n['before_is_enable'].lower() == 'true':
+                    # print(n['before_is_enable'], n['before_time'], type(n['before_time']))
+                    notification_time = start_time - timedelta(seconds=ProcessDuration(n['before_time']))
+                    # print("Notification Time: ", notification_time)
+                    notification_time_diff = cur_UTC - notification_time
+                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                    if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
+                        # print("\nBEFORE Notification Criteria met")
+                        for id in getGUID(guid):
+                            #id = getGUID(n)
+                                if (id != ''):
+                                    notify(n['before_message'],id)
 
 
-            if n['after_is_enable'].lower() == 'true':
-                # print(n['after_is_enable'], n['after_time'], type(n['after_time']))
-                notification_time = end_time + timedelta(seconds=ProcessDuration(n['after_time']))
-                # print("Notification Time: ", notification_time)
-                notification_time_diff = cur_UTC - notification_time
-                # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                    # print("\nAFTER Notification Criteria met")
-                    for id in getGUID(guid):
-                        #id = getGUID(n)
-                            if (id != ''):
-                                notify(n['after_message'],id)
+                if n['during_is_enable'].lower() == 'true':
+                    # print(n['during_is_enable'], n['during_time'], type(n['during_time']))
+                    notification_time = start_time + timedelta(seconds=ProcessDuration(n['during_time']))
+                    # print("Notification Time: ", notification_time)
+                    notification_time_diff = cur_UTC - notification_time
+                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                    if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
+                        # print("\nDURING Notification Criteria met")
+                        for id in getGUID(guid):
+                            #id = getGUID(n)
+                                if (id != ''):
+                                    notify(n['during_message'],id)
+
+
+                if n['after_is_enable'].lower() == 'true':
+                    # print(n['after_is_enable'], n['after_time'], type(n['after_time']))
+                    notification_time = end_time + timedelta(seconds=ProcessDuration(n['after_time']))
+                    # print("Notification Time: ", notification_time)
+                    notification_time_diff = cur_UTC - notification_time
+                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                    if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
+                        # print("\nAFTER Notification Criteria met")
+                        for id in getGUID(guid):
+                            #id = getGUID(n)
+                                if (id != ''):
+                                    notify(n['after_message'],id)
 
         return response, 200
 
