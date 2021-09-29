@@ -702,8 +702,10 @@ class AddNewGR(Resource):
             print(new_gr_id)
 
             # If picture is a link and not a file uploaded
+            print(photo)
             if not photo:
                 # Add G/R to database
+                print("not photo")
                 query.append("""
                     INSERT INTO goals_routines
                     SET gr_unique_id = \'""" + new_gr_id + """\',
@@ -735,7 +737,7 @@ class AddNewGR(Resource):
 
             # If a new picture is uploaded
             else:
-
+                print("photo")
                 gr_picture = helper_upload_img(photo)
 
                 query.append("""
@@ -750,7 +752,7 @@ class AddNewGR(Resource):
                         is_persistent = \'""" + str(is_persistent).title() + """\',
                         is_sublist_available = \'""" + 'False' + """\',
                         is_timed = \'""" + str(is_timed).title() + """\',
-                        gr_photo = \'""" + gr_picture + """\'
+                        gr_photo = \'""" + gr_picture + """\',
                         `repeat` = \'""" + str(repeat).title() + """\',
                         repeat_type = \'""" + str(repeat_ends).title() + """\',
                         repeat_ends_on = \'""" + repeat_ends_on + """\',
@@ -764,8 +766,9 @@ class AddNewGR(Resource):
                         gr_end_day_and_time = \'""" + end_day_and_time + """\',
                         gr_expected_completion_time = \'""" + expected_completion_time + """\'
                         ;""")
-
+                print("Before query")
                 # if the type of picture uploaded is icon then add it to icon table
+                print("Icon type: ", icon_type)
                 if icon_type == 'icon':
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
@@ -813,7 +816,8 @@ class AddNewGR(Resource):
                     #                 , \'""" + user_id + """\');""", 'post', conn)
 
                 execute(query[1], 'post', conn)
-
+                print(query[1])
+                print("after query execute")
             # New Notification ID
             new_notification_id_response = execute(
                 "CALL get_notification_id;",  'get', conn)
@@ -5767,32 +5771,38 @@ def notify(msg,tag):
     print("In Notify")
     # print(msg,tag)
     # hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7...m3xuVg=", "Manifest-Notification-Hub", isDebug)
-    hub = AzureNotificationHub(NOTIFICATION_HUB_KEY, NOTIFICATION_HUB_NAME, isDebug)
+    
+    try:
+        hub = AzureNotificationHub(NOTIFICATION_HUB_KEY, NOTIFICATION_HUB_NAME, isDebug)
+        print("Hub Credentials: ", hub)
+ 
+        # APPLE NOTIFICATIONS
+        #wns_payload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"}}"
+        wns_payload = {
+            'aps':
+                {
+                    'alert': msg,
+                    'sound':'default'
+                }
+        }
+        hub.send_apple_notification(0, wns_payload,tag)
 
-    # APPLE NOTIFICATIONS
-	#wns_payload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"}}"
-    wns_payload = {
-	    'aps':
-	        {
-	            'alert': msg,
-                'sound':'default'
-	        }
-	}
-    hub.send_apple_notification(0, wns_payload,tag)
+        # ANDROID NOTIFICATIONS
+        #wns_payload ="""{\n\"notification\":{\n\"title\":\"Notification Hub Test Notification\",\n\"body\":\"This is a sample notification delivered by Azure Notification Hubs.\"\n},\n\"data\":{\n\"property1\":\"value1\",\n\"property2\":42\n}\n}"""
+        wns_payload = {
+            "notification":{
+                "title":"Hi",
+                "body": msg
+            },
+            "data":{
+                "property1":"value1",
+                "property2":42
+            }
+        }
+        hub.send_google_notification(0, wns_payload,tag)
 
-	# ANDROID NOTIFICATIONS
-    #wns_payload ="""{\n\"notification\":{\n\"title\":\"Notification Hub Test Notification\",\n\"body\":\"This is a sample notification delivered by Azure Notification Hubs.\"\n},\n\"data\":{\n\"property1\":\"value1\",\n\"property2\":42\n}\n}"""
-    wns_payload = {
-		"notification":{
-			"title":"Hi",
-			"body": msg
-		},
-		"data":{
-			"property1":"value1",
-			"property2":42
-		}
-	}
-    hub.send_google_notification(0, wns_payload,tag)
+    except:
+        print("No Hub Credentials")
     
 
 def getGUID(guid):
@@ -6031,68 +6041,74 @@ class ManifestNotification_CLASS(Resource):
                     guid = n['cust_guid_device_id_notification']
                 else:
                     guid = n['ta_guid_device_id_notification']
-                print(guid, type(guid))
+                print("GUID: ", guid, type(guid))
                 # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
-                time_zone = n['time_zone']
-                print(time_zone, type(time_zone))
-                start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
-                print("FUNCTION RETURNS: ", start_time)
+                # Check if guid is NONE.  Skip Notifications if no guid
+                if guid != None:
+                
+                    time_zone = n['time_zone']
+                    print(time_zone, type(time_zone))
+                    start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
+                    print("FUNCTION RETURNS: ", start_time)
 
-                end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
-                print("FUNCTION RETURNS: ", end_time)
+                    end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
+                    print("FUNCTION RETURNS: ", end_time)
 
-                # CALCULATE TIME DIFFERENCE VS UTC
-                print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
-                if n['before_is_enable'].lower() == 'true':
-                    print(n['before_is_enable'], n['before_time'], type(n['before_time']))
-                    notification_time = start_time - timedelta(seconds=ProcessDuration(n['before_time']))
-                    print("Notification Time: ", notification_time)
-                    notification_time_diff = cur_UTC - notification_time
-                    print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                    print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                    if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                        print("\nBEFORE Notification Criteria met")
-                        for id in getGUID(guid):
-                            #id = getGUID(n)
-                                if (id != ''):
-                                    # print("About to send before notification", n['before_message'],id)
-                                    notify(n['before_message'],id)
-                                    # print("Sent before notification", n['before_message'],id)
-
-
-                if n['during_is_enable'].lower() == 'true':
-                    # print(n['during_is_enable'], n['during_time'], type(n['during_time']))
-                    notification_time = start_time + timedelta(seconds=ProcessDuration(n['during_time']))
-                    # print("Notification Time: ", notification_time)
-                    notification_time_diff = cur_UTC - notification_time
-                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                    if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                        print("\nDURING Notification Criteria met")
-                        for id in getGUID(guid):
-                            #id = getGUID(n)
-                                if (id != ''):
-                                    # print("About to send during notification", n['during_message'],id)
-                                    notify(n['during_message'],id)
-                                    # print("Sent during notification", n['during_message'],id)
+                    # CALCULATE TIME DIFFERENCE VS UTC
+                    print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+                    if n['before_is_enable'].lower() == 'true':
+                        print(n['before_is_enable'], n['before_time'], type(n['before_time']))
+                        notification_time = start_time - timedelta(seconds=ProcessDuration(n['before_time']))
+                        print("Notification Time: ", notification_time)
+                        notification_time_diff = cur_UTC - notification_time
+                        print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                        print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                        if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                            print("\nBEFORE Notification Criteria met")
+                            for id in getGUID(guid):
+                                    print("GUID: ", id)
+                                    #id = getGUID(n)
+                                    if (id != ''):
+                                        # print("About to send before notification", n['before_message'],id)
+                                        notify(n['before_message'],id)
+                                        # print("Sent before notification", n['before_message'],id)
 
 
-                if n['after_is_enable'].lower() == 'true':
-                    # print(n['after_is_enable'], n['after_time'], type(n['after_time']))
-                    notification_time = end_time + timedelta(seconds=ProcessDuration(n['after_time']))
-                    # print("Notification Time: ", notification_time)
-                    notification_time_diff = cur_UTC - notification_time
-                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                    if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                        print("\nAFTER Notification Criteria met")
-                        for id in getGUID(guid):
-                            #id = getGUID(n)
-                                if (id != ''):
-                                    # print("About to send after notification", n['after_message'],id)
-                                    notify(n['after_message'],id)
-                                    # print("Sent after notification", n['after_message'],id)
+                    if n['during_is_enable'].lower() == 'true':
+                        # print(n['during_is_enable'], n['during_time'], type(n['during_time']))
+                        notification_time = start_time + timedelta(seconds=ProcessDuration(n['during_time']))
+                        # print("Notification Time: ", notification_time)
+                        notification_time_diff = cur_UTC - notification_time
+                        # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                        # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                        if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                            print("\nDURING Notification Criteria met")
+                            for id in getGUID(guid):
+                                    print("GUID: ", id)
+                                    #id = getGUID(n)
+                                    if (id != ''):
+                                        # print("About to send during notification", n['during_message'],id)
+                                        notify(n['during_message'],id)
+                                        # print("Sent during notification", n['during_message'],id)
+
+
+                    if n['after_is_enable'].lower() == 'true':
+                        # print(n['after_is_enable'], n['after_time'], type(n['after_time']))
+                        notification_time = end_time + timedelta(seconds=ProcessDuration(n['after_time']))
+                        # print("Notification Time: ", notification_time)
+                        notification_time_diff = cur_UTC - notification_time
+                        # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                        # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                        if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                            print("\nAFTER Notification Criteria met")
+                            for id in getGUID(guid):
+                                    print("GUID: ", id)
+                                    #id = getGUID(n)
+                                    if (id != ''):
+                                        # print("About to send after notification", n['after_message'],id)
+                                        notify(n['after_message'],id)
+                                        # print("Sent after notification", n['after_message'],id)
 
             return response, 200
 
