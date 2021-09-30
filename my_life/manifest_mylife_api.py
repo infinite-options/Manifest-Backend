@@ -501,7 +501,12 @@ class ActionsInstructions(Resource):
             goals = execute(
                 """SELECT * FROM goals_routines WHERE gr_unique_id = \'""" + gr_id + """\';""", 'get', conn)
             res_actions = execute(
-                """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
+                """
+                SELECT * 
+                FROM actions_tasks 
+                WHERE goal_routine_id = \'""" + gr_id + """\'
+                ORDER BY at_datetime_started;
+                """, 'get', conn)
             items['result'] = goals['result']
             items['result'][0]['actions_tasks'] = list(res_actions['result'])
 
@@ -534,8 +539,12 @@ class ActionsTasks(Resource):
 
             conn = connect()
 
-            query = """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + \
-                goal_routine_id + """\';"""
+            query = """
+                SELECT * 
+                FROM manifest_mylife.actions_tasks 
+                WHERE goal_routine_id = \'""" + goal_routine_id + """\'
+                ORDER BY at_datetime_started;
+            """
             items = execute(query, 'get', conn)
 
             response['result'] = items['result']
@@ -558,8 +567,12 @@ class InstructionsAndSteps(Resource):
 
             conn = connect()
 
-            query = """SELECT * FROM instructions_steps WHERE at_id = \'""" + \
-                action_task_id + """\' ORDER BY is_sequence;"""
+            query = """
+                SELECT * 
+                FROM manifest_mylife.instructions_steps 
+                WHERE at_id = \'""" + action_task_id + """\' 
+                ORDER BY is_sequence;
+            """
             items = execute(query, 'get', conn)
 
             response['result'] = items['result']
@@ -2203,11 +2216,11 @@ class CopyGR(Resource):
                            repeat_every = \'""" + str(goal_routine_response[0]['repeat_every']) + """\',
                            repeat_frequency = \'""" + str(goal_routine_response[0]['repeat_frequency']) + """\',
                            repeat_occurences = \'""" + str(goal_routine_response[0]['repeat_occurences']) + """\',
-                           gr_start_day_and_time = \'""" + str(start_date_time) + """\',
+                           gr_start_day_and_time = \'""" + str(goal_routine_response[0]['gr_start_day_and_time']) + """\',
                            repeat_week_days = \'""" + goal_routine_response[0]['repeat_week_days'] + """\',
                            gr_datetime_completed = \'""" + goal_routine_response[0]['gr_datetime_completed'] + """\',
                            gr_datetime_started = \'""" + goal_routine_response[0]['gr_datetime_started'] + """\',
-                           gr_end_day_and_time = \'""" + str(end_date_time) + """\',
+                           gr_end_day_and_time = \'""" + str(goal_routine_response[0]['gr_end_day_and_time']) + """\',
                            gr_expected_completion_time = \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\';""", 'post', conn) 
             print("After insert")
 
@@ -5987,6 +6000,7 @@ def ManifestNotification_CRON():
                                 if (id != ''):
                                     notify(n['after_message'],id)
 
+        print("Successfully completed Notification CRON Function")
         return response, 200
 
     except:
@@ -6113,6 +6127,7 @@ class ManifestNotification_CLASS(Resource):
                                         notify(n['after_message'],id)
                                         # print("Sent after notification", n['after_message'],id)
 
+            print("Successfully completed Notification CRON Function")
             return response, 200
 
         except:
@@ -6150,7 +6165,8 @@ def GRATIS(user_id):
             AT_query = """
                 SELECT * 
                 FROM actions_tasks 
-                WHERE goal_routine_id = \'""" + gr_id + """\';
+                WHERE goal_routine_id = \'""" + gr_id + """\'
+                ORDER BY at_datetime_started;
                 """
 
             # print(AT_query)
@@ -6240,7 +6256,8 @@ def GRATIS_History(user_id):
                     is_sublist_available,
                     at_photo AS photo
                 FROM manifest_mylife.actions_tasks 
-                WHERE goal_routine_id = \'""" + gr_id + """\';
+                WHERE goal_routine_id = \'""" + gr_id + """\'
+                ORDER BY at_datetime_started;
                 """
             # print(AT_query)
             AT = execute(AT_query, 'get', conn)
@@ -6280,6 +6297,7 @@ def GRATIS_History(user_id):
         # response = GR['result']
         response = GR['result']
 
+        print("\nSuccessfully completed GRATIS_HISTORY")
         return response
 
     except:
@@ -6339,8 +6357,10 @@ class GRATIS_History_CLASS(Resource):
                         is_sublist_available,
                         at_photo AS photo
                     FROM manifest_mylife.actions_tasks 
-                    WHERE goal_routine_id = \'""" + gr_id + """\';
+                    WHERE goal_routine_id = \'""" + gr_id + """\'
+                    ORDER BY at_datetime_started;
                     """
+
                 # print(AT_query)
                 AT = execute(AT_query, 'get', conn)
                 # print(AT)
@@ -6379,6 +6399,7 @@ class GRATIS_History_CLASS(Resource):
             # response = GR['result']
             response = GR['result']
 
+            print("\nSuccessfully completed GRATIS_HISTORY")
             return response
 
         except:
@@ -6688,6 +6709,7 @@ def ManifestHistory_CRON():
 
         response = user_tz
     
+        print("Successfully completed Manifest History CRON Function")
         return response, 200
     except:
         raise BadRequest('Request failed, please try again later.')
@@ -6995,6 +7017,7 @@ class ManifestHistory_CLASS(Resource):
 
             response = user_tz
         
+            print("Successfully completed Manifest History CRON Function")
             return response, 200
         except:
             raise BadRequest('Request failed, please try again later.')
@@ -7012,7 +7035,6 @@ class TodayGoalsRoutines(Resource):
         try:
             response = {}
             conn = connect()
-            print("In History CRON Function")
 
             # FIND CURRENT TIME FOR EACH USER
             user_tz_query = """
