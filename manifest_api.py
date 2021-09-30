@@ -1515,10 +1515,11 @@ class AddNewIS(Resource):
             else:
                 response['Insert IS message'] = 'Did not post to IS Table'
 
-            execute("""UPDATE actions_tasks
-                                SET 
-                                    is_sublist_available = \'""" + "True" + """\'   
-                            WHERE at_unique_id = \'""" + at_id + """\';""", 'post', conn)
+            execute("""
+                    UPDATE actions_tasks
+                    SET is_sublist_available = \'""" + "True" + """\'   
+                    WHERE at_unique_id = \'""" + at_id + """\';
+                """, 'post', conn)
             res = {}
             items = execute(
                 """Select * from actions_tasks WHERE at_unique_id = \'""" + at_id + """\';""", 'get', conn)
@@ -1600,10 +1601,10 @@ class UpdateIS(Resource):
                                    url = \'""" + is_picture + """\';""", 'post', conn) 
 
                 else:
-                    NewIDresponse = execute("CALL get_image_id;",  'get', conn)
+                    NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO image_upload
+                    execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + is_picture + """\',
                                    user_id = \'""" + is_id + """\';""", 'post', conn)
@@ -1704,13 +1705,13 @@ class UpdateAT(Resource):
                                    url = \'""" + at_picture + """\';""", 'post', conn)
 
                 else:
-                    NewIDresponse = execute("CALL get_image_id;",  'get', conn)
+                    NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
                     # Need to fix this
                     user_id = '100-000027'
 
-                    execute("""INSERT INTO image_upload 
+                    execute("""INSERT INTO icons 
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + at_picture + """\',
                                    user_id = \'""" + user_id + """\';""", 'post', conn)
