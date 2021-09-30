@@ -501,7 +501,12 @@ class ActionsInstructions(Resource):
             goals = execute(
                 """SELECT * FROM goals_routines WHERE gr_unique_id = \'""" + gr_id + """\';""", 'get', conn)
             res_actions = execute(
-                """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
+                """
+                SELECT * 
+                FROM actions_tasks 
+                WHERE goal_routine_id = \'""" + gr_id + """\'
+                ORDER BY at_datetime_started;
+                """, 'get', conn)
             items['result'] = goals['result']
             items['result'][0]['actions_tasks'] = list(res_actions['result'])
 
@@ -6160,7 +6165,8 @@ def GRATIS(user_id):
             AT_query = """
                 SELECT * 
                 FROM actions_tasks 
-                WHERE goal_routine_id = \'""" + gr_id + """\';
+                WHERE goal_routine_id = \'""" + gr_id + """\'
+                ORDER BY at_datetime_started;
                 """
 
             # print(AT_query)
@@ -6250,7 +6256,8 @@ def GRATIS_History(user_id):
                     is_sublist_available,
                     at_photo AS photo
                 FROM manifest.actions_tasks 
-                WHERE goal_routine_id = \'""" + gr_id + """\';
+                WHERE goal_routine_id = \'""" + gr_id + """\'
+                ORDER BY at_datetime_started;
                 """
             # print(AT_query)
             AT = execute(AT_query, 'get', conn)
@@ -6350,8 +6357,10 @@ class GRATIS_History_CLASS(Resource):
                         is_sublist_available,
                         at_photo AS photo
                     FROM manifest.actions_tasks 
-                    WHERE goal_routine_id = \'""" + gr_id + """\';
+                    WHERE goal_routine_id = \'""" + gr_id + """\'
+                    ORDER BY at_datetime_started;
                     """
+
                 # print(AT_query)
                 AT = execute(AT_query, 'get', conn)
                 # print(AT)
@@ -7026,7 +7035,6 @@ class TodayGoalsRoutines(Resource):
         try:
             response = {}
             conn = connect()
-            print("In History CRON Function")
 
             # FIND CURRENT TIME FOR EACH USER
             user_tz_query = """
