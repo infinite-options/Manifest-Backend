@@ -534,8 +534,12 @@ class ActionsTasks(Resource):
 
             conn = connect()
 
-            query = """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + \
-                goal_routine_id + """\';"""
+            query = """
+                SELECT * 
+                FROM manifest.actions_tasks 
+                WHERE goal_routine_id = \'""" + goal_routine_id + """\'
+                ORDER BY at_datetime_started;
+            """
             items = execute(query, 'get', conn)
 
             response['result'] = items['result']
@@ -558,8 +562,12 @@ class InstructionsAndSteps(Resource):
 
             conn = connect()
 
-            query = """SELECT * FROM instructions_steps WHERE at_id = \'""" + \
-                action_task_id + """\' ORDER BY is_sequence;"""
+            query = """
+                SELECT * 
+                FROM manifest.instructions_steps 
+                WHERE at_id = \'""" + action_task_id + """\' 
+                ORDER BY is_sequence;
+            """
             items = execute(query, 'get', conn)
 
             response['result'] = items['result']
@@ -5987,6 +5995,7 @@ def ManifestNotification_CRON():
                                 if (id != ''):
                                     notify(n['after_message'],id)
 
+        print("Successfully completed Notification CRON Function")
         return response, 200
 
     except:
@@ -6113,6 +6122,7 @@ class ManifestNotification_CLASS(Resource):
                                         notify(n['after_message'],id)
                                         # print("Sent after notification", n['after_message'],id)
 
+            print("Successfully completed Notification CRON Function")
             return response, 200
 
         except:
@@ -6280,6 +6290,7 @@ def GRATIS_History(user_id):
         # response = GR['result']
         response = GR['result']
 
+        print("\nSuccessfully completed GRATIS_HISTORY")
         return response
 
     except:
@@ -6379,6 +6390,7 @@ class GRATIS_History_CLASS(Resource):
             # response = GR['result']
             response = GR['result']
 
+            print("\nSuccessfully completed GRATIS_HISTORY")
             return response
 
         except:
@@ -6688,6 +6700,7 @@ def ManifestHistory_CRON():
 
         response = user_tz
     
+        print("Successfully completed Manifest History CRON Function")
         return response, 200
     except:
         raise BadRequest('Request failed, please try again later.')
@@ -6995,6 +7008,7 @@ class ManifestHistory_CLASS(Resource):
 
             response = user_tz
         
+            print("Successfully completed Manifest History CRON Function")
             return response, 200
         except:
             raise BadRequest('Request failed, please try again later.')
