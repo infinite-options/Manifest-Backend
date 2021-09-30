@@ -6301,6 +6301,7 @@ def GRATIS_History(user_id):
                     is_available,
                     is_sublist_available,
                     at_photo AS photo,
+                    at_expected_completion_time,
                     at_datetime_started,
                     at_datetime_completed
                 FROM manifest.actions_tasks 
@@ -6407,6 +6408,7 @@ class GRATIS_History_CLASS(Resource):
                         is_available,
                         is_sublist_available,
                         at_photo AS photo,
+                        at_expected_completion_time,
                         at_datetime_started,
                         at_datetime_completed
                     FROM manifest.actions_tasks 
