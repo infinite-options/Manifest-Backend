@@ -2211,11 +2211,11 @@ class CopyGR(Resource):
                            repeat_every = \'""" + str(goal_routine_response[0]['repeat_every']) + """\',
                            repeat_frequency = \'""" + str(goal_routine_response[0]['repeat_frequency']) + """\',
                            repeat_occurences = \'""" + str(goal_routine_response[0]['repeat_occurences']) + """\',
-                           gr_start_day_and_time = \'""" + str(start_date_time) + """\',
+                           gr_start_day_and_time = \'""" + str(goal_routine_response[0]['gr_start_day_and_time']) + """\',
                            repeat_week_days = \'""" + goal_routine_response[0]['repeat_week_days'] + """\',
                            gr_datetime_completed = \'""" + goal_routine_response[0]['gr_datetime_completed'] + """\',
                            gr_datetime_started = \'""" + goal_routine_response[0]['gr_datetime_started'] + """\',
-                           gr_end_day_and_time = \'""" + str(end_date_time) + """\',
+                           gr_end_day_and_time = \'""" + str(goal_routine_response[0]['gr_end_day_and_time']) + """\',
                            gr_expected_completion_time = \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\';""", 'post', conn) 
             print("After insert")
 
