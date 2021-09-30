@@ -6271,7 +6271,10 @@ def GRATIS_History(user_id):
                 is_sublist_available,
                 gr_photo AS photo, 
                 gr_start_day_and_time AS start_day_and_time, 
-                gr_end_day_and_time AS end_day_and_time
+                gr_end_day_and_time AS end_day_and_time,
+                gr_datetime_started,
+                gr_datetime_completed,
+                gr_expected_completion_time
             FROM manifest.goals_routines
             WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
             """
@@ -6297,7 +6300,9 @@ def GRATIS_History(user_id):
                     END AS status,
                     is_available,
                     is_sublist_available,
-                    at_photo AS photo
+                    at_photo AS photo,
+                    at_datetime_started,
+                    at_datetime_completed
                 FROM manifest.actions_tasks 
                 WHERE goal_routine_id = \'""" + gr_id + """\'
                 ORDER BY at_datetime_started;
@@ -6372,7 +6377,10 @@ class GRATIS_History_CLASS(Resource):
                     is_sublist_available,
                     gr_photo AS photo, 
                     gr_start_day_and_time AS start_day_and_time, 
-                    gr_end_day_and_time AS end_day_and_time
+                    gr_end_day_and_time AS end_day_and_time,
+                    gr_datetime_started,
+                    gr_datetime_completed,
+                    gr_expected_completion_time
                 FROM manifest.goals_routines
                 WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
                 """
@@ -6398,12 +6406,13 @@ class GRATIS_History_CLASS(Resource):
                         END AS status,
                         is_available,
                         is_sublist_available,
-                        at_photo AS photo
+                        at_photo AS photo,
+                        at_datetime_started,
+                        at_datetime_completed
                     FROM manifest.actions_tasks 
                     WHERE goal_routine_id = \'""" + gr_id + """\'
                     ORDER BY at_datetime_started;
                     """
-
                 # print(AT_query)
                 AT = execute(AT_query, 'get', conn)
                 # print(AT)
