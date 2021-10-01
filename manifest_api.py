@@ -848,10 +848,9 @@ class AddNewGR(Resource):
                     execute("""
                         INSERT INTO icons
                         SET uid = \'""" + NewID + """\',
-                            Description = \'""" + 'Image Uploaded' + """\',
                             url = \'""" + gr_picture + """\',
-                            user_id = \'""" + user_id + """\';
-                            """, 'post', conn)
+                            Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
                     
                     # NEED TO TEST WITH ABOVE QUERY.  IF IT WORKS DELETE COMMENTS BELOW
                     # execute("""INSERT INTO icons(
@@ -1190,7 +1189,7 @@ class UpdateGR(Resource):
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + gr_picture + """\',
                                    Description = \'""" + 'Image Uploaded' + """\',
-                                   user_id = \'""" + user_id + """\';""", 'post', conn)
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             items = execute(query, 'post', conn)
 
@@ -1290,6 +1289,7 @@ class AddNewAT(Resource):
             expected_completion_time = request.form.get(
                 'expected_completion_time')
             gr_id = request.form.get('gr_id')
+            user_id = request.form.get('user_id')
             is_timed = request.form.get('is_timed')
             is_available = request.form.get('is_available')
             is_complete = request.form.get('is_complete')
@@ -1375,15 +1375,12 @@ class AddNewAT(Resource):
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    # Need to fix this
-                    user_id = '100-000027'
 
                     execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
-                                   Description = \'""" + 'Image Uploaded' + """\'
                                    url = \'""" + at_picture + """\',
-                                   user_id = \'""" + user_id + """\';
-                                   """, 'post', conn)
+                                   Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             print("\nThis is query")
             print(query)
@@ -1427,6 +1424,7 @@ class AddNewIS(Resource):
             print("Photo URL: ", request.form.get('photo_url'))
 
             at_id = request.form.get('at_id')
+            user_id = request.form.get('user_id')
             is_timed = request.form.get('is_timed')
             is_sequence = request.form.get('is_sequence')
             is_available = request.form.get('is_available')
@@ -1498,8 +1496,6 @@ class AddNewIS(Resource):
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    user_id = "100-000040"
-
                     execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + is_picture + """\',
@@ -1546,6 +1542,7 @@ class UpdateIS(Resource):
             conn = connect()
 
             audio = request.form.get('audio')
+            user_id = request.form.get('user_id')
             is_id = request.form.get('is_id')
             is_timed = request.form.get('is_timed')
             is_sequence = request.form.get('is_sequence')
@@ -1607,7 +1604,8 @@ class UpdateIS(Resource):
                     execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + is_picture + """\',
-                                   user_id = \'""" + is_id + """\';""", 'post', conn)
+                                   Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             execute(query, 'post', conn)
             response['message'] = 'successful'
@@ -1629,6 +1627,7 @@ class UpdateAT(Resource):
             conn = connect()
 
             audio = request.form.get('audio')
+            user_id = request.form.get('user_id')
             datetime_completed = request.form.get('datetime_completed')
             datetime_started = request.form.get('datetime_started')
             expected_completion_time = request.form.get(
@@ -1708,13 +1707,12 @@ class UpdateAT(Resource):
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    # Need to fix this
-                    user_id = '100-000027'
 
                     execute("""INSERT INTO icons 
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + at_picture + """\',
-                                   user_id = \'""" + user_id + """\';""", 'post', conn)
+                                   Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             execute(query, 'post', conn)
             response['message'] = 'successful'
