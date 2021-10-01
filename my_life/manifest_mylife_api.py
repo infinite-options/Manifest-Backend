@@ -329,7 +329,16 @@ class GoalsRoutines(Resource):
             conn = connect()
 
             # Get all goals and routines of the user
-            query = """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + """\';"""
+            query = """
+                SELECT *,
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "in_progress"
+                        ELSE "not started"
+                    END AS status
+                FROM goals_routines 
+                WHERE user_id = \'""" + user_id + """\';
+            """
 
             items = execute(query, 'get', conn)
 
@@ -339,7 +348,11 @@ class GoalsRoutines(Resource):
             for i in range(len(goal_routine_response)):
                 gr_id = goal_routine_response[i]['gr_unique_id']
                 res = execute(
-                    """SELECT * FROM notifications WHERE gr_at_id = \'""" + gr_id + """\';""", 'get', conn)
+                    """
+                    SELECT * 
+                    FROM notifications 
+                    WHERE gr_at_id = \'""" + gr_id + """\';
+                    """, 'get', conn)
                 items['result'][i]['notifications'] = list(res['result'])
 
             response['message'] = 'successful'
@@ -499,10 +512,24 @@ class ActionsInstructions(Resource):
 
             conn = connect()
             goals = execute(
-                """SELECT * FROM goals_routines WHERE gr_unique_id = \'""" + gr_id + """\';""", 'get', conn)
+                """
+                    SELECT *,
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "in_progress"
+                        ELSE "not started"
+                    END AS status 
+                    FROM goals_routines 
+                    WHERE gr_unique_id = \'""" + gr_id + """\';
+                """, 'get', conn)
             res_actions = execute(
                 """
-                SELECT * 
+                SELECT *,
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "in_progress"
+                        ELSE "not started"
+                    END AS status 
                 FROM actions_tasks 
                 WHERE goal_routine_id = \'""" + gr_id + """\'
                 ORDER BY at_datetime_started;
@@ -513,8 +540,15 @@ class ActionsInstructions(Resource):
             if len(res_actions['result']) > 0:
                 action_response = res_actions['result']
                 for j in range(len(action_response)):
-                    res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
-                                      action_response[j]['at_unique_id'] + """\';""", 'get', conn)
+                    res_ins = execute("""
+                        SELECT *,
+                            CASE
+                                WHEN is_complete = "True" THEN  "completed"
+                                WHEN is_in_progress = "True" THEN  "in_progress"
+                                ELSE "not started"
+                            END AS status
+                        FROM instructions_steps 
+                        WHERE at_id = \'""" + action_response[j]['at_unique_id'] + """\';""", 'get', conn)
                     items['result'][0]['actions_tasks'][j]['instructions_steps'] = list(
                         res_ins['result'])
 
@@ -752,6 +786,7 @@ class AddNewGR(Resource):
             else:
                 print("photo")
                 gr_picture = helper_upload_img(photo)
+                print("gr_picture: ", gr_picture)
 
                 query.append("""
                     INSERT INTO goals_routines
@@ -783,6 +818,7 @@ class AddNewGR(Resource):
                 # if the type of picture uploaded is icon then add it to icon table
                 print("Icon type: ", icon_type)
                 if icon_type == 'icon':
+                    print("In icon")
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
@@ -790,8 +826,8 @@ class AddNewGR(Resource):
                         INSERT INTO icons
                         SET uid = \'""" + NewID + """\',
                             Description = \'""" + description + """\',
-                            url = \'""" + gr_picture + """\'
-                            ;""", 'post', conn)
+                            url = \'""" + gr_picture + """\';
+                            """, 'post', conn)
 
                     # NEED TO TEST WITH ABOVE QUERY.  IF IT WORKS DELETE COMMENTS BELOW
                     # execute("""INSERT INTO icons(
@@ -805,16 +841,16 @@ class AddNewGR(Resource):
 
                 # if the type of picture uploaded is picture then add it to icon table with the description
                 else:
+                    print("User Image")
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
                     execute("""
                         INSERT INTO icons
                         SET uid = \'""" + NewID + """\',
-                            Description = \'""" + 'Image Uploaded' + """\',
                             url = \'""" + gr_picture + """\',
-                            user_id = \'""" + user_id + """\'
-                            ;""", 'post', conn)
+                            Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
                     
                     # NEED TO TEST WITH ABOVE QUERY.  IF IT WORKS DELETE COMMENTS BELOW
                     # execute("""INSERT INTO icons(
@@ -1153,7 +1189,7 @@ class UpdateGR(Resource):
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + gr_picture + """\',
                                    Description = \'""" + 'Image Uploaded' + """\',
-                                   user_id = \'""" + user_id + """\';""", 'post', conn)
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             items = execute(query, 'post', conn)
 
@@ -1253,6 +1289,7 @@ class AddNewAT(Resource):
             expected_completion_time = request.form.get(
                 'expected_completion_time')
             gr_id = request.form.get('gr_id')
+            user_id = request.form.get('user_id')
             is_timed = request.form.get('is_timed')
             is_available = request.form.get('is_available')
             is_complete = request.form.get('is_complete')
@@ -1277,6 +1314,7 @@ class AddNewAT(Resource):
             NewATID = NewATIDresponse['result'][0]['new_id']
             print(NewATID)
 
+            print("photo")
             if not photo:
                 print("No Photo")
 
@@ -1301,7 +1339,7 @@ class AddNewAT(Resource):
             else:
                 print("photo")
                 at_picture = helper_upload_img(photo)
-                print(at_picture)
+                print("at_picture: ", at_picture)
                 query.append("""INSERT INTO actions_tasks
                                 SET at_unique_id = \'""" + NewATID + """\',
                                     at_title = \'""" + at_title + """\',
@@ -1310,7 +1348,7 @@ class AddNewAT(Resource):
                                     is_available = \'""" + str(is_available).title() + """\',
                                     is_complete = \'""" + str(is_complete).title() + """\',
                                     is_in_progress = \'""" + str(is_in_progress).title() + """\',
-                                    is_sublist_available = \'""" + str(is_sublist_available).title() + """\',
+                                    is_sublist_available = \'""" + 'False' + """\',
                                     is_must_do = \'""" + str(is_must_do).title() + """\',
                                     at_photo = \'""" + at_picture + """\',
                                     is_timed = \'""" + str(is_timed).title() + """\',
@@ -1320,6 +1358,7 @@ class AddNewAT(Resource):
                                     at_available_start_time = \'""" + available_start_time + """\',
                                     at_available_end_time = \'""" + available_end_time + """\';""")
 
+                print("Icon type: ", icon_type)
                 if icon_type == 'icon':
                     print("In icon")
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
@@ -1328,21 +1367,20 @@ class AddNewAT(Resource):
                     execute("""INSERT INTO icons 
                                SET uid = \'""" + NewID + """\',
                                    Description = \'""" + description + """\',
-                                   url = \'""" + at_picture + """\';""", 'post', conn)
+                                   url = \'""" + at_picture + """\';
+                                   """, 'post', conn)
 
                 else:
                     print("User Image")
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    # Need to fix this
-                    user_id = '100-000027'
 
                     execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + at_picture + """\',
-                                   Description = \'""" + 'Image Uploaded' + """\'
-                                   user_id = \'""" + user_id + """\';""", 'post', conn)
+                                   Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             print("\nThis is query")
             print(query)
@@ -1358,10 +1396,11 @@ class AddNewAT(Resource):
             else:
                 response['Insert AT message'] = 'Did not post to AT Table'
 
-            execute("""UPDATE goals_routines
-                                SET 
-                                    is_sublist_available = \'""" + "True" + """\'   
-                            WHERE gr_unique_id = \'""" + gr_id + """\';""", 'post', conn)
+            # UPDATE GR TO SHOW SUBLIST IS AVAILABLE
+            execute("""
+                UPDATE goals_routines
+                SET is_sublist_available = \'""" + "True" + """\'   
+                WHERE gr_unique_id = \'""" + gr_id + """\';""", 'post', conn)
 
             response['Update GR message'] = 'successful'
 
@@ -1385,6 +1424,7 @@ class AddNewIS(Resource):
             print("Photo URL: ", request.form.get('photo_url'))
 
             at_id = request.form.get('at_id')
+            user_id = request.form.get('user_id')
             is_timed = request.form.get('is_timed')
             is_sequence = request.form.get('is_sequence')
             is_available = request.form.get('is_available')
@@ -1456,8 +1496,6 @@ class AddNewIS(Resource):
                     NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    user_id = "100-000040"
-
                     execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + is_picture + """\',
@@ -1473,10 +1511,11 @@ class AddNewIS(Resource):
             else:
                 response['Insert IS message'] = 'Did not post to IS Table'
 
-            execute("""UPDATE actions_tasks
-                                SET 
-                                    is_sublist_available = \'""" + "True" + """\'   
-                            WHERE at_unique_id = \'""" + at_id + """\';""", 'post', conn)
+            execute("""
+                    UPDATE actions_tasks
+                    SET is_sublist_available = \'""" + "True" + """\'   
+                    WHERE at_unique_id = \'""" + at_id + """\';
+                """, 'post', conn)
             res = {}
             items = execute(
                 """Select * from actions_tasks WHERE at_unique_id = \'""" + at_id + """\';""", 'get', conn)
@@ -1503,6 +1542,7 @@ class UpdateIS(Resource):
             conn = connect()
 
             audio = request.form.get('audio')
+            user_id = request.form.get('user_id')
             is_id = request.form.get('is_id')
             is_timed = request.form.get('is_timed')
             is_sequence = request.form.get('is_sequence')
@@ -1558,13 +1598,14 @@ class UpdateIS(Resource):
                                    url = \'""" + is_picture + """\';""", 'post', conn) 
 
                 else:
-                    NewIDresponse = execute("CALL get_image_id;",  'get', conn)
+                    NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    execute("""INSERT INTO image_upload
+                    execute("""INSERT INTO icons
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + is_picture + """\',
-                                   user_id = \'""" + is_id + """\';""", 'post', conn)
+                                   Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             execute(query, 'post', conn)
             response['message'] = 'successful'
@@ -1586,6 +1627,7 @@ class UpdateAT(Resource):
             conn = connect()
 
             audio = request.form.get('audio')
+            user_id = request.form.get('user_id')
             datetime_completed = request.form.get('datetime_completed')
             datetime_started = request.form.get('datetime_started')
             expected_completion_time = request.form.get(
@@ -1662,16 +1704,15 @@ class UpdateAT(Resource):
                                    url = \'""" + at_picture + """\';""", 'post', conn)
 
                 else:
-                    NewIDresponse = execute("CALL get_image_id;",  'get', conn)
+                    NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
                     NewID = NewIDresponse['result'][0]['new_id']
 
-                    # Need to fix this
-                    user_id = '100-000027'
 
-                    execute("""INSERT INTO image_upload 
+                    execute("""INSERT INTO icons 
                                SET uid = \'""" + NewID + """\',
                                    url = \'""" + at_picture + """\',
-                                   user_id = \'""" + user_id + """\';""", 'post', conn)
+                                   Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
 
             execute(query, 'post', conn)
             response['message'] = 'successful'
@@ -6228,7 +6269,10 @@ def GRATIS_History(user_id):
                 is_sublist_available,
                 gr_photo AS photo, 
                 gr_start_day_and_time AS start_day_and_time, 
-                gr_end_day_and_time AS end_day_and_time
+                gr_end_day_and_time AS end_day_and_time,
+                gr_datetime_started,
+                gr_datetime_completed,
+                gr_expected_completion_time
             FROM manifest_mylife.goals_routines
             WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
             """
@@ -6254,7 +6298,10 @@ def GRATIS_History(user_id):
                     END AS status,
                     is_available,
                     is_sublist_available,
-                    at_photo AS photo
+                    at_photo AS photo,
+                    at_expected_completion_time,
+                    at_datetime_started,
+                    at_datetime_completed
                 FROM manifest_mylife.actions_tasks 
                 WHERE goal_routine_id = \'""" + gr_id + """\'
                 ORDER BY at_datetime_started;
@@ -6329,7 +6376,10 @@ class GRATIS_History_CLASS(Resource):
                     is_sublist_available,
                     gr_photo AS photo, 
                     gr_start_day_and_time AS start_day_and_time, 
-                    gr_end_day_and_time AS end_day_and_time
+                    gr_end_day_and_time AS end_day_and_time,
+                    gr_datetime_started,
+                    gr_datetime_completed,
+                    gr_expected_completion_time
                 FROM manifest_mylife.goals_routines
                 WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
                 """
@@ -6355,12 +6405,14 @@ class GRATIS_History_CLASS(Resource):
                         END AS status,
                         is_available,
                         is_sublist_available,
-                        at_photo AS photo
+                        at_photo AS photo,
+                        at_expected_completion_time,
+                        at_datetime_started,
+                        at_datetime_completed
                     FROM manifest_mylife.actions_tasks 
                     WHERE goal_routine_id = \'""" + gr_id + """\'
                     ORDER BY at_datetime_started;
                     """
-
                 # print(AT_query)
                 AT = execute(AT_query, 'get', conn)
                 # print(AT)
