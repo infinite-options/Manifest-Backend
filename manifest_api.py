@@ -1348,7 +1348,7 @@ class AddNewAT(Resource):
                                     is_available = \'""" + str(is_available).title() + """\',
                                     is_complete = \'""" + str(is_complete).title() + """\',
                                     is_in_progress = \'""" + str(is_in_progress).title() + """\',
-                                    is_sublist_available = \'""" + str(is_sublist_available).title() + """\',
+                                    is_sublist_available = \'""" + 'False' + """\',
                                     is_must_do = \'""" + str(is_must_do).title() + """\',
                                     at_photo = \'""" + at_picture + """\',
                                     is_timed = \'""" + str(is_timed).title() + """\',
