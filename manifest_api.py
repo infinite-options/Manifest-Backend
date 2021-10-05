@@ -3978,6 +3978,15 @@ class UpdateAboutMe(Resource):
                                     , user_major_events = \'""" + major_events + """\'
                                 WHERE user_unique_id = \'""" + user_id + """\' ;""", 'post', conn)
 
+                NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
+                NewID = NewIDresponse['result'][0]['new_id']
+
+                execute("""
+                    INSERT INTO icons
+                    SET uid = \'""" + NewID + """\',
+                        url = \'""" + user_photo_url + """\',
+                        Description = \'""" + 'Image Uploaded' + """\',
+                        user_id = \'""" + user_id + """\'; """, 'post', conn)
             response['message'] = 'successful'
             response['result'] = 'Update to about me successful'
 
