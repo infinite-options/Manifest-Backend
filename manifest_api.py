@@ -3080,6 +3080,7 @@ class CreateNewPeople(Resource):
             timestamp = getNow()
 
             user_id = request.form.get('user_id')
+
             people_name = request.form.get('people_name')
             people_email = request.form.get("people_email")
             people_employer = request.form.get("people_employer")
@@ -3108,30 +3109,49 @@ class CreateNewPeople(Resource):
             else:
                 advisor = 0
 
-            query = """SELECT ta_email_id FROM ta_people;"""
-            peopleResponse = execute(query, 'get', conn)
-            email_id_list = []
+            # query = """SELECT ta_email_id FROM ta_people;"""
 
+            query = """SELECT * FROM ta_people 
+                        LEFT JOIN relationship 
+                        ON ta_people_id = ta_unique_id;"""
+            peopleResponse = execute(query, 'get', conn)
+            print('peopleResponse',peopleResponse)
+
+            email_id_list = []
+            user_uid_list=[]
             for i in range(len(peopleResponse['result'])):
                 email_id_existing = peopleResponse['result'][i]['ta_email_id']
                 email_id_list.append(email_id_existing)
-            print(email_id_list)
+            print('email_id_list', email_id_list)
 
             if people_email in email_id_list:
                 print('ta email exists')
-                typeResponse = execute(
-                    """SELECT ta_unique_id from ta_people WHERE ta_email_id = \'""" + people_email + """\';""", 'get', conn)
+                
+                # typeResponse = execute(
+                #     """SELECT ta_unique_id from ta_people WHERE ta_email_id = \'""" + people_email + """\';""", 'get', conn)
 
-                relationResponse = execute("""SELECT id from relationship 
-                                            WHERE ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\'
-                                            AND user_uid = \'""" + user_id + """\';""", 'get', conn)
+                typeResponse = execute("""SELECT * 
+                                            FROM ta_people
+                                            LEFT JOIN relationship 
+                                            ON ta_people_id = ta_unique_id 
+                                            WHERE ta_email_id = \'""" + people_email + """\';""", 'get', conn)
+                print(typeResponse['result'])
 
-                if len(relationResponse['result']) > 0:
+                for i in range(len(typeResponse['result'])):
+                    user_uid_existing = typeResponse['result'][i]['user_uid']
+                    user_uid_list.append(user_uid_existing)
+                print('user_uid_list', user_uid_list)
 
+                # relationResponse = execute("""SELECT id from relationship 
+                #                             WHERE ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\'
+                #                             AND user_uid = \'""" + user_id + """\';""", 'get', conn)
+
+                if user_id in user_uid_list:
+                    print('relationship exists')
                     response['message'] = "TA already exists."
 
                 else:
-
+                    print('relationship doesnt exists')
                     NewRelationIDresponse = execute("Call get_relation_id;", 'get', conn)
                     NewRelationID = NewRelationIDresponse['result'][0]['new_id']
                     print("relation Id", NewRelationID)
@@ -3142,7 +3162,7 @@ class CreateNewPeople(Resource):
                         execute("""INSERT INTO relationship
                                     SET id = \'""" + NewRelationID + """\',
                                         r_timestamp = \'""" + str(timestamp) + """\',
-                                        ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\',
+                                        ta_people_id = \'""" + typeResponse['result']['ta_unique_id'] + """\',
                                         user_uid = \'""" + user_id + """\',
                                         relation_type = \'""" + people_relationship + """\',
                                         ta_have_pic = \'""" + str(people_have_pic).title() + """\',
@@ -4133,7 +4153,7 @@ class UpdatePeople(Resource):
             else:
                 advisor =0;
             
-
+            #updates ta_people table
             execute("""UPDATE  ta_people
                         SET 
                             ta_first_name = \'""" + first_name + """\'
@@ -4149,7 +4169,7 @@ class UpdatePeople(Resource):
                             WHERE ta_people_id = \'""" + ta_people_id + """\' 
                             and user_uid = \'""" + user_id + """\';""", 'get', conn)
 
-            
+            #updates relationship table
             if not people_pic:
                 print("if no pic")
                 if len(relationResponse['result']) > 0:
