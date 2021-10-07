@@ -1234,7 +1234,7 @@ class UpdateGR(Resource):
                                 gr_at_id = \'""" + id + """\',
                                 before_is_enable = \'""" + str(ta_before_is_enabled).title() + """\',
                                 before_is_set = \'""" + str(ta_before_is_set).title() + """\',
-                                before_message = \'""" + str(ta_before_message ).replace("'", "''")+ """\',
+                                before_message = \'""" + str(ta_before_message).replace("'", "''")+ """\',
                                 before_time = \'""" + ta_before_time + """\',
                                 during_is_enable = \'""" + str(ta_during_is_enabled).title() + """\',
                                 during_is_set = \'""" + str(ta_during_is_set).title() + """\',
@@ -1255,7 +1255,7 @@ class UpdateGR(Resource):
                 query2 = """UPDATE notifications
                                 SET   before_is_enable = \'""" + str(ta_before_is_enabled).title() + """\'
                                         , before_is_set  = \'""" + str(ta_before_is_set).title() + """\'
-                                        , before_message = \'""" + str(ta_before_message ).replace("'", "''") + """\'
+                                        , before_message = \'""" + str(ta_before_message).replace("'", "''") + """\'
                                         , before_time = \'""" + ta_before_time + """\'
                                         , during_is_enable = \'""" + str(ta_during_is_enabled).title() + """\'
                                         , during_is_set = \'""" + str(ta_during_is_set).title() + """\'
@@ -6052,7 +6052,7 @@ def ManifestNotification_CRON():
                 guid = n['cust_guid_device_id_notification']
             else:
                 guid = n['ta_guid_device_id_notification']
-            print(guid, type(guid))
+            #print(guid, type(guid))
 
             # Check if guid is NONE.  Skip Notifications if no guid
             if guid != None:
@@ -6077,7 +6077,7 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        print("\nBEFORE Notification Criteria met")
+                        #print("\nBEFORE Notification Criteria met")
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6092,7 +6092,7 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        print("\nDURING Notification Criteria met")
+                        #print("\nDURING Notification Criteria met")
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6107,7 +6107,7 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        print("\nAFTER Notification Criteria met")
+                        #print("\nAFTER Notification Criteria met")
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
