@@ -365,6 +365,52 @@ class GoalsRoutines(Resource):
         finally:
             disconnect(conn)
 
+class GetGoals(Resource):
+    def get(self, user_id):
+        print("In GetGoals")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            # Get all goals and routines of the user
+            query = """
+                SELECT *,
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "in_progress"
+                        ELSE "not started"
+                    END AS status
+                FROM goals_routines 
+                WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'False';
+            """
+
+            items = execute(query, 'get', conn)
+
+            goal_routine_response = items['result']
+
+            # Get all notification details
+            for i in range(len(goal_routine_response)):
+                gr_id = goal_routine_response[i]['gr_unique_id']
+                res = execute(
+                    """
+                    SELECT * 
+                    FROM notifications 
+                    WHERE gr_at_id = \'""" + gr_id + """\';
+                    """, 'get', conn)
+                items['result'][i]['notifications'] = list(res['result'])
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response, 200
+        except:
+            raise BadRequest(
+                'Get Routines Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 # Returns Goals with actions/tasks and instructions/steps
 class GAI(Resource):
     def get(self, user_id):
@@ -7750,6 +7796,7 @@ class UpdateVersionNumber(Resource):
 
 # GET requests
 api.add_resource(GoalsRoutines, '/api/v2/getgoalsandroutines/<string:user_id>')  # working 092821
+api.add_resource(GetGoals, '/api/v2/getgoals/<string:user_id>') 
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')  # working Mobile only 092821
 # api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
 api.add_resource(ActionsInstructions,'/api/v2/actionsInstructions/<string:gr_id>')  # working
