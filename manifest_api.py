@@ -532,7 +532,7 @@ class ActionsInstructions(Resource):
                     END AS status 
                 FROM actions_tasks 
                 WHERE goal_routine_id = \'""" + gr_id + """\'
-                ORDER BY at_datetime_started;
+                ORDER BY at_available_start_time;
                 """, 'get', conn)
             items['result'] = goals['result']
             items['result'][0]['actions_tasks'] = list(res_actions['result'])
@@ -577,7 +577,7 @@ class ActionsTasks(Resource):
                 SELECT * 
                 FROM manifest.actions_tasks 
                 WHERE goal_routine_id = \'""" + goal_routine_id + """\'
-                ORDER BY at_datetime_started;
+                ORDER BY at_available_start_time;
             """
             items = execute(query, 'get', conn)
 
@@ -6207,7 +6207,7 @@ def GRATIS(user_id):
                 SELECT * 
                 FROM actions_tasks 
                 WHERE goal_routine_id = \'""" + gr_id + """\'
-                ORDER BY at_datetime_started;
+                ORDER BY at_available_start_time;
                 """
 
             # print(AT_query)
@@ -6249,7 +6249,7 @@ def GRATIS(user_id):
 
 def GRATIS_History(user_id):
     # GET ALL GRATIS INFOMATION GIVEN USER ID MAPPED TO FIT INTO HISTORY TABLE
-    print("\nIn GRATIS_HISTORY")
+    # print("\nIn GRATIS_HISTORY")
     response = {}
     try:
 
@@ -6304,7 +6304,7 @@ def GRATIS_History(user_id):
                     at_datetime_completed
                 FROM manifest.actions_tasks 
                 WHERE goal_routine_id = \'""" + gr_id + """\'
-                ORDER BY at_datetime_started;
+                ORDER BY at_available_start_time;
                 """
             # print(AT_query)
             AT = execute(AT_query, 'get', conn)
@@ -6411,7 +6411,7 @@ class GRATIS_History_CLASS(Resource):
                         at_datetime_completed
                     FROM manifest.actions_tasks 
                     WHERE goal_routine_id = \'""" + gr_id + """\'
-                    ORDER BY at_datetime_started;
+                    ORDER BY at_available_start_time;
                     """
                 # print(AT_query)
                 AT = execute(AT_query, 'get', conn)
