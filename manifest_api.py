@@ -532,7 +532,7 @@ class ActionsInstructions(Resource):
                     END AS status 
                 FROM actions_tasks 
                 WHERE goal_routine_id = \'""" + gr_id + """\'
-                ORDER BY at_datetime_started;
+                ORDER BY at_available_start_time;
                 """, 'get', conn)
             items['result'] = goals['result']
             items['result'][0]['actions_tasks'] = list(res_actions['result'])
@@ -577,7 +577,7 @@ class ActionsTasks(Resource):
                 SELECT * 
                 FROM manifest.actions_tasks 
                 WHERE goal_routine_id = \'""" + goal_routine_id + """\'
-                ORDER BY at_datetime_started;
+                ORDER BY at_available_start_time;
             """
             items = execute(query, 'get', conn)
 
@@ -6052,7 +6052,7 @@ def ManifestNotification_CRON():
                 guid = n['cust_guid_device_id_notification']
             else:
                 guid = n['ta_guid_device_id_notification']
-            # print(guid, type(guid))
+            print(guid, type(guid))
 
             # Check if guid is NONE.  Skip Notifications if no guid
             if guid != None:
@@ -6077,7 +6077,7 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        # print("\nBEFORE Notification Criteria met")
+                        print("\nBEFORE Notification Criteria met")
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6092,7 +6092,7 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        # print("\nDURING Notification Criteria met")
+                        print("\nDURING Notification Criteria met")
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6107,7 +6107,7 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        # print("\nAFTER Notification Criteria met")
+                        print("\nAFTER Notification Criteria met")
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6279,7 +6279,7 @@ def GRATIS(user_id):
                 SELECT * 
                 FROM actions_tasks 
                 WHERE goal_routine_id = \'""" + gr_id + """\'
-                ORDER BY at_datetime_started;
+                ORDER BY at_available_start_time;
                 """
 
             # print(AT_query)
@@ -6376,7 +6376,7 @@ def GRATIS_History(user_id):
                     at_datetime_completed
                 FROM manifest.actions_tasks 
                 WHERE goal_routine_id = \'""" + gr_id + """\'
-                ORDER BY at_datetime_started;
+                ORDER BY at_available_start_time;
                 """
             # print(AT_query)
             AT = execute(AT_query, 'get', conn)
@@ -6483,7 +6483,7 @@ class GRATIS_History_CLASS(Resource):
                         at_datetime_completed
                     FROM manifest.actions_tasks 
                     WHERE goal_routine_id = \'""" + gr_id + """\'
-                    ORDER BY at_datetime_started;
+                    ORDER BY at_available_start_time;
                     """
                 # print(AT_query)
                 AT = execute(AT_query, 'get', conn)
