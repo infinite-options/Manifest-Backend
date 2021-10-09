@@ -337,7 +337,7 @@ class GoalsRoutines(Resource):
                         ELSE "not started"
                     END AS status
                 FROM goals_routines 
-                WHERE user_id = \'""" + user_id + """\';
+                WHERE user_id = \'""" + user_id + """\'  AND is_persistent = 'True';
             """
 
             items = execute(query, 'get', conn)
@@ -5208,91 +5208,91 @@ class GetHistoryDate(Resource):
 #         finally:
 #             disconnect(conn)
 
-# NOT USED
-# class ParticularGoalHistory(Resource):
-#     def get(self, user_id):
-#         response = {}
-#         try:
-#             conn = connect()
+#  USED IN MOBILE ONLY
+class ParticularGoalHistory(Resource):
+    def get(self, user_id):
+        response = {}
+        try:
+            conn = connect()
 
-#             start_date = request.headers['start_date']
-#             print(start_date)
-#             end_date = request.headers['end_date']
-#             gr_id = request.headers['goal_routine_id']
+            start_date = request.headers['start_date']
+            print(start_date)
+            end_date = request.headers['end_date']
+            gr_id = request.headers['goal_routine_id']
 
-#             print(gr_id)
+            print(gr_id)
 
-#             items = execute(
-#                 """SELECT * FROM history where user_id = \'""" + user_id + """\';""", 'get', conn)
+            items = execute(
+                """SELECT * FROM history where user_id = \'""" + user_id + """\';""", 'get', conn)
 
-#             details_json = {}
-#             res = {}
+            details_json = {}
+            res = {}
 
-#             for i in range(len(items['result'])):
-#                 if items['result'][i]['date_affected'] >= start_date and items['result'][i]['date_affected'] <= end_date:
-#                     goal = [{}]
-#                     res_p = 0
-#                     if items['result'][i]['details'][0] == '[':
-#                         details_json = json.loads(
-#                             items['result'][i]['details'])
-#                         for k in range(len(details_json)):
-#                             if len(details_json[k]) > 0:
-#                                 if 'goal' in details_json[k] and 'status' in details_json[k] and gr_id == details_json[k]['goal']:
+            for i in range(len(items['result'])):
+                if items['result'][i]['date_affected'] >= start_date and items['result'][i]['date_affected'] <= end_date:
+                    goal = [{}]
+                    res_p = 0
+                    if items['result'][i]['details'][0] == '[':
+                        details_json = json.loads(
+                            items['result'][i]['details'])
+                        for k in range(len(details_json)):
+                            if len(details_json[k]) > 0:
+                                if 'goal' in details_json[k] and 'status' in details_json[k] and gr_id == details_json[k]['goal']:
 
-#                                     goal[res_p][details_json[k]['title']
-#                                                 ] = details_json[k]['status']
-#                                     if 'actions' in details_json[k]:
-#                                         action = {}
-#                                         for j in range(len(details_json[k]['actions'])):
-#                                             action[details_json[k]['actions'][j]['title']
-#                                                    ] = details_json[k]['actions'][j]['status']
-#                                         goal[res_p]['actions'] = action
+                                    goal[res_p][details_json[k]['title']
+                                                ] = details_json[k]['status']
+                                    if 'actions' in details_json[k]:
+                                        action = {}
+                                        for j in range(len(details_json[k]['actions'])):
+                                            action[details_json[k]['actions'][j]['title']
+                                                   ] = details_json[k]['actions'][j]['status']
+                                        goal[res_p]['actions'] = action
 
-#                                     res_p += 1
+                                    res_p += 1
 
-#                     if len(goal[0]) > 1:
-#                         res[items['result'][i]
-#                             ['date_affected']] = dict(goal[0])
+                    if len(goal[0]) > 1:
+                        res[items['result'][i]
+                            ['date_affected']] = dict(goal[0])
 
-#             today_date = getToday()
+            today_date = getToday()
 
-#             goals = execute("""SELECT gr_unique_id, gr_title, is_in_progress, is_complete FROM goals_routines where user_id = \'""" +
-#                             user_id + """\' and is_displayed_today = 'True' and is_persistent = 'False';""", 'get', conn)
+            goals = execute("""SELECT gr_unique_id, gr_title, is_in_progress, is_complete FROM goals_routines where user_id = \'""" +
+                            user_id + """\' and is_displayed_today = 'True' and is_persistent = 'False';""", 'get', conn)
 
-#             if len(goals['result']) > 0:
-#                 goal = {}
-#                 for i in range(len(goals['result'])):
-#                     if gr_id == goals['result'][i]['gr_unique_id']:
-#                         if goals['result'][i]['is_in_progress'].lower() == 'true':
-#                             goal[goals['result'][i]['gr_title']] = 'in_progress'
-#                         elif goals['result'][i]['is_complete'].lower() == 'true':
-#                             goal[goals['result'][i]['gr_title']] = 'completed'
-#                         else:
-#                             goal[goals['result'][i]['gr_title']] = 'not started'
-#                         actions = execute("""SELECT at_unique_id, at_title, is_in_progress, is_complete FROM actions_tasks where goal_routine_id = \'""" +
-#                                           goals['result'][i]['gr_unique_id'] + """\';""", 'get', conn)
-#                         if len(actions['result']) > 0:
-#                             action = {}
-#                             for j in range(len(actions['result'])):
-#                                 if actions['result'][j]['is_in_progress'].lower() == 'true':
-#                                     action[actions['result'][j]
-#                                            ['at_title']] = 'in_progress'
-#                                 elif actions['result'][j]['is_complete'].lower() == 'true':
-#                                     action[actions['result'][j]
-#                                            ['at_title']] = 'completed'
-#                                 else:
-#                                     action[actions['result'][j]
-#                                            ['at_title']] = 'not started'
-#                             goal['actions'] = action
-#                 res[today_date] = goal
+            if len(goals['result']) > 0:
+                goal = {}
+                for i in range(len(goals['result'])):
+                    if gr_id == goals['result'][i]['gr_unique_id']:
+                        if goals['result'][i]['is_in_progress'].lower() == 'true':
+                            goal[goals['result'][i]['gr_title']] = 'in_progress'
+                        elif goals['result'][i]['is_complete'].lower() == 'true':
+                            goal[goals['result'][i]['gr_title']] = 'completed'
+                        else:
+                            goal[goals['result'][i]['gr_title']] = 'not started'
+                        actions = execute("""SELECT at_unique_id, at_title, is_in_progress, is_complete FROM actions_tasks where goal_routine_id = \'""" +
+                                          goals['result'][i]['gr_unique_id'] + """\';""", 'get', conn)
+                        if len(actions['result']) > 0:
+                            action = {}
+                            for j in range(len(actions['result'])):
+                                if actions['result'][j]['is_in_progress'].lower() == 'true':
+                                    action[actions['result'][j]
+                                           ['at_title']] = 'in_progress'
+                                elif actions['result'][j]['is_complete'].lower() == 'true':
+                                    action[actions['result'][j]
+                                           ['at_title']] = 'completed'
+                                else:
+                                    action[actions['result'][j]
+                                           ['at_title']] = 'not started'
+                            goal['actions'] = action
+                res[today_date] = goal
 
-#             response['message'] = 'successful'
-#             response['result'] = res
-#             return response, 200
-#         except:
-#             raise BadRequest('Request failed, please try again later.')
-#         finally:
-#             disconnect(conn)
+            response['message'] = 'successful'
+            response['result'] = res
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
 
 # USED IN MOBILE FOR GOAL PAGE
 class GoalHistory(Resource):
@@ -5933,17 +5933,35 @@ class AboutHistory(Resource):
 #         finally:
 #             disconnect(conn)
 
+class ResetBadge(Resource):
+    def post(self,user_id):
+        print("In ResetBadge")
+        response = {}
+        try:
+            conn = connect()
+
+            execute("""UPDATE users
+                               SET notification_badge_num = 0
+                               WHERE user_unique_id = \'""" + user_id + """\';""", 'post', conn)
+
+            response['message'] = 'successful'
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
 
 # CRON JOBS
 
 # NOTIFICATION CRON JOB FUNCTIONS AND SUBFUCTIONS
 
-def notify(msg,tag):
+def notify(msg,tag,user_id,badge):
     print("In Notify")
     # print(msg,tag)
     # hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7...m3xuVg=", "Manifest-Notification-Hub", isDebug)
     
     try:
+        conn = connect()
         hub = AzureNotificationHub(NOTIFICATION_HUB_KEY, NOTIFICATION_HUB_NAME, isDebug)
         print("Hub Credentials: ", hub)
  
@@ -5953,17 +5971,20 @@ def notify(msg,tag):
             'aps':
                 {
                     'alert': msg,
-                    'sound':'default'
+                    'sound':'default',
+                    'badge': badge + 1
                 }
         }
         hub.send_apple_notification(0, wns_payload,tag)
 
+        
         # ANDROID NOTIFICATIONS
         #wns_payload ="""{\n\"notification\":{\n\"title\":\"Notification Hub Test Notification\",\n\"body\":\"This is a sample notification delivered by Azure Notification Hubs.\"\n},\n\"data\":{\n\"property1\":\"value1\",\n\"property2\":42\n}\n}"""
         wns_payload = {
             "notification":{
                 "title":"Hi",
-                "body": msg
+                "body": msg,
+                "badge": badge + 1
             },
             "data":{
                 "property1":"value1",
@@ -5971,6 +5992,12 @@ def notify(msg,tag):
             }
         }
         hub.send_google_notification(0, wns_payload,tag)
+
+        if user_id[0] == '1':
+            query = """ UPDATE users
+                        SET notification_badge_num =  badge + 1 
+                        WHERE user_unique_id = \'""" + user_id + """\'; """
+            execute(query, 'post', conn)  
 
     except:
         print("No Hub Credentials")
@@ -6071,7 +6098,7 @@ def ManifestNotification_CRON():
                 SELECT -- *
                     n.*,
                     gr.gr_title, is_available, is_complete, is_in_progress, is_displayed_today, is_persistent, gr_start_day_and_time, gr_end_day_and_time,
-                    u.time_zone, cust_guid_device_id_notification,
+                    u.time_zone, cust_guid_device_id_notification, notification_badge_num,
                     ta.ta_guid_device_id_notification
                 FROM manifest.notifications n
                 LEFT JOIN manifest.goals_routines gr
@@ -6127,7 +6154,7 @@ def ManifestNotification_CRON():
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
-                                    notify(n['before_message'],id)
+                                    notify(n['before_message'],id,n['user_ta_id'], n['notification_badge_num'])
 
 
                 if n['during_is_enable'].lower() == 'true':
@@ -6142,7 +6169,7 @@ def ManifestNotification_CRON():
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
-                                    notify(n['during_message'],id)
+                                    notify(n['during_message'],id,n['user_ta_id'], n['notification_badge_num'])
 
 
                 if n['after_is_enable'].lower() == 'true':
@@ -6157,7 +6184,7 @@ def ManifestNotification_CRON():
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
-                                    notify(n['after_message'],id)
+                                    notify( n['after_message'], id, n['user_ta_id'], n['notification_badge_num'])
 
         print("Successfully completed Notification CRON Function")
         return response, 200
@@ -7796,7 +7823,7 @@ class UpdateVersionNumber(Resource):
 
 # GET requests
 api.add_resource(GoalsRoutines, '/api/v2/getgoalsandroutines/<string:user_id>')  # working 092821
-api.add_resource(GetGoals, '/api/v2/getgoals/<string:user_id>') 
+api.add_resource(GetGoals, '/api/v2/getgoals/<string:user_id>') #working web 100821
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')  # working Mobile only 092821
 # api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
 api.add_resource(ActionsInstructions,'/api/v2/actionsInstructions/<string:gr_id>')  # working
@@ -7838,7 +7865,7 @@ api.add_resource(GetPeopleImages, '/api/v2/getPeopleImages/<string:ta_id>')
 api.add_resource(GetHistory, '/api/v2/getHistory/<string:user_id>') # working 092821
 api.add_resource(GetHistoryDate, '/api/v2/getHistoryDate/<string:user_id>,<string:date_affected>') # working Mobile only 092821
 api.add_resource(GoalHistory, '/api/v2/goalHistory/<string:user_id>') # working Mobile only 092821
-# api.add_resource(ParticularGoalHistory, '/api/v2/particularGoalHistory/<string:user_id>')
+api.add_resource(ParticularGoalHistory, '/api/v2/particularGoalHistory/<string:user_id>')
 api.add_resource(RoutineHistory, '/api/v2/routineHistory/<string:user_id>') # working Mobile only 092821
 # api.add_resource(GoalRoutineHistory, '/api/v2/goalRoutineHistory/<string:user_id>')
 # api.add_resource(GetUserAndTime, '/api/v2/getUserAndTime')
@@ -7851,7 +7878,7 @@ api.add_resource(ManifestNotification_CLASS, '/api/v2/ManifestNotification_CLASS
 api.add_resource(ManifestHistory_CLASS, '/api/v2/ManifestHistory_CLASS') # working Testing only 092821
 # api.add_resource(GRATIS, '/api/v2/GRATIS/<string:user_id>')
 api.add_resource(GRATIS_History_CLASS, '/api/v2/GRATIS_History_CLASS/<string:user_id>') # working Testing only 092821
-
+api.add_resource(ResetBadge,'/api/v2/resetBadge/<string:user_id>')
 
 # api.add_resource(GetNotifications, '/api/v2/getNotifications')  # working
 api.add_resource(Calender, '/api/v2/calender/<string:user_id>')  # working
