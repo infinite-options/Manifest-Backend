@@ -5939,10 +5939,10 @@ class ResetBadge(Resource):
         response = {}
         try:
             conn = connect()
-
-            execute("""UPDATE users
-                               SET notification_badge_num = 0
-                               WHERE user_unique_id = \'""" + user_id + """\';""", 'post', conn)
+            query = """UPDATE users
+                       SET notification_badge_num = 0
+                       WHERE user_unique_id = \'""" + user_id + """\';"""
+            execute(query, 'post', conn)
 
             response['message'] = 'successful'
             return response, 200
