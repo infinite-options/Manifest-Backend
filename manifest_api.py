@@ -337,6 +337,52 @@ class GoalsRoutines(Resource):
                         ELSE "not started"
                     END AS status
                 FROM goals_routines 
+                WHERE user_id = \'""" + user_id + """\';
+            """
+
+            items = execute(query, 'get', conn)
+
+            goal_routine_response = items['result']
+
+            # Get all notification details
+            for i in range(len(goal_routine_response)):
+                gr_id = goal_routine_response[i]['gr_unique_id']
+                res = execute(
+                    """
+                    SELECT * 
+                    FROM notifications 
+                    WHERE gr_at_id = \'""" + gr_id + """\';
+                    """, 'get', conn)
+                items['result'][i]['notifications'] = list(res['result'])
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response, 200
+        except:
+            raise BadRequest(
+                'Get Routines Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+class GetRoutines(Resource):
+    def get(self, user_id):
+        print("In GetRoutines")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            # Get all goals and routines of the user
+            query = """
+                SELECT *,
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "in_progress"
+                        ELSE "not started"
+                    END AS status
+                FROM goals_routines 
                 WHERE user_id = \'""" + user_id + """\'  AND is_persistent = 'True';
             """
 
@@ -364,6 +410,7 @@ class GoalsRoutines(Resource):
                 'Get Routines Request failed, please try again later.')
         finally:
             disconnect(conn)
+
 
 class GetGoals(Resource):
     def get(self, user_id):
@@ -733,9 +780,9 @@ class AddNewGR(Resource):
             icon_type = request.form.get('type')
             description = 'Other'
 
-            """ for i, char in enumerate(gr_title):
+            for i, char in enumerate(gr_title):
                 if char == "'":
-                    gr_title = gr_title[:i+1] + "'" + gr_title[i+1:] """
+                    gr_title = gr_title[:i+1] + "'" + gr_title[i+1:]
 
             # creating dictionary for changing format for week days
             repeat_week_days = json.loads(repeat_week_days)
@@ -802,7 +849,7 @@ class AddNewGR(Resource):
                 query.append("""
                     INSERT INTO goals_routines
                     SET gr_unique_id = \'""" + new_gr_id + """\',
-                        gr_title = \'""" + str(gr_title).replace("'", "''") + """\',
+                        gr_title = \'""" + gr_title + """\',
                         user_id = \'""" + user_id + """\',
                         is_available = \'""" + str(is_available).title() + """\',
                         is_complete = \'""" + str(is_complete).title() + """\',
@@ -837,7 +884,7 @@ class AddNewGR(Resource):
                 query.append("""
                     INSERT INTO goals_routines
                     SET gr_unique_id = \'""" + new_gr_id + """\',
-                        gr_title = \'""" + str(gr_title).replace("'","''") + """\',
+                        gr_title = \'""" + gr_title + """\',
                         user_id = \'""" + user_id + """\',
                         is_available = \'""" + str(is_available).title() + """\',
                         is_complete = \'""" + str(is_complete).title() + """\',
@@ -1046,9 +1093,9 @@ class UpdateGR(Resource):
             print("repeat_week_days", repeat_week_days, type(repeat_week_days))
 
             print("Received Input")
-            """ for i, char in enumerate(gr_title):
+            for i, char in enumerate(gr_title):
                 if char == "'":
-                    gr_title = gr_title[:i+1] + "'" + gr_title[i+1:] """
+                    gr_title = gr_title[:i+1] + "'" + gr_title[i+1:]
 
             repeat_week_days = json.loads(repeat_week_days)
             dict_week_days = {"Sunday": "False", "Monday": "False", "Tuesday": "False",
@@ -1166,7 +1213,7 @@ class UpdateGR(Resource):
             if not photo:
                 print("not photo")
                 query = """UPDATE goals_routines
-                                SET gr_title = \'""" + str(gr_title).replace("'", "''") + """\'
+                                SET gr_title = \'""" + gr_title + """\'
                                     ,is_available = \'""" + str(is_available).title() + """\'
                                     ,is_complete = \'""" + str(is_complete).title() + """\'
                                     ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
@@ -1194,7 +1241,7 @@ class UpdateGR(Resource):
 
                 # Update G/R to database
                 query = """UPDATE goals_routines
-                                SET gr_title = \'""" + str(gr_title).replace("'", "''") + """\'
+                                SET gr_title = \'""" + gr_title + """\'
                                     ,is_available = \'""" + str(is_available).title() + """\'
                                     ,is_complete = \'""" + str(is_complete).title() + """\'
                                     ,is_sublist_available = \'""" + str(is_sublist_available).title() + """\'
@@ -1481,8 +1528,7 @@ class AddNewIS(Resource):
             photo = request.files.get('photo')
             photo_url = request.form.get('photo_url')
             title = request.form.get('title')
-            expected_completion_time = request.form.get(
-                'expected_completion_time')
+            expected_completion_time = request.form.get('expected_completion_time')
             icon_type = request.form.get('type')
 
             # for i, char in enumerate(title):
@@ -1605,9 +1651,9 @@ class UpdateIS(Resource):
             icon_type = request.form.get('type')
             description = 'Other'
 
-            # for i, char in enumerate(title):
-            #     if char == "'":
-            #         title = title[:i+1] + "'" + title[i+1:]
+            for i, char in enumerate(title):
+                if char == "'":
+                    title = title[:i+1] + "'" + title[i+1:]
 
             if not photo:
                 query = """UPDATE instructions_steps
@@ -1695,14 +1741,14 @@ class UpdateAT(Resource):
             icon_type = request.form.get('type')
             description = 'Other'
 
-            """ for i, char in enumerate(at_title):
+            for i, char in enumerate(at_title):
                 if char == "'":
-                    at_title = at_title[:i+1] + "'" + at_title[i+1:] """
+                    at_title = at_title[:i+1] + "'" + at_title[i+1:]
 
             if not photo:
 
                 query = """UPDATE actions_tasks
-                            SET  at_title = \'""" + str(at_title).replace("'","''") + """\'
+                            SET  at_title = \'""" + str(at_title).replace("'", "''") + """\'
                                 , at_sequence = \'""" + '1' + """\'
                                 , is_available = \'""" + str(is_available).title() + """\'
                                 , is_complete = \'""" + str(is_complete).title() + """\'
@@ -1726,7 +1772,7 @@ class UpdateAT(Resource):
                 at_picture = helper_upload_img(photo)
 
                 query = """UPDATE actions_tasks
-                            SET  at_title = \'""" + str(at_title).replace("'", "''") + """\'
+                            SET  at_title = \'""" + str(at_title).replace("'","''") + """\'
                                 , at_sequence = \'""" + '1' + """\'
                                 , is_available = \'""" + str(is_available).title() + """\'
                                 , is_complete = \'""" + str(is_complete).title() + """\'
@@ -7301,7 +7347,7 @@ class TodayGoalsRoutines(Resource):
                         SET id = \'""" + NewID + """\',
                             user_id = \'""" + user + """\',
                             date = \'""" + date + """\',
-                            details = \'""" + str(json.dumps(getGRATIS_History)) + """\',
+                            details = \'""" + str(json.dumps(getGRATIS_History).replace("'", "''")) + """\',
                             date_affected = \'""" + str(date_affected) + """\';
                     """
 
@@ -7319,7 +7365,7 @@ class TodayGoalsRoutines(Resource):
                         SET id = \'""" + currentGR['result'][0]['id'] + """\',
                             user_id = \'""" + user + """\',
                             date = \'""" + date + """\',
-                            details = \'""" + json.dumps(getGRATIS_History) + """\',
+                            details = \'""" + str(json.dumps(getGRATIS_History).replace("'", "''")) + """\',
                             date_affected = \'""" + str(date_affected) + """\'
                         WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                     """
@@ -7824,12 +7870,12 @@ class UpdateVersionNumber(Resource):
 # GET requests
 api.add_resource(GoalsRoutines, '/api/v2/getgoalsandroutines/<string:user_id>')  # working 092821
 api.add_resource(GetGoals, '/api/v2/getgoals/<string:user_id>') #working web 100821
+api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>') #working web 101121
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')  # working Mobile only 092821
 # api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
 api.add_resource(ActionsInstructions,'/api/v2/actionsInstructions/<string:gr_id>')  # working
 api.add_resource(ActionsTasks, '/api/v2/actionsTasks/<string:goal_routine_id>')  # working 092821
 api.add_resource(InstructionsAndSteps,'/api/v2/instructionsSteps/<string:action_task_id>')  # working 092821
-
 
 # api.add_resource(TodayGoalsRoutines,'/api/v2/todaygoalsandroutines/<string:user_id>')
 
