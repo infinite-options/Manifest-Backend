@@ -780,9 +780,9 @@ class AddNewGR(Resource):
             icon_type = request.form.get('type')
             description = 'Other'
 
-            for i, char in enumerate(gr_title):
-                if char == "'":
-                    gr_title = gr_title[:i+1] + "'" + gr_title[i+1:]
+            # for i, char in enumerate(gr_title):
+            #     if char == "'":
+            #         gr_title = gr_title[:i+1] + "'" + gr_title[i+1:]
 
             # creating dictionary for changing format for week days
             repeat_week_days = json.loads(repeat_week_days)
@@ -849,7 +849,7 @@ class AddNewGR(Resource):
                 query.append("""
                     INSERT INTO goals_routines
                     SET gr_unique_id = \'""" + new_gr_id + """\',
-                        gr_title = \'""" + gr_title + """\',
+                        gr_title = \'""" + str(gr_title).replace("'","''") + """\',
                         user_id = \'""" + user_id + """\',
                         is_available = \'""" + str(is_available).title() + """\',
                         is_complete = \'""" + str(is_complete).title() + """\',
@@ -884,7 +884,7 @@ class AddNewGR(Resource):
                 query.append("""
                     INSERT INTO goals_routines
                     SET gr_unique_id = \'""" + new_gr_id + """\',
-                        gr_title = \'""" + gr_title + """\',
+                        gr_title = \'""" + str(gr_title).replace("'","''") + """\',
                         user_id = \'""" + user_id + """\',
                         is_available = \'""" + str(is_available).title() + """\',
                         is_complete = \'""" + str(is_complete).title() + """\',
@@ -1093,9 +1093,9 @@ class UpdateGR(Resource):
             print("repeat_week_days", repeat_week_days, type(repeat_week_days))
 
             print("Received Input")
-            for i, char in enumerate(gr_title):
-                if char == "'":
-                    gr_title = gr_title[:i+1] + "'" + gr_title[i+1:]
+            # for i, char in enumerate(gr_title):
+            #     if char == "'":
+            #         gr_title = gr_title[:i+1] + "'" + gr_title[i+1:]
 
             repeat_week_days = json.loads(repeat_week_days)
             dict_week_days = {"Sunday": "False", "Monday": "False", "Tuesday": "False",
@@ -1213,7 +1213,7 @@ class UpdateGR(Resource):
             if not photo:
                 print("not photo")
                 query = """UPDATE goals_routines
-                                SET gr_title = \'""" + gr_title + """\'
+                                SET gr_title = \'""" + str(gr_title).replace("'","''") + """\'
                                     ,is_available = \'""" + str(is_available).title() + """\'
                                     ,is_complete = \'""" + str(is_complete).title() + """\'
                                     ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
@@ -1241,7 +1241,7 @@ class UpdateGR(Resource):
 
                 # Update G/R to database
                 query = """UPDATE goals_routines
-                                SET gr_title = \'""" + gr_title + """\'
+                                SET gr_title = \'""" + str(gr_title).replace("'","''") + """\'
                                     ,is_available = \'""" + str(is_available).title() + """\'
                                     ,is_complete = \'""" + str(is_complete).title() + """\'
                                     ,is_sublist_available = \'""" + str(is_sublist_available).title() + """\'
@@ -1651,9 +1651,9 @@ class UpdateIS(Resource):
             icon_type = request.form.get('type')
             description = 'Other'
 
-            for i, char in enumerate(title):
-                if char == "'":
-                    title = title[:i+1] + "'" + title[i+1:]
+            # for i, char in enumerate(title):
+            #     if char == "'":
+            #         title = title[:i+1] + "'" + title[i+1:]
 
             if not photo:
                 query = """UPDATE instructions_steps
@@ -1741,9 +1741,9 @@ class UpdateAT(Resource):
             icon_type = request.form.get('type')
             description = 'Other'
 
-            for i, char in enumerate(at_title):
-                if char == "'":
-                    at_title = at_title[:i+1] + "'" + at_title[i+1:]
+            # for i, char in enumerate(at_title):
+            #     if char == "'":
+            #         at_title = at_title[:i+1] + "'" + at_title[i+1:]
 
             if not photo:
 
