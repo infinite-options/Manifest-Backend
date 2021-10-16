@@ -6465,7 +6465,7 @@ def GRATIS_History(user_id):
                 gr_datetime_completed,
                 gr_expected_completion_time
             FROM manifest.goals_routines
-            WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
+            WHERE user_id = \'""" + user_id + """\' AND is_available = 'True' AND is_displayed_today = 'True';
             """
         # print(GR_query)
         GR = execute(GR_query, 'get', conn)
@@ -6572,7 +6572,7 @@ class GRATIS_History_CLASS(Resource):
                     gr_datetime_completed,
                     gr_expected_completion_time
                 FROM manifest.goals_routines
-                WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'True' AND is_available = 'True' AND is_displayed_today = 'True';
+                WHERE user_id = \'""" + user_id + """\' AND is_available = 'True' AND is_displayed_today = 'True';
                 """
             # print(GR_query)
             GR = execute(GR_query, 'get', conn)
