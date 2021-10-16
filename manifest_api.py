@@ -6741,7 +6741,7 @@ def ManifestHistory_CRON():
                         SET id = \'""" + NewID + """\',
                             user_id = \'""" + user + """\',
                             date = \'""" + date + """\',
-                            details = \'""" + str(json.dumps(getGRATIS_History)) + """\',
+                            details = \'""" + str(json.dumps(getGRATIS_History).replace("'", "''")) + """\',
                             date_affected = \'""" + str(date_affected) + """\';
                     """
 
@@ -6758,7 +6758,7 @@ def ManifestHistory_CRON():
                         SET id = \'""" + currentGR['result'][0]['id'] + """\',
                             user_id = \'""" + user + """\',
                             date = \'""" + date + """\',
-                            details = \'""" + json.dumps(getGRATIS_History) + """\',
+                            details = \'""" + str(json.dumps(getGRATIS_History).replace("'", "''")) + """\',
                             date_affected = \'""" + str(date_affected) + """\'
                         WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                     """
@@ -7049,7 +7049,7 @@ class ManifestHistory_CLASS(Resource):
                             SET id = \'""" + NewID + """\',
                                 user_id = \'""" + user + """\',
                                 date = \'""" + date + """\',
-                                details = \'""" + str(json.dumps(getGRATIS_History)) + """\',
+                                details = \'""" + str(json.dumps(getGRATIS_History).replace("'", "''")) + """\',
                                 date_affected = \'""" + str(date_affected) + """\';
                         """
 
@@ -7066,7 +7066,7 @@ class ManifestHistory_CLASS(Resource):
                             SET id = \'""" + currentGR['result'][0]['id'] + """\',
                                 user_id = \'""" + user + """\',
                                 date = \'""" + date + """\',
-                                details = \'""" + json.dumps(getGRATIS_History) + """\',
+                                details = \'""" + str(json.dumps(getGRATIS_History).replace("'", "''")) + """\',
                                 date_affected = \'""" + str(date_affected) + """\'
                             WHERE id = \'""" + currentGR['result'][0]['id'] + """\';
                         """
