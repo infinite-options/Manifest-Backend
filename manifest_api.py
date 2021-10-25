@@ -3881,7 +3881,7 @@ class CreateNewUser(Resource):
         try:
             conn = connect()
             data = request.get_json(force=True)
-            print("In try")
+            print("In try", data)
             email_id = data['email_id']
             print(email_id)
             first_name = data['first_name']
@@ -3894,8 +3894,12 @@ class CreateNewUser(Resource):
             print(ta_people_id)
             google_auth_token = data['google_auth_token']
             print(google_auth_token)
+            social_id = data['social_id']
+            print(social_id)
             google_refresh_token = data['google_refresh_token']
             print(google_refresh_token)
+            access_expires_in = data['access_expires_in']
+            print(access_expires_in)
 
             user_id_response = execute("""SELECT user_unique_id FROM users
                                             WHERE user_email_id = \'""" + email_id + """\';""", 'get', conn)
@@ -3913,8 +3917,10 @@ class CreateNewUser(Resource):
                                user_email_id = \'""" + email_id + """\',
                                user_first_name = \'""" + first_name + """\',
                                user_last_name = \'""" + last_name + """\',
+                               social_id = \'""" + social_id + """\',
                                google_auth_token = \'""" + google_auth_token + """\',
                                google_refresh_token = \'""" + google_refresh_token + """\',
+                               access_expires_in = \'""" + access_expires_in + """\',
                                time_zone = \'""" + time_zone + """\',
                                user_have_pic = \'""" + 'False' + """\',
                                user_picture = \'""" + '' + """\',
@@ -4670,18 +4676,76 @@ class AccessRefresh(Resource):
         finally:
             disconnect(conn)
 
-
-class GoogleCalenderEvents(Resource):
+class refreshToken(Resource):
     def post(self):
-        print("In Google Calender Events")
+        print("In RefreshToken")
+        response = {}
+        items = {}
         try:
             conn = connect()
             data = request.get_json(force=True)
 
+            user_unique_id = data['user_unique_id']
+
+            items = execute("""SELECT user_email_id, google_refresh_token, google_auth_token, access_issue_time, access_expires_in FROM users WHERE user_unique_id = \'""" +
+                            user_unique_id + """\'""", 'get', conn)
+
+            print(items)
+
+            if len(items['result']) == 0:
+                return "No such user exists"
+            
+            if items['result'][0]['google_refresh_token'] == '':
+                print('in if')
+                
+                flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+                'credentials.json',
+                scopes=['https://www.googleapis.com/auth/drive.metadata.readonly'])
+
+                flow.redirect_uri = 'https://www.manifestmy.space/home'
+
+                # Generate URL for request to Google's OAuth 2.0 server.
+                # Use kwargs to set optional request parameters.
+                authorization_url, state = flow.authorization_url(
+                    # Enable offline access so that you can refresh an access token without
+                    # re-prompting the user for permission. Recommended for web server apps.
+                    grant_type='refresh_token',
+                    access_type='offline',
+                    prompt = 'consent',
+                    login_hint=items['result'][0]['user_email_id'],
+                    
+                    # Enable incremental authorization. Recommended as a best practice.
+                    include_granted_scopes='true')
+                print(authorization_url)
+                print("state",state)
+                # execute("""UPDATE users SET google_refresh_token = \'""" + google_refresh_token + """\'
+                #                         , google_auth_token =  \'""" + auth_token + """\'
+                #         WHERE user_unique_id =  \'""" + user_id + """\';""", 'post', conn)
+                
+
+            items['message'] = "Updated successfully."
+            items['code'] = 200
+            return items
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+
+
+
+class GoogleCalenderEvents(Resource):
+    def post(self,user_unique_id,start,end):
+        print("In Google Calender Events")
+        try:
+            conn = connect()
+            # data = request.get_json(force=True)
+
             timestamp = getNow()
-            user_unique_id = data["id"]
-            start = data["start"]
-            end = data["end"]
+            # user_unique_id = data["id"]
+            # start = data["start"]
+            # end = data["end"]
 
             items = execute("""SELECT user_email_id, google_refresh_token, google_auth_token, access_issue_time, access_expires_in FROM users WHERE user_unique_id = \'""" +
                             user_unique_id + """\'""", 'get', conn)
@@ -4695,21 +4759,21 @@ class GoogleCalenderEvents(Resource):
                 client_id = data['web']['client_id']
                 client_secret = data['web']['client_secret']
                 refresh_token = items['result'][0]['google_refresh_token']
-
+                print('in if',data)
                 params = {
                     "grant_type": "refresh_token",
                     "client_id": client_id,
                     "client_secret": client_secret,
                     "refresh_token": items['result'][0]['google_refresh_token'],
                 }
-
+                print('in if', params)
                 authorization_url = "https://www.googleapis.com/oauth2/v4/token"
                 r = requests.post(authorization_url, data=params)
                 auth_token = ""
                 if r.ok:
                     auth_token = r.json()['access_token']
                 expires_in = r.json()['expires_in']
-
+                print('in if', expires_in)
                 execute("""UPDATE users SET 
                                 google_auth_token = \'""" + str(auth_token) + """\'
                                 , access_issue_time = \'""" + str(timestamp) + """\'
@@ -4737,28 +4801,29 @@ class GoogleCalenderEvents(Resource):
                     items['result'][0]['access_issue_time'], "%Y-%m-%d %H:%M:%S")
                 timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
                 diff = (timestamp - access_issue_time).total_seconds() / 60
-                print(diff)
+                print('in else',diff)
                 if int(diff) > int(access_issue_min):
                     f = open('credentials.json',)
                     data = json.load(f)
                     client_id = data['web']['client_id']
                     client_secret = data['web']['client_secret']
                     refresh_token = items['result'][0]['google_refresh_token']
-
+                    print('in else',data)
                     params = {
                         "grant_type": "refresh_token",
                         "client_id": client_id,
                         "client_secret": client_secret,
                         "refresh_token": items['result'][0]['google_refresh_token'],
                     }
-
+                    print('in else',params)
                     authorization_url = "https://www.googleapis.com/oauth2/v4/token"
                     r = requests.post(authorization_url, data=params)
+                    print('in else',r)
                     auth_token = ""
                     if r.ok:
                         auth_token = r.json()['access_token']
                     expires_in = r.json()['expires_in']
-
+                    print('in else',expires_in)
                     execute("""UPDATE users SET 
                                     google_auth_token = \'""" + str(auth_token) + """\'
                                     , access_issue_time = \'""" + str(timestamp) + """\'
@@ -7900,7 +7965,8 @@ api.add_resource(TASocialLogin, '/api/v2/loginSocialTA/<string:email_id>')  # wo
 # api.add_resource(UserLogin, '/api/v2/userLogin/<string:email_id>')  # NOT USED
 api.add_resource(GetEmailId, '/api/v2/getEmailId/<string:user_id>')  # working MOBILE ONLY 092821
 # api.add_resource(CurrentStatus, '/api/v2/currentStatus/<string:user_id>')  # working
-api.add_resource(GoogleCalenderEvents, '/api/v2/calenderEvents')
+api.add_resource(GoogleCalenderEvents,
+                 '/api/v2/calenderEvents/<string:user_unique_id>,<string:start>,<string:end>')
 api.add_resource(GetIconsHygiene, '/api/v2/getIconsHygiene')
 api.add_resource(GetIconsClothing, '/api/v2/getIconsClothing')
 api.add_resource(GetIconsFood, '/api/v2/getIconsFood')
@@ -7965,6 +8031,8 @@ api.add_resource(UpdateISWatchMobile, '/api/v2/updateISWatchMobile') # working M
 
 api.add_resource(Login, '/api/v2/login')
 api.add_resource(AccessRefresh, '/api/v2/updateAccessRefresh')
+api.add_resource(refreshToken, '/api/v2/refreshToken')
+
 api.add_resource(UpdateAboutMe2, '/api/v2/update')
 api.add_resource(UploadIcons, '/api/v2/uploadIcons')
 api.add_resource(UpdatePeople, '/api/v2/updatePeople')
