@@ -4683,7 +4683,7 @@ class GoogleCalenderEvents(Resource):
         try:
             conn = connect()
             # data = request.get_json(force=True)
-
+            print(user_unique_id,start, end)
             timestamp = getNow()
             # user_unique_id = data["id"]
             # start = data["start"]
@@ -4696,7 +4696,9 @@ class GoogleCalenderEvents(Resource):
                 return "No such user exists"
             print(items)
             if items['result'][0]['access_expires_in'] == None or items['result'][0]['access_issue_time'] == None:
+                print('in if')
                 f = open('credentials.json',)
+                print('in if')
                 data = json.load(f)
                 client_id = data['web']['client_id']
                 client_secret = data['web']['client_secret']
@@ -4708,6 +4710,7 @@ class GoogleCalenderEvents(Resource):
                     "client_secret": client_secret,
                     "refresh_token": items['result'][0]['google_refresh_token'],
                 }
+                
                 print('in if', params)
                 authorization_url = "https://accounts.google.com/o/oauth2/token"
                 r = requests.post(authorization_url, data=params)
@@ -4741,10 +4744,12 @@ class GoogleCalenderEvents(Resource):
                     items['result'][0]['access_expires_in'])/60
                 access_issue_time = datetime.strptime(
                     items['result'][0]['access_issue_time'], "%Y-%m-%d %H:%M:%S")
+                print('in else', access_issue_min)
                 timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
                 diff = (timestamp - access_issue_time).total_seconds() / 60
                 print('in else',diff)
                 if int(diff) > int(access_issue_min):
+                    print('in else', diff)
                     f = open('credentials.json',)
                     data = json.load(f)
                     client_id = data['web']['client_id']
