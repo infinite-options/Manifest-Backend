@@ -16,6 +16,7 @@ import boto3
 import os.path
 
 from googleapiclient.discovery import build
+import google_auth_oauthlib.flow
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from urllib.parse import urlparse
@@ -4676,65 +4677,6 @@ class AccessRefresh(Resource):
         finally:
             disconnect(conn)
 
-class refreshToken(Resource):
-    def post(self):
-        print("In RefreshToken")
-        response = {}
-        items = {}
-        try:
-            conn = connect()
-            data = request.get_json(force=True)
-
-            user_unique_id = data['user_unique_id']
-
-            items = execute("""SELECT user_email_id, google_refresh_token, google_auth_token, access_issue_time, access_expires_in FROM users WHERE user_unique_id = \'""" +
-                            user_unique_id + """\'""", 'get', conn)
-
-            print(items)
-
-            if len(items['result']) == 0:
-                return "No such user exists"
-            
-            if items['result'][0]['google_refresh_token'] == '':
-                print('in if')
-                
-                flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-                'credentials.json',
-                scopes=['https://www.googleapis.com/auth/drive.metadata.readonly'])
-
-                flow.redirect_uri = 'https://www.manifestmy.space/home'
-
-                # Generate URL for request to Google's OAuth 2.0 server.
-                # Use kwargs to set optional request parameters.
-                authorization_url, state = flow.authorization_url(
-                    # Enable offline access so that you can refresh an access token without
-                    # re-prompting the user for permission. Recommended for web server apps.
-                    grant_type='refresh_token',
-                    access_type='offline',
-                    prompt = 'consent',
-                    login_hint=items['result'][0]['user_email_id'],
-                    
-                    # Enable incremental authorization. Recommended as a best practice.
-                    include_granted_scopes='true')
-                print(authorization_url)
-                print("state",state)
-                # execute("""UPDATE users SET google_refresh_token = \'""" + google_refresh_token + """\'
-                #                         , google_auth_token =  \'""" + auth_token + """\'
-                #         WHERE user_unique_id =  \'""" + user_id + """\';""", 'post', conn)
-                
-
-            items['message'] = "Updated successfully."
-            items['code'] = 200
-            return items
-        except:
-            raise BadRequest('Request failed, please try again later.')
-        finally:
-            disconnect(conn)
-
-
-
-
-
 class GoogleCalenderEvents(Resource):
     def post(self,user_unique_id,start,end):
         print("In Google Calender Events")
@@ -4767,7 +4709,7 @@ class GoogleCalenderEvents(Resource):
                     "refresh_token": items['result'][0]['google_refresh_token'],
                 }
                 print('in if', params)
-                authorization_url = "https://www.googleapis.com/oauth2/v4/token"
+                authorization_url = "https://accounts.google.com/o/oauth2/token"
                 r = requests.post(authorization_url, data=params)
                 auth_token = ""
                 if r.ok:
@@ -4808,7 +4750,7 @@ class GoogleCalenderEvents(Resource):
                     client_id = data['web']['client_id']
                     client_secret = data['web']['client_secret']
                     refresh_token = items['result'][0]['google_refresh_token']
-                    print('in else',data)
+                    print('in else data',data)
                     params = {
                         "grant_type": "refresh_token",
                         "client_id": client_id,
@@ -4816,7 +4758,7 @@ class GoogleCalenderEvents(Resource):
                         "refresh_token": items['result'][0]['google_refresh_token'],
                     }
                     print('in else',params)
-                    authorization_url = "https://www.googleapis.com/oauth2/v4/token"
+                    authorization_url = "https://accounts.google.com/o/oauth2/token"
                     r = requests.post(authorization_url, data=params)
                     print('in else',r)
                     auth_token = ""
@@ -4834,13 +4776,19 @@ class GoogleCalenderEvents(Resource):
                                 user_unique_id + """\'""", 'get', conn)
                 print(items)
                 baseUri = "https://www.googleapis.com/calendar/v3/calendars/primary/events?orderBy=startTime&singleEvents=true&"
+                print(baseUri)
                 timeMaxMin = "timeMax="+end+"&timeMin="+start
+                print(timeMaxMin)
                 url = baseUri + timeMaxMin
+                print(url)
                 bearerString = "Bearer " + \
                     items['result'][0]['google_auth_token']
+                print(bearerString)
                 headers = {"Authorization": bearerString,
                            "Accept": "application/json"}
+                print(headers)
                 response = requests.get(url, headers=headers)
+                print(response)
                 response.raise_for_status()
                 calendars = response.json().get('items')
                 return calendars
@@ -8031,7 +7979,6 @@ api.add_resource(UpdateISWatchMobile, '/api/v2/updateISWatchMobile') # working M
 
 api.add_resource(Login, '/api/v2/login')
 api.add_resource(AccessRefresh, '/api/v2/updateAccessRefresh')
-api.add_resource(refreshToken, '/api/v2/refreshToken')
 
 api.add_resource(UpdateAboutMe2, '/api/v2/update')
 api.add_resource(UploadIcons, '/api/v2/uploadIcons')
