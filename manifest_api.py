@@ -4405,37 +4405,37 @@ class UpdateNameTimeZone(Resource):
         finally:
             disconnect(conn)
 
-# User login - Not USED
-# class UserLogin(Resource):
-#     def get(self, email_id):
-#         print("In UserLogin")
-#         response = {}
-#         items = {}
+# User login - Not USED - Used in Apple Watch
+class UserLogin(Resource):
+    def get(self, email_id):
+        print("In UserLogin")
+        response = {}
+        items = {}
 
-#         try:
-#             conn = connect()
+        try:
+            conn = connect()
 
-#             temp = False
-#             emails = execute(
-#                 """SELECT user_unique_id, user_email_id from users;""", 'get', conn)
-#             for i in range(len(emails['result'])):
-#                 email = emails['result'][i]['user_email_id']
-#                 if email == email_id:
-#                     temp = True
-#                     user_unique_id = emails['result'][i]['user_unique_id']
-#             if temp == True:
+            temp = False
+            emails = execute(
+                """SELECT user_unique_id, user_email_id from users;""", 'get', conn)
+            for i in range(len(emails['result'])):
+                email = emails['result'][i]['user_email_id']
+                if email == email_id:
+                    temp = True
+                    user_unique_id = emails['result'][i]['user_unique_id']
+            if temp == True:
 
-#                 response['result'] = user_unique_id
+                response['result'] = user_unique_id
 
-#             if temp == False:
-#                 response['result'] = False
-#                 response['message'] = 'Email ID doesnt exist'
+            if temp == False:
+                response['result'] = False
+                response['message'] = 'Email ID doesnt exist'
 
-#             return response, 200
-#         except:
-#             raise BadRequest('Request failed, please try again later.')
-#         finally:
-#             disconnect(conn)
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
 
 # User login
 class GetEmailId(Resource):
@@ -7915,7 +7915,7 @@ api.add_resource(AllUsers, '/api/v2/usersOfTA/<string:email_id>')  # working  09
 api.add_resource(TALogin, '/api/v2/loginTA/<string:email_id>/<string:password>')  # working 092821
 api.add_resource(TASocialLogin, '/api/v2/loginSocialTA/<string:email_id>')  # working 092821
 # api.add_resource(Usertoken, '/api/v2/usersToken/<string:user_id>')  # NOT USED
-# api.add_resource(UserLogin, '/api/v2/userLogin/<string:email_id>')  # NOT USED
+api.add_resource(UserLogin, '/api/v2/userLogin/<string:email_id>')  # NOT USED - Used in Apple Watch
 api.add_resource(GetEmailId, '/api/v2/getEmailId/<string:user_id>')  # working MOBILE ONLY 092821
 # api.add_resource(CurrentStatus, '/api/v2/currentStatus/<string:user_id>')  # working
 api.add_resource(GoogleCalenderEvents,
