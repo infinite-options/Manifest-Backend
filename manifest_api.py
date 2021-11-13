@@ -1028,7 +1028,7 @@ class UpdateGR(Resource):
             conn = connect()
 
             audio = request.form.get('audio')
-            id = request.form.get('id')
+            id = request.form.get('gr_unique_id')
             datetime_completed = request.form.get('datetime_completed')
             datetime_started = request.form.get('datetime_started')
             end_day_and_time = request.form.get('end_day_and_time')
@@ -4462,35 +4462,101 @@ class GetEmailId(Resource):
             disconnect(conn)
 
 # returns users token - NOT USED
-# class Usertoken(Resource):
-#     def get(self, user_id=None):
-#         print("In Usertoken")
-#         response = {}
-#         items = {}
+class Usertoken(Resource):
+    def get(self, user_id=None):
+        print("In Usertoken")
+        response = {}
+        items = {}
 
-#         try:
-#             conn = connect()
-#             query = None
+        try:
+            conn = connect()
+            query = None
 
-#             query = """SELECT user_unique_id
-#                                 , user_email_id
-#                                 , google_auth_token
-#                                 , google_refresh_token
-#                         FROM
-#                         users WHERE user_unique_id = \'""" + user_id + """\';"""
+            query = """SELECT user_unique_id
+                                , user_email_id
+                                , google_auth_token
+                                , google_refresh_token
+                        FROM
+                        users WHERE user_unique_id = \'""" + user_id + """\';"""
 
-#             items = execute(query, 'get', conn)
-#             print(items)
-#             response['message'] = 'successful'
-#             response['email_id'] = items['result'][0]['user_email_id']
-#             response['google_auth_token'] = items['result'][0]['google_auth_token']
-#             response['google_refresh_token'] = items['result'][0]['google_refresh_token']
+            items = execute(query, 'get', conn)
+            print(items)
+            response['message'] = 'successful'
+            response['email_id'] = items['result'][0]['user_email_id']
+            response['google_auth_token'] = items['result'][0]['google_auth_token']
+            response['google_refresh_token'] = items['result'][0]['google_refresh_token']
 
-#             return response, 200
-#         except:
-#             raise BadRequest('Request failed, please try again later.')
-#         finally:
-#             disconnect(conn)
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+# returns users token - NOT USED
+class TAToken(Resource):
+    def get(self, ta_id=None):
+        print("In tatoken")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+            query = None
+
+            query = """SELECT ta_unique_id
+                                , ta_email_id
+                                , ta_google_auth_token
+                                , ta_google_refresh_token
+                        FROM
+                        ta_people WHERE ta_unique_id = \'""" + ta_id + """\';"""
+
+            items = execute(query, 'get', conn)
+            print(items)
+            response['message'] = 'successful'
+            response['ta_email_id'] = items['result'][0]['ta_email_id']
+            response['ta_google_auth_token'] = items['result'][0]['ta_google_auth_token']
+            response['ta_google_refresh_token'] = items['result'][0]['ta_google_refresh_token']
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+class UpdateAccessToken(Resource):
+    def post(self, ta_id=None):
+        print("In tatoken")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+            query = None
+            data = request.get_json(force=True)
+            ta_google_auth_token = data['ta_google_auth_token']
+
+            execute("""UPDATE ta_people
+                       SET ta_google_auth_token = \'""" + ta_google_auth_token + """\'
+                       WHERE ta_unique_id = \'""" + ta_id + """\';
+                        """, 'post', conn)
+
+            # query = """UPDATE ta_people
+            #            SET
+            #            ta_google_auth_token = \'""" + ta_google_auth_token + """\'
+            #            WHERE ta_unique_id = \'""" + ta_id + """\';"""
+
+            # items = 
+            # print(items)
+            response['message'] = 'successful'
+            # response['ta_google_auth_token'] = items['result'][0]['ta_google_auth_token']
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 
 # CHECK THAT THIS IS ONLY USED FOR MOBILE LOGIN
 class Login(Resource):
@@ -7914,7 +7980,9 @@ api.add_resource(ListAllPeople, '/api/v2/listPeople/<string:user_id>')  # workin
 api.add_resource(AllUsers, '/api/v2/usersOfTA/<string:email_id>')  # working  092821
 api.add_resource(TALogin, '/api/v2/loginTA/<string:email_id>/<string:password>')  # working 092821
 api.add_resource(TASocialLogin, '/api/v2/loginSocialTA/<string:email_id>')  # working 092821
-# api.add_resource(Usertoken, '/api/v2/usersToken/<string:user_id>')  # NOT USED
+api.add_resource(Usertoken, '/api/v2/usersToken/<string:user_id>')  # NOT USED
+api.add_resource(TAToken, '/api/v2/taToken/<string:ta_id>')
+api.add_resource(UpdateAccessToken,'/api/v2/UpdateAccessToken/<string:ta_id>')
 api.add_resource(UserLogin, '/api/v2/userLogin/<string:email_id>')  # NOT USED - Used in Apple Watch
 api.add_resource(GetEmailId, '/api/v2/getEmailId/<string:user_id>')  # working MOBILE ONLY 092821
 # api.add_resource(CurrentStatus, '/api/v2/currentStatus/<string:user_id>')  # working
