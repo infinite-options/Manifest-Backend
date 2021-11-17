@@ -4793,7 +4793,7 @@ class GoogleCalenderEvents(Resource):
                 items = execute("""SELECT user_email_id, google_refresh_token, google_auth_token, access_issue_time, access_expires_in FROM users WHERE user_unique_id = \'""" +
                                 user_unique_id + """\'""", 'get', conn)
                 print(items)
-                baseUri = "https://www.googleapis.com/calendar/v3/calendars/primary/events?orderBy=startTime&singleEvents=true&"
+                baseUri = "https://www.googleapis.com/calendar/v3/calendars/primary/events?orderBy=startTime&"
                 timeMaxMin = "timeMax="+end+"&timeMin="+start
                 url = baseUri + timeMaxMin
                 bearerString = "Bearer " + \
