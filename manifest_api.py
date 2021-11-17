@@ -4870,6 +4870,131 @@ class GoogleCalenderEvents(Resource):
             disconnect(conn)
 
 
+class GoogleRecurringInstances(Resource):
+    def post(self, user_unique_id, id):
+        print("In Google Calender Events")
+        try:
+            conn = connect()
+            # data = request.get_json(force=True)
+            print(user_unique_id)
+            timestamp = getNow()
+            # user_unique_id = data["id"]
+            # start = data["start"]
+            # end = data["end"]
+
+            items = execute("""SELECT user_email_id, google_refresh_token, google_auth_token, access_issue_time, access_expires_in FROM users WHERE user_unique_id = \'""" +
+                            user_unique_id + """\'""", 'get', conn)
+
+            if len(items['result']) == 0:
+                return "No such user exists"
+            print(items)
+            if items['result'][0]['access_expires_in'] == None or items['result'][0]['access_issue_time'] == None:
+                print('in if')
+                f = open('credentials.json',)
+                print('in if')
+                data = json.load(f)
+                client_id = data['web']['client_id']
+                client_secret = data['web']['client_secret']
+                refresh_token = items['result'][0]['google_refresh_token']
+                print('in if', data)
+                params = {
+                    "grant_type": "refresh_token",
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "refresh_token": items['result'][0]['google_refresh_token'],
+                }
+
+                print('in if', params)
+                authorization_url = "https://accounts.google.com/o/oauth2/token"
+                r = requests.post(authorization_url, data=params)
+                auth_token = ""
+                if r.ok:
+                    auth_token = r.json()['access_token']
+                expires_in = r.json()['expires_in']
+                print('in if', expires_in)
+                execute("""UPDATE users SET 
+                                google_auth_token = \'""" + str(auth_token) + """\'
+                                , access_issue_time = \'""" + str(timestamp) + """\'
+                                , access_expires_in = \'""" + str(expires_in) + """\'
+                                WHERE user_unique_id = \'""" + user_unique_id + """\';""", 'post', conn)
+                items = execute("""SELECT user_email_id, google_refresh_token, google_auth_token, access_issue_time, access_expires_in FROM users WHERE user_unique_id = \'""" +
+                                user_unique_id + """\'""", 'get', conn)
+                print(items)
+                baseUri = "https://content.googleapis.com/calendar/v3/calendars/primary/events/"
+                recId = id
+                # timeMaxMin = "timeMax="+end+"&timeMin="+start
+                url = baseUri + recId + '/instances?key=AIzaSyDJgy68RxPcqn7ENZDDcGGbdvLRN6Tx5GU'
+                bearerString = "Bearer " + \
+                    items['result'][0]['google_auth_token']
+                headers = {"Authorization": bearerString,
+                           "Accept": "application/json"}
+                params = {"key": 'AIzaSyDJgy68RxPcqn7ENZDDcGGbdvLRN6Tx5GU'}
+                response = requests.get(url, headers=headers)
+                response.raise_for_status()
+                calendars = response.json().get('items')
+                return calendars
+
+            else:
+                access_issue_min = int(
+                    items['result'][0]['access_expires_in'])/60
+                access_issue_time = datetime.strptime(
+                    items['result'][0]['access_issue_time'], "%Y-%m-%d %H:%M:%S")
+                print('in else', access_issue_min)
+                timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                diff = (timestamp - access_issue_time).total_seconds() / 60
+                print('in else', diff)
+                if int(diff) > int(access_issue_min):
+                    print('in else', diff)
+                    f = open('credentials.json',)
+                    data = json.load(f)
+                    client_id = data['web']['client_id']
+                    client_secret = data['web']['client_secret']
+                    refresh_token = items['result'][0]['google_refresh_token']
+                    print('in else data', data)
+                    params = {
+                        "grant_type": "refresh_token",
+                        "client_id": client_id,
+                        "client_secret": client_secret,
+                        "refresh_token": items['result'][0]['google_refresh_token'],
+                    }
+                    print('in else', params)
+                    authorization_url = "https://accounts.google.com/o/oauth2/token"
+                    r = requests.post(authorization_url, data=params)
+                    print('in else', r)
+                    auth_token = ""
+                    if r.ok:
+                        auth_token = r.json()['access_token']
+                    expires_in = r.json()['expires_in']
+                    print('in else', expires_in)
+                    execute("""UPDATE users SET 
+                                    google_auth_token = \'""" + str(auth_token) + """\'
+                                    , access_issue_time = \'""" + str(timestamp) + """\'
+                                    , access_expires_in = \'""" + str(expires_in) + """\'
+                                    WHERE user_unique_id = \'""" + user_unique_id + """\';""", 'post', conn)
+
+                items = execute("""SELECT user_email_id, google_refresh_token, google_auth_token, access_issue_time, access_expires_in FROM users WHERE user_unique_id = \'""" +
+                                user_unique_id + """\'""", 'get', conn)
+                print(items)
+                baseUri = "https://content.googleapis.com/calendar/v3/calendars/primary/events/"
+                recId = id
+                # timeMaxMin = "timeMax="+end+"&timeMin="+start
+                url = baseUri + recId + '/instances?key=AIzaSyDJgy68RxPcqn7ENZDDcGGbdvLRN6Tx5GU'
+                bearerString = "Bearer " + \
+                    items['result'][0]['google_auth_token']
+                headers = {"Authorization": bearerString,
+                           "Accept": "application/json"}
+                params = {"key": 'AIzaSyDJgy68RxPcqn7ENZDDcGGbdvLRN6Tx5GU'}
+                response = requests.get(url, headers=headers)
+                print(url)
+                response.raise_for_status()
+                calendars = response.json().get('items')
+                return calendars
+
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 # Add coordinates
 class AddCoordinates(Resource):
     def post(self):
@@ -7988,6 +8113,8 @@ api.add_resource(GetEmailId, '/api/v2/getEmailId/<string:user_id>')  # working M
 # api.add_resource(CurrentStatus, '/api/v2/currentStatus/<string:user_id>')  # working
 api.add_resource(GoogleCalenderEvents,
                  '/api/v2/calenderEvents/<string:user_unique_id>,<string:start>,<string:end>')
+api.add_resource(GoogleRecurringInstances,
+                 '/api/v2/googleRecurringInstances/<string:user_unique_id>,<string:id>')
 api.add_resource(GetIconsHygiene, '/api/v2/getIconsHygiene')
 api.add_resource(GetIconsClothing, '/api/v2/getIconsClothing')
 api.add_resource(GetIconsFood, '/api/v2/getIconsFood')
