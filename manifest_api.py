@@ -5161,8 +5161,9 @@ class UpdateISWatchMobile(Resource):
             response['message'] = 'Update instructions/steps successful'
 
             return response, 200
-        except:
-            raise BadRequest('Request failed, please try again later.')
+        except Exception as e:
+            print(e)
+            raise BadRequest('UpdateISWatchMobile Request failed, please try again later.')
         finally:
             disconnect(conn)
 
