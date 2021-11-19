@@ -6369,7 +6369,7 @@ def ManifestNotification_CRON():
             """
         
         notifications = execute(notifications_query, 'get', conn)
-        # print(len(notifications['result']))
+        print(len(notifications['result']))
         # print(notifications)
 
         for n in notifications['result']:
@@ -6381,7 +6381,7 @@ def ManifestNotification_CRON():
                 guid = n['cust_guid_device_id_notification']
             else:
                 guid = n['ta_guid_device_id_notification']
-            #print(guid, type(guid))
+            print(guid, type(guid))
 
             # Check if guid is NONE.  Skip Notifications if no guid
             if guid != None:
@@ -6406,7 +6406,7 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        #print("\nBEFORE Notification Criteria met")
+                        print("\nBEFORE Notification Criteria met")
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6421,7 +6421,7 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        #print("\nDURING Notification Criteria met")
+                        print("\nDURING Notification Criteria met")
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
@@ -6436,7 +6436,7 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        #print("\nAFTER Notification Criteria met")
+                        print("\nAFTER Notification Criteria met")
                         for id in getGUID(guid):
                             #id = getGUID(n)
                                 if (id != ''):
