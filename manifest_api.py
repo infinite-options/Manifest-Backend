@@ -3801,7 +3801,15 @@ class TASocialSignUP(Resource):
             phone_number = data['phone_number']
             employer = data['employer']
             ta_time_zone = data['ta_time_zone']
-
+            ta_google_auth_token = data["ta_google_auth_token"]
+            # print(ta_google_auth_token)
+            ta_social_id = data["ta_social_id"]
+            # print(ta_social_id)
+            ta_google_refresh_token = data["ta_google_refresh_token"]
+            # print(ta_google_refresh_token)
+            ta_access_expires_in = data["ta_access_expires_in"]
+            # print(ta_access_expires_in)
+            print(data)
             ta_id_response = execute("""SELECT ta_unique_id, password_hashed FROM ta_people
                                             WHERE ta_email_id = \'""" + email_id + """\';""", 'get', conn)
 
@@ -3812,7 +3820,7 @@ class TASocialSignUP(Resource):
                 new_ta_id_response = execute(
                     "CALL get_ta_people_id;", 'get', conn)
                 new_ta_id = new_ta_id_response['result'][0]['new_id']
-
+                print(new_ta_id)
                 execute("""INSERT INTO ta_people
                            SET ta_unique_id = \'""" + new_ta_id + """\',
                                ta_timestamp = \'""" + ts + """\',
@@ -3821,6 +3829,10 @@ class TASocialSignUP(Resource):
                                ta_last_name = \'""" + last_name + """\',
                                employer = \'""" + employer + """\',
                                ta_time_zone = \'""" + ta_time_zone + """\',
+                               ta_google_auth_token = \'""" + ta_google_auth_token + """\',
+                               ta_social_id = \'""" + ta_social_id + """\',
+                               ta_google_refresh_token = \'""" + ta_google_refresh_token + """\',
+                               ta_access_expires_in = \'""" + ta_access_expires_in + """\',
                                ta_phone_number = \'""" + phone_number + """\';""", 'post', conn)
                 response['message'] = 'successful'
                 response['result'] = new_ta_id
@@ -3897,15 +3909,16 @@ class TASocialLogin(Resource):
             # password = data['password']
             temp = False
             emails = execute(
-                """SELECT ta_unique_id, ta_email_id from ta_people;""", 'get', conn)
+                """SELECT ta_unique_id, ta_email_id, ta_google_auth_token from ta_people;""", 'get', conn)
             for i in range(len(emails['result'])):
                 email = emails['result'][i]['ta_email_id']
                 if email == email_id:
                     temp = True
                     ta_unique_id = emails['result'][i]['ta_unique_id']
+                    ta_google_auth_token = emails["result"][i]["ta_google_auth_token"]
             if temp == True:
 
-                response['result'] = ta_unique_id
+                response['result'] = ta_unique_id, ta_google_auth_token
                 response['message'] = 'Correct Email'
 
             if temp == False:
@@ -4526,6 +4539,71 @@ class GetEmailId(Resource):
 # returns users token - NOT USED
 
 
+class GetTAEmailId(Resource):
+    def get(self, ta_email_id):
+        print("In GetTAEmailID")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+
+            temp = False
+            emails = execute(
+                """SELECT ta_email_id from ta_people where ta_unique_id = \'""" + ta_email_id + """\';""", 'get', conn)
+            if len(emails['result']) > 0:
+                response['message'] = emails['result'][0]['ta_email_id']
+            else:
+                response['message'] = 'User ID doesnt exist'
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+# get user tokens
+
+
+class TaTokenEmail(Resource):
+    def get(self, ta_email_id):
+        print("In TaTokenEmail")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+            query = None
+
+            query = (
+                """SELECT ta_unique_id
+                                , ta_email_id
+                                , ta_google_auth_token
+                                ,ta_google_refresh_token
+                        FROM
+                        ta_people WHERE ta_email_id = \'"""
+                + ta_email_id
+                + """\';"""
+            )
+
+            items = execute(query, "get", conn)
+            print(items)
+            response["message"] = "successful"
+            response["ta_unique_id"] = items["result"][0]["ta_unique_id"]
+            response["ta_email_id"] = items["result"][0]["ta_email_id"]
+            response["ta_google_auth_token"] = items["result"][0]["ta_google_auth_token"]
+            response["ta_google_refresh_token"] = items["result"][0][
+                "ta_google_refresh_token"
+            ]
+
+            return response, 200
+        except:
+            raise BadRequest("Request failed, please try again later.")
+        finally:
+            disconnect(conn)
+
+
 class Usertoken(Resource):
     def get(self, user_id=None):
         print("In Usertoken")
@@ -4633,7 +4711,6 @@ class UpdateAccessToken(Resource):
                        WHERE ta_unique_id = \'""" + ta_id + """\';
                         """, 'post', conn)
 
-       
             response['message'] = 'successful'
             # response['ta_google_auth_token'] = items['result'][0]['ta_google_auth_token']
 
@@ -8230,7 +8307,11 @@ api.add_resource(
     TALogin, '/api/v2/loginTA/<string:email_id>/<string:password>')
 # working 092821
 api.add_resource(TASocialLogin, '/api/v2/loginSocialTA/<string:email_id>')
-api.add_resource(Usertoken, '/api/v2/usersToken/<string:user_id>')  
+
+api.add_resource(TaTokenEmail, '/api/v2/taTokenEmail/<string:ta_email_id>')
+
+api.add_resource(GetTAEmailId, '/api/v2/GetTAEmailId/<string:ta_email_id>')
+api.add_resource(Usertoken, '/api/v2/usersToken/<string:user_id>')
 api.add_resource(UpdateUserAccessToken,
                  '/api/v2/UpdateUserAccessToken/<string:user_id>')
 
