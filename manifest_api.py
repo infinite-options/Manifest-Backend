@@ -1839,6 +1839,60 @@ class UpdateAT(Resource):
 
 # Delete Goal/Routine
 
+# class DeleteUserInfo(Resource):
+#     def post(self, user_id):
+#         print("In DeleteGR")
+#         response = {}
+#         items = {}
+
+#         try:
+#             conn = connect()
+
+
+#             query = ["""DELETE FROM user WHERE user_unique_id = \'""" +
+#                      user_id + """\';"""]
+
+#             execute(query[0], 'post', conn)
+
+#             query2 = ["""DELETE FROM goals_routines WHERE user_unique_id = \'""" +
+#                      user_id + """\';"""]
+
+#             grResponse =execute(query2[0], 'post', conn)
+
+#             for i in range(len(grResponse['result'])):
+#                 gr_id = grResponse['result'][i]['gr_unique_id']
+
+#                 query.append("""DELETE FROM notifications
+#                         WHERE gr_at_id = \'""" + gr_id + """\';""", 'post', conn)
+
+#                 query2 = ["""DELETE FROM goals_routines WHERE user_unique_id = \'""" +
+#                      user_id + """\';"""]
+#                 query.append("""SELECT at_unique_id FROM actions_tasks
+#                             WHERE goal_routine_id = \'""" + goal_routine_id + """\';""")
+#                 execute("""DELETE FROM notifications  WHERE gr_unique_id = \'""" +
+#                         gr_id + """\';""", 'post', conn)
+#                 execute("""DELETE FROM notifications
+#                             WHERE gr_at_id = \'""" + at_id + """\';""", 'post', conn)
+
+
+#             atResponse = execute(query[1], 'get', conn)
+
+#             for i in range(len(atResponse['result'])):
+#                 at_id = atResponse['result'][i]['at_unique_id']
+#                 execute("""DELETE FROM actions_tasks WHERE at_unique_id = \'""" +
+#                         at_id + """\';""", 'post', conn)
+#                 execute("""DELETE FROM notifications
+#                             WHERE gr_at_id = \'""" + at_id + """\';""", 'post', conn)
+
+#             response['message'] = 'successful'
+#             response['result'] = items
+
+#             return response, 200
+#         except:
+#             raise BadRequest('Request failed, please try again later.')
+#         finally:
+#             disconnect(conn)
+
 
 class DeleteGR(Resource):
     def post(self):
@@ -3965,8 +4019,29 @@ class CreateNewUser(Resource):
 
             user_id_response = execute("""SELECT user_unique_id FROM users
                                             WHERE user_email_id = \'""" + email_id + """\';""", 'get', conn)
-
+            print(user_id_response['result'][0]['user_unique_id'])
             if len(user_id_response['result']) > 0:
+                execute("""UPDATE users
+                           SET 
+                               social_id = \'""" + social_id + """\',
+                               google_auth_token = \'""" + google_auth_token + """\',
+                               google_refresh_token = \'""" + google_refresh_token + """\',
+                               access_expires_in = \'""" + access_expires_in + """\'
+                            WHERE user_unique_id = \'""" + user_id_response['result'][0]['user_unique_id'] + """\';""", 'post', conn)
+
+                NewRelationIDresponse = execute(
+                    "Call get_relation_id;", 'get', conn)
+                NewRelationID = NewRelationIDresponse['result'][0]['new_id']
+                execute("""INSERT INTO relationship
+                           SET id = \'""" + NewRelationID + """\',
+                               r_timestamp = \'""" + timestamp + """\',
+                               ta_people_id = \'""" + ta_people_id + """\',
+                               user_uid = \'""" + user_id_response['result'][0]['user_unique_id'] + """\',
+                               relation_type = \'""" + 'advisor' + """\',
+                               ta_have_pic = \'""" + 'False' + """\',
+                               ta_picture = \'""" + '' + """\',
+                               important = \'""" + 'True' + """\',
+                               advisor = \'""" + str(1) + """\';""", 'post', conn)
                 response['message'] = 'User already exists'
 
             else:

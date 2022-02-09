@@ -3967,6 +3967,27 @@ class CreateNewUser(Resource):
                                             WHERE user_email_id = \'""" + email_id + """\';""", 'get', conn)
 
             if len(user_id_response['result']) > 0:
+                execute("""UPDATE users
+                           SET
+                               social_id = \'""" + social_id + """\',
+                               google_auth_token = \'""" + google_auth_token + """\',
+                               google_refresh_token = \'""" + google_refresh_token + """\',
+                               access_expires_in = \'""" + access_expires_in + """\'
+                            WHERE user_unique_id = \'""" + user_id_response['result'][0]['user_unique_id'] + """\';""", 'post', conn)
+
+                NewRelationIDresponse = execute(
+                    "Call get_relation_id;", 'get', conn)
+                NewRelationID = NewRelationIDresponse['result'][0]['new_id']
+                execute("""INSERT INTO relationship
+                        SET id = \'""" + NewRelationID + """\',
+                            r_timestamp = \'""" + timestamp + """\',
+                            ta_people_id = \'""" + ta_people_id + """\',
+                            user_uid = \'""" + user_id_response['result'][0]['user_unique_id'] + """\',
+                            relation_type = \'""" + 'advisor' + """\',
+                            ta_have_pic = \'""" + 'False' + """\',
+                            ta_picture = \'""" + '' + """\',
+                            important = \'""" + 'True' + """\',
+                            advisor = \'""" + str(1) + """\';""", 'post', conn)
                 response['message'] = 'User already exists'
 
             else:
