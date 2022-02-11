@@ -73,7 +73,7 @@ app.config['DEBUG'] = True
 
 # SECTION 2:  UTILITIES AND SUPPORT FUNCTIONS
 # EMAIL INFO
-#app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_SERVER'] = 'smtp.mydomain.com'
 app.config['MAIL_PORT'] = 465
 
@@ -338,7 +338,7 @@ class GoalsRoutines(Resource):
                         WHEN is_in_progress = "True" THEN  "in_progress"
                         ELSE "not started"
                     END AS status
-                FROM goals_routines 
+                FROM goals_routines
                 WHERE user_id = \'""" + user_id + """\';
             """
 
@@ -351,8 +351,8 @@ class GoalsRoutines(Resource):
                 gr_id = goal_routine_response[i]['gr_unique_id']
                 res = execute(
                     """
-                    SELECT * 
-                    FROM notifications 
+                    SELECT *
+                    FROM notifications
                     WHERE gr_at_id = \'""" + gr_id + """\';
                     """, 'get', conn)
                 items['result'][i]['notifications'] = list(res['result'])
@@ -385,7 +385,7 @@ class GetRoutines(Resource):
                         WHEN is_in_progress = "True" THEN  "in_progress"
                         ELSE "not started"
                     END AS status
-                FROM goals_routines 
+                FROM goals_routines
                 WHERE user_id = \'""" + user_id + """\'  AND is_persistent = 'True';
             """
 
@@ -398,8 +398,8 @@ class GetRoutines(Resource):
                 gr_id = goal_routine_response[i]['gr_unique_id']
                 res = execute(
                     """
-                    SELECT * 
-                    FROM notifications 
+                    SELECT *
+                    FROM notifications
                     WHERE gr_at_id = \'""" + gr_id + """\';
                     """, 'get', conn)
                 items['result'][i]['notifications'] = list(res['result'])
@@ -432,7 +432,7 @@ class GetGoals(Resource):
                         WHEN is_in_progress = "True" THEN  "in_progress"
                         ELSE "not started"
                     END AS status
-                FROM goals_routines 
+                FROM goals_routines
                 WHERE user_id = \'""" + user_id + """\' AND is_persistent = 'False';
             """
 
@@ -445,8 +445,8 @@ class GetGoals(Resource):
                 gr_id = goal_routine_response[i]['gr_unique_id']
                 res = execute(
                     """
-                    SELECT * 
-                    FROM notifications 
+                    SELECT *
+                    FROM notifications
                     WHERE gr_at_id = \'""" + gr_id + """\';
                     """, 'get', conn)
                 items['result'][i]['notifications'] = list(res['result'])
@@ -513,6 +513,103 @@ class GAI(Resource):
                         action_response = res_actions['result']
                         for j in range(len(action_response)):
                             print(action_response[j]['at_unique_id'])
+                            res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
+                                              action_response[j]['at_unique_id'] + """\' ORDER BY is_sequence;""", 'get', conn)
+                            print(res_ins)
+                            items['result'][i]['actions_tasks'][j]['instructions_steps'] = list(
+                                res_ins['result'])
+
+                response['message'] = 'successful'
+                response['result'] = items['result']
+
+            return response, 200
+        except:
+            raise BadRequest(
+                'Get Routines Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+# Returns current Goals and Routines with actions/tasks and instructions/steps
+
+
+class GRAI(Resource):
+    def get(self, user_id):
+        print("In GRAI")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            # Get all goals and routines of the user
+            query = """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + \
+                """\' AND is_available = 'True' AND is_displayed_today = 'True';"""
+
+            items = execute(query, 'get', conn)
+            timezone_query = execute(
+                """SELECT time_zone FROM users where user_unique_id = \'""" + user_id + """\';""", 'get', conn)
+            timezone = timezone_query['result'][0]['time_zone']
+            goal_routine_response = items['result']
+            # print(goal_routine_response)
+            updated_goal_routine_response = []
+            if len(goal_routine_response) == 0:
+                response['message'] = 'No goals'
+                return response
+
+            else:
+                print("In else clause")
+                for routine in goal_routine_response:
+
+                    start_time = datetime.strptime(
+                        routine['gr_start_day_and_time'], '%Y-%m-%d %H:%M:%S %p').time()
+                    print(start_time, type(start_time))
+                    # print(start_time[1], start_time[2])
+
+                    end_time = datetime.strptime(
+                        routine['gr_end_day_and_time'], '%Y-%m-%d %H:%M:%S %p').time()
+                    print(end_time, type(end_time))
+                    # print(end_time[1], end_time[2])
+
+                    now_timestamp = str(datetime.now(
+                        pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + str(datetime.now(
+                            pytz.timezone(timezone)).strftime("%I:%M:%S %p"))
+
+                    now_time = datetime.strptime(
+                        now_timestamp, '%Y-%m-%d %H:%M:%S %p').time()
+                    print(now_time, type(now_time))
+
+                    # print(routine)
+                    if (start_time < now_time) and (end_time > now_time):
+                        print('true')
+                        print(now_time, start_time, end_time)
+                        routine['start_time'] = str(
+                            start_time.strftime("%I:%M:%S %p"))
+                        updated_goal_routine_response.append(routine)
+                        print("Routine: ", routine)
+
+                # print('here', updated_goal_routine_response)
+                updated_goal_routine_response.sort(
+                    key=lambda x: x['start_time'])
+                print('here', updated_goal_routine_response)
+                for goal in updated_goal_routine_response:
+                    del goal['start_time']
+                items['result'] = updated_goal_routine_response
+                # Get all notification details
+                for i in range(len(updated_goal_routine_response)):
+                    gr_id = updated_goal_routine_response[i]['gr_unique_id']
+                    print('here', gr_id)
+                    res_actions = execute(
+                        """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
+
+                    items['result'][i]['actions_tasks'] = list(
+                        res_actions['result'])
+                    print('here', items['result'][i]['actions_tasks'])
+                    if len(res_actions['result']) > 0:
+                        action_response = res_actions['result']
+                        print('here', action_response)
+                        for j in range(len(action_response)):
+                            print('here', action_response[j]['at_unique_id'])
                             res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
                                               action_response[j]['at_unique_id'] + """\' ORDER BY is_sequence;""", 'get', conn)
                             print(res_ins)
@@ -599,6 +696,7 @@ class GAI(Resource):
 #                 'Get Routines Request failed, please try again later.')
 #         finally:
 #             disconnect(conn)
+
 
 # Returns Goals with actions/tasks and instructions/steps
 class ActionsInstructions(Resource):
@@ -1205,7 +1303,7 @@ class UpdateGR(Resource):
                         # print(repeat_ends)
                         # repeat_ends_on = repeat_ends[:24]
                         # print(repeat_ends_on)
-                        #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+                        # repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
                         repeat_ends_on = datetime.strptime(
                             repeat_ends_on, "%Y-%m-%d").date()
                         # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
@@ -3131,7 +3229,7 @@ class AnotherTAAccess(Resource):
                                 r_timestamp = \'""" + str(timestamp) + """\',
                                 ta_people_id = \'""" + str(ta_id) + """\',
                                 user_uid = \'""" + str(user_id) + """\',
-                                relation_type = \'""" + 'advisor' + """\',
+                                relation_type = \'""" + 'Advisor' + """\',
                                 ta_have_pic = \'""" + 'False' + """\',
                                 ta_picture = \'""" + '' + """\',
                                 important = \'""" + 'True' + """\',
@@ -3458,7 +3556,7 @@ class UserTADetails(Resource):
                                     res['phone_number'] = ta_response['result'][i]['ta_phone_number']
                                     res['ta_time_zone'] = ta_response['result'][i]['ta_time_zone']
                                     res['picture'] = relation_response['result'][k]['ta_picture']
-                                    res['role'] = 'advisor'
+                                    res['role'] = 'Advisor'
                                     items.append(res)
                             break
 
@@ -3972,7 +4070,13 @@ class CreateNewUser(Resource):
                                social_id = \'""" + social_id + """\',
                                google_auth_token = \'""" + google_auth_token + """\',
                                google_refresh_token = \'""" + google_refresh_token + """\',
-                               access_expires_in = \'""" + access_expires_in + """\'
+                               access_expires_in = \'""" + access_expires_in + """\',
+                               day_start =  \'""" + "00:00" + """\', 
+                               day_end =  \'""" + "23:59" + """\',  
+                               morning_time =  \'""" + "06:00" + """\', 
+                               afternoon_time =  \'""" + "11:00" + """\', 
+                               evening_time =  \'""" + "16:00" + """\', 
+                               night_time =  \'""" + "21:00" + """\'
                             WHERE user_unique_id = \'""" + user_id_response['result'][0]['user_unique_id'] + """\';""", 'post', conn)
 
                 NewRelationIDresponse = execute(
@@ -3983,7 +4087,7 @@ class CreateNewUser(Resource):
                             r_timestamp = \'""" + timestamp + """\',
                             ta_people_id = \'""" + ta_people_id + """\',
                             user_uid = \'""" + user_id_response['result'][0]['user_unique_id'] + """\',
-                            relation_type = \'""" + 'advisor' + """\',
+                            relation_type = \'""" + 'Advisor' + """\',
                             ta_have_pic = \'""" + 'False' + """\',
                             ta_picture = \'""" + '' + """\',
                             important = \'""" + 'True' + """\',
@@ -4009,6 +4113,12 @@ class CreateNewUser(Resource):
                                user_picture = \'""" + '' + """\',
                                user_social_media = \'""" + 'GOOGLE' + """\',
                                new_account = \'""" + 'True' + """\',
+                               day_start =  \'""" + "00:00" + """\', 
+                               day_end =  \'""" + "23:59" + """\',   
+                               morning_time =  \'""" + "06:00" + """\', 
+                               afternoon_time =  \'""" + "11:00" + """\', 
+                               evening_time =  \'""" + "16:00" + """\', 
+                               night_time =  \'""" + "21:00" + """\', 
                                cust_guid_device_id_notification = \'""" + 'null' + """\';""", 'post', conn)
 
                 NewRelationIDresponse = execute(
@@ -4019,7 +4129,7 @@ class CreateNewUser(Resource):
                                r_timestamp = \'""" + timestamp + """\',
                                ta_people_id = \'""" + ta_people_id + """\',
                                user_uid = \'""" + new_user_id + """\',
-                               relation_type = \'""" + 'advisor' + """\',
+                               relation_type = \'""" + 'Advisor' + """\',
                                ta_have_pic = \'""" + 'False' + """\',
                                ta_picture = \'""" + '' + """\',
                                important = \'""" + 'True' + """\',
@@ -4070,7 +4180,7 @@ class ExistingUser(Resource):
                                    ta_people_id = \'""" + ta_people_id + """\',
                                    user_uid = \'""" + user_id_response['result'][0]['user_unique_id'] + """\',
                                    r_timestamp = \'""" + timestamp + """\',
-                                   relation_type = \'""" + 'advisor' + """\',
+                                   relation_type = \'""" + 'Advisor' + """\',
                                    ta_have_pic = \'""" + 'False' + """\',
                                    ta_picture = \'""" + '' + """\',
                                    important = \'""" + 'True' + """\',
@@ -4482,7 +4592,7 @@ class UpdateNameTimeZone(Resource):
                            r_timestamp = \'""" + timestamp + """\',
                            ta_people_id = \'""" + ta_people_id + """\',
                            user_uid = \'""" + user_unique_id + """\',
-                           relation_type = \'""" + 'advisor' + """\',
+                           relation_type = \'""" + 'Advisor' + """\',
                            ta_have_pic = \'""" + 'False' + """\' ,
                            ta_picture = \'""" + '' + """\',
                            important = \'""" + 'True' + """\',
@@ -4832,7 +4942,7 @@ class Login(Resource):
                                r_timestamp = \'""" + timestamp + """\',
                                ta_people_id = \'""" + '200-000001' + """\',
                                user_uid = \'""" + new_user_id + """\',
-                               relation_type = \'""" + 'advisor' + """\',
+                               relation_type = \'""" + 'Advisor' + """\',
                                ta_have_pic = \'""" + 'False' + """\',
                                ta_picture = \'""" + '' + """\',
                                important = \'""" + 'True' + """\',
@@ -6106,6 +6216,27 @@ class AboutMe(Resource):
             disconnect(conn)
 
 
+class Announcements(Resource):
+    def get(self, user_id):
+        print("In Announcements")
+        response = {}
+        try:
+            conn = connect()
+
+            items = execute(
+                """SELECT message_day FROM users WHERE user_unique_id = \'""" + user_id + """\';""", 'get', conn)
+
+            print(items['result'])
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
 class Motivation(Resource):
     def get(self, user_id):
         print("In Motivation")
@@ -6421,7 +6552,7 @@ def notify(msg, tag, user_id, badge):
         print("Hub Credentials: ", hub)
 
         # APPLE NOTIFICATIONS
-        #wns_payload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"}}"
+        # wns_payload = "{\"aps\":{\"alert\":\"Notification Hub test notification\"}}"
         wns_payload = {
             'aps':
                 {
@@ -6433,7 +6564,7 @@ def notify(msg, tag, user_id, badge):
         hub.send_apple_notification(0, wns_payload, tag)
 
         # ANDROID NOTIFICATIONS
-        #wns_payload ="""{\n\"notification\":{\n\"title\":\"Notification Hub Test Notification\",\n\"body\":\"This is a sample notification delivered by Azure Notification Hubs.\"\n},\n\"data\":{\n\"property1\":\"value1\",\n\"property2\":42\n}\n}"""
+        # wns_payload ="""{\n\"notification\":{\n\"title\":\"Notification Hub Test Notification\",\n\"body\":\"This is a sample notification delivered by Azure Notification Hubs.\"\n},\n\"data\":{\n\"property1\":\"value1\",\n\"property2\":42\n}\n}"""
         wns_payload = {
             "notification": {
                 "title": "Hi",
@@ -6461,26 +6592,26 @@ def getGUID(guid):
     print("In getGUID")
     # GET UNIQUE LIST OF GUIDS
     s = ''
-    # print('inside getGUID')
-    # print(guid)
+    print('inside getGUID')
+    print(guid)
     l = []
-    # print("Initialize GUID List: ", l)
+    print("Initialize GUID List: ", l)
     if 'guid' in guid:
         guid_list = guid.split(' ')
-        # print("List after split: ", guid_list)
-        # print("guid_list_len: ", len(guid_list))
+        print("List after split: ", guid_list)
+        print("guid_list_len: ", len(guid_list))
         if(len(guid_list) > 1):
             for i in range(len(guid_list)):
                 # if(guid_list[i]=="guid"):
                 if(re.search('guid', guid_list[i])):
                     s = 'guid_'+guid_list[i+1][1:-2]
-                    # print("S: ", s)
+                    print("S: ", s)
                     # CHECKS TO MAKE SURE THERE ARE ONLY UNIQUE GUIDS IN THE LIST
                     if s not in l:
                         l.append(s)
-                        # print("Current List: ", l)
+                        print("Current List: ", l)
                     s = ''
-    # print("Final List:   ", l)
+    print("Final List:   ", l)
     return l
 
 
@@ -6563,7 +6694,8 @@ def ManifestNotification_CRON():
                     ON user_ta_id = ta_unique_id
                 WHERE is_complete != 'True' 
                     AND is_available = 'True'
-                    AND is_displayed_today = "True";
+                    AND is_displayed_today = "True"
+                    AND (user_ta_id= u.user_unique_id OR ta.ta_unique_id);
             """
 
         notifications = execute(notifications_query, 'get', conn)
@@ -6579,7 +6711,7 @@ def ManifestNotification_CRON():
                 guid = n['cust_guid_device_id_notification']
             else:
                 guid = n['ta_guid_device_id_notification']
-            #print(guid, type(guid))
+            # print(guid, type(guid))
 
             # Check if guid is NONE.  Skip Notifications if no guid
             if guid != None:
@@ -6605,9 +6737,9 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        #print("\nBEFORE Notification Criteria met")
+                        # print("\nBEFORE Notification Criteria met")
                         for id in getGUID(guid):
-                            #id = getGUID(n)
+                            # id = getGUID(n)
                             if (id != ''):
                                 notify(
                                     n['before_message'], id, n['user_ta_id'], n['notification_badge_num'])
@@ -6621,9 +6753,9 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        #print("\nDURING Notification Criteria met")
+                        # print("\nDURING Notification Criteria met")
                         for id in getGUID(guid):
-                            #id = getGUID(n)
+                            # id = getGUID(n)
                             if (id != ''):
                                 notify(
                                     n['during_message'], id, n['user_ta_id'], n['notification_badge_num'])
@@ -6637,9 +6769,9 @@ def ManifestNotification_CRON():
                     # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                     # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                     if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        #print("\nAFTER Notification Criteria met")
+                        # print("\nAFTER Notification Criteria met")
                         for id in getGUID(guid):
-                            #id = getGUID(n)
+                            # id = getGUID(n)
                             if (id != ''):
                                 notify(
                                     n['after_message'], id, n['user_ta_id'], n['notification_badge_num'])
@@ -6648,6 +6780,16 @@ def ManifestNotification_CRON():
         return response, 200
 
     except:
+        msg = Message(
+            subject="Notifications failed MyLife",
+            sender="support@manifestmy.life",
+            recipients=['pmarathay@gmail.com', 'anu.sandhu7893@gmail.com'],
+        )
+
+        msg.body = (
+            "Problem in Manifest MyLife notification! Please check what's wrong")
+        print(msg.body)
+        mail.send(msg)
         raise BadRequest(
             'ManifestNotification_CRON Request failed, please try again later.')
     finally:
@@ -6689,7 +6831,8 @@ class ManifestNotification_CLASS(Resource):
                         ON user_ta_id = ta_unique_id
                     WHERE is_complete != 'True' 
                         AND is_available = 'True'
-                        AND is_displayed_today = "True";
+                        AND is_displayed_today = "True"
+                    AND (user_ta_id= u.user_unique_id OR ta.ta_unique_id);
                 """
 
             notifications = execute(notifications_query, 'get', conn)
@@ -6703,8 +6846,10 @@ class ManifestNotification_CLASS(Resource):
                 print("\nNotification Info:", n['notification_id'])
                 if n['user_ta_id'][0] == '1':
                     guid = n['cust_guid_device_id_notification']
+                    print(n['user_ta_id'][0])
                 else:
                     guid = n['ta_guid_device_id_notification']
+                    print(n['user_ta_id'][0])
                 print("GUID: ", guid, type(guid))
                 # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
@@ -6735,11 +6880,14 @@ class ManifestNotification_CLASS(Resource):
                             notification_time_diff))
                         print('time_diff in seconds:', notification_time_diff.total_seconds(), type(
                             notification_time_diff.total_seconds()))
+                        print("GUID1: ", guid)
                         if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+
                             print("\nBEFORE Notification Criteria met")
                             for id in getGUID(guid):
-                                print("GUID: ", id)
-                                #id = getGUID(n)
+
+                                print("GUID 2: ", id)
+                                # id = getGUID(n)
                                 if (id != ''):
                                     # print("About to send before notification", n['before_message'],id)
                                     notify(n['before_message'], id)
@@ -6758,7 +6906,7 @@ class ManifestNotification_CLASS(Resource):
                             print("\nDURING Notification Criteria met")
                             for id in getGUID(guid):
                                 print("GUID: ", id)
-                                #id = getGUID(n)
+                                # id = getGUID(n)
                                 if (id != ''):
                                     # print("About to send during notification", n['during_message'],id)
                                     notify(n['during_message'], id)
@@ -6776,7 +6924,7 @@ class ManifestNotification_CLASS(Resource):
                             print("\nAFTER Notification Criteria met")
                             for id in getGUID(guid):
                                 print("GUID: ", id)
-                                #id = getGUID(n)
+                                # id = getGUID(n)
                                 if (id != ''):
                                     # print("About to send after notification", n['after_message'],id)
                                     notify(n['after_message'], id)
@@ -6786,6 +6934,16 @@ class ManifestNotification_CLASS(Resource):
             return response, 200
 
         except:
+            msg = Message(
+                subject="Notifications failed MyLife",
+                sender="support@manifestmy.life",
+                recipients=['pmarathay@gmail.com', 'anu.sandhu7893@gmail.com'],
+            )
+
+            msg.body = (
+                "Problem in Manifest MyLife notification! Please check what's wrong")
+            print(msg.body)
+            mail.send(msg)
             raise BadRequest(
                 'ManifestNotification_CRON Request failed, please try again later.')
         finally:
@@ -7282,7 +7440,7 @@ def ManifestHistory_CRON():
                                 # print(repeat_ends)
                                 # repeat_ends_on = repeat_ends[:24]
                                 # print(repeat_ends_on)
-                                #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+                                # repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
                                 repeat_ends_on = datetime.strptime(
                                     repeat_ends_on, "%Y-%m-%d").date()
                                 # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
@@ -7589,7 +7747,7 @@ class ManifestHistory_CLASS(Resource):
                                     # print(repeat_ends)
                                     # repeat_ends_on = repeat_ends[:24]
                                     # print(repeat_ends_on)
-                                    #repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
+                                    # repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
                                     repeat_ends_on = datetime.strptime(
                                         repeat_ends_on, "%Y-%m-%d").date()
                                     # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
@@ -8296,6 +8454,7 @@ api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 # working Mobile only 092821
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
 # api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
+api.add_resource(GRAI, '/api/v2/grai/<string:user_id>')
 api.add_resource(ActionsInstructions,
                  '/api/v2/actionsInstructions/<string:gr_id>')  # working
 # working 092821
@@ -8437,6 +8596,7 @@ api.add_resource(ResetGR, '/api/v2/resetGR/<string:gr_id>')
 api.add_resource(update_guid_notification,
                  '/api/v2/updateGuid/<string:action>')
 api.add_resource(AboutHistory, '/api/v2/changeAboutMeHistory')
+api.add_resource(Announcements, '/api/v2/Announcements/<string:user_id>')
 api.add_resource(UpdateMotivation, '/api/v2/updateMotivation')
 api.add_resource(UpdateFeelings, '/api/v2/updateFeelings')
 api.add_resource(UpdateHappy, '/api/v2/updateHappy')
