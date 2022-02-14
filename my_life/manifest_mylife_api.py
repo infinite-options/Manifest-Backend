@@ -532,6 +532,119 @@ class GAI(Resource):
 # Returns current Goals and Routines with actions/tasks and instructions/steps
 
 
+class CurrentNotifications(Resource):
+    def get(self, user_id):
+        print("In CurrentNotifications")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            # Get all goals and routines of the user
+            query = """SELECT -- *
+                        n.*,
+                        gr.gr_title, is_available, is_complete, is_in_progress, is_displayed_today, is_persistent, gr_start_day_and_time, gr_end_day_and_time,
+                        u.time_zone, cust_guid_device_id_notification,
+                        ta.ta_guid_device_id_notification
+                    FROM manifest_mylife.notifications n
+                    LEFT JOIN manifest_mylife.goals_routines gr
+                        ON gr_at_id = gr_unique_id
+                    LEFT JOIN manifest_mylife.users u
+                        ON user_id = user_unique_id
+                    LEFT JOIN manifest_mylife.ta_people ta
+                        ON user_ta_id = ta_unique_id
+                    WHERE is_complete != 'True'
+                        AND is_available = 'True'
+                        AND is_displayed_today = "True"
+                    AND user_ta_id= \'""" + user_id + """\';"""
+            # print(query)
+            items = execute(query, 'get', conn)
+            timezone_query = execute(
+                """SELECT time_zone FROM users where user_unique_id = \'""" + user_id + """\';""", 'get', conn)
+            timezone = timezone_query['result'][0]['time_zone']
+            notificaton = items['result']
+            print(notificaton)
+            updated_notificaton = []
+            if len(notificaton) == 0:
+                response['message'] = 'No notifications'
+                return response
+
+            else:
+                print("In else clause")
+                for notify in notificaton:
+                    print(notify)
+                    now_timestamp = str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + str(datetime.now(pytz.timezone(timezone)).strftime("%H:%M:%S %p"))
+                    now_time = datetime.strptime(
+                        now_timestamp, '%Y-%m-%d %H:%M:%S %p')
+                    print(now_time, type(now_time))
+
+                    time_zero = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + '00:00:00'), "%Y-%m-%d %H:%M:%S")
+
+                    before_time = (datetime.strptime(
+                        notify['gr_start_day_and_time'], "%Y-%m-%d %H:%M:%S %p") - datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + notify['before_time']), "%Y-%m-%d %H:%M:%S"))
+                    before_time = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + str(before_time)), "%Y-%m-%d %H:%M:%S"))
+                    print('Before time', before_time, type(before_time))
+                    before_diff = now_time-before_time
+                    before_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + str(before_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                    print('Before diff', before_diff, type(before_diff))
+
+                    during_time = (datetime.strptime(
+                        notify['gr_start_day_and_time'], "%Y-%m-%d %H:%M:%S %p") - time_zero + datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + notify['during_time']), "%Y-%m-%d %H:%M:%S"))
+                    print('During time', during_time, type(during_time))
+                    during_diff = now_time-during_time
+                    during_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + str(during_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                    print('During diff', during_diff)
+
+                    after_time = (datetime.strptime(
+                        notify['gr_end_day_and_time'], "%Y-%m-%d %H:%M:%S %p") - time_zero + datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + notify['after_time']), "%Y-%m-%d %H:%M:%S"))
+                    print('After time', after_time, type(after_time))
+                    after_diff = now_time-after_time
+                    after_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + str(after_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                    print('After diff', after_diff)
+
+                    check = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + '02:00:00'), "%Y-%m-%d %H:%M:%S")).time()
+                    print(check, type(check))
+
+                    print(check > before_diff)
+                    if ((before_diff) > check) or ((during_diff) > check) or ((after_diff) > check):
+                        print('true')
+                        # print(now_time, start_time, end_time)
+                        # notify['start_time'] = str(
+                        #     start_time.strftime("%I:%M:%S %p"))
+                    else:
+                        updated_notificaton.append(notify)
+                        print("notify: ", notify)
+
+                # print('here', updated_notificaton)
+                # updated_notificaton.sort(
+                #     key=lambda x: x['start_time'])
+                print('here', updated_notificaton)
+                # for goal in updated_notificaton:
+                #     del goal['start_time']
+                items['result'] = updated_notificaton
+
+                response['message'] = 'successful'
+                response['result'] = items['result']
+
+            return response, 200
+        except:
+            raise BadRequest(
+                'Get Routines Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
 class GRAI(Resource):
     def get(self, user_id):
         print("In GRAI")
@@ -3112,6 +3225,37 @@ class ListAllTA(Resource):
         finally:
             disconnect(conn)
 
+
+class ListAllTAUser(Resource):
+    def get(self, user_id):
+        print("In ListAllTAUser")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+
+            # Get all TA of the user
+            query = """ SELECT DISTINCT ta_unique_id
+                                , CONCAT(ta_first_name, SPACE(1), ta_last_name) as name
+                                , ta_first_name
+                                , ta_last_name
+                                , ta_email_id
+                        FROM ta_people
+                        JOIN relationship on ta_unique_id = ta_people_id
+                        WHERE user_uid = \'""" + user_id + """\'
+                        and advisor = '1';"""
+
+            taList = execute(query, 'get', conn)
+            response['message'] = 'successful'
+            response['result'] = taList['result']
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 # Returns all TA that doesn't belong to the user
 
 
@@ -3918,22 +4062,32 @@ class TASocialSignUP(Resource):
                 new_ta_id_response = execute(
                     "CALL get_ta_people_id;", 'get', conn)
                 new_ta_id = new_ta_id_response['result'][0]['new_id']
+                user_info_query = execute(
+                    """SELECT * FROM users WHERE user_email_id = \'""" + email_id + """\';""", 'get', conn)
+                print(user_info_query)
+                user_info = user_info_query['result']
+                print(user_info)
+                guid = 'null'
 
-                execute("""INSERT INTO ta_people
-                           SET ta_unique_id = \'""" + new_ta_id + """\',
-                               ta_timestamp = \'""" + ts + """\',
-                               ta_email_id = \'""" + email_id + """\',
-                               ta_first_name = \'""" + first_name + """\',
-                               ta_last_name = \'""" + last_name + """\',
-                               employer = \'""" + employer + """\',
-                               ta_time_zone = \'""" + ta_time_zone + """\',
-                               ta_google_auth_token = \'""" + ta_google_auth_token + """\',
-                               ta_social_id = \'""" + ta_social_id + """\',
-                               ta_google_refresh_token = \'""" + ta_google_refresh_token + """\',
-                               ta_access_expires_in = \'""" + ta_access_expires_in + """\',
-                               ta_phone_number = \'""" + phone_number + """\';""", 'post', conn)
-                response['message'] = 'successful'
-                response['result'] = new_ta_id
+                if user_info:
+                    guid = user_info[0]['cust_guid_device_id_notification']
+
+                    execute("""INSERT INTO ta_people
+                            SET ta_unique_id = \'""" + new_ta_id + """\',
+                                ta_timestamp = \'""" + ts + """\',
+                                ta_email_id = \'""" + email_id + """\',
+                                ta_first_name = \'""" + first_name + """\',
+                                ta_last_name = \'""" + last_name + """\',
+                                employer = \'""" + employer + """\',
+                                ta_time_zone = \'""" + ta_time_zone + """\',
+                                ta_google_auth_token = \'""" + ta_google_auth_token + """\',
+                                ta_social_id = \'""" + ta_social_id + """\',
+                                ta_google_refresh_token = \'""" + ta_google_refresh_token + """\',
+                                ta_access_expires_in = \'""" + ta_access_expires_in + """\',
+                                ta_phone_number = \'""" + phone_number + """\',
+                                ta_guid_device_id_notification = \'""" + guid + """\';""", 'post', conn)
+                    response['message'] = 'successful'
+                    response['result'] = new_ta_id
 
             return response, 200
         except:
@@ -4903,6 +5057,15 @@ class Login(Resource):
                         """
 
                 items = execute(query, 'get', conn)
+
+                # taquery = """
+                #         SELECT ta_unique_id,
+                #             ta_email_id,
+                #         FROM ta_people
+                #         WHERE ta_email_id = \'""" + email + """\'; """
+                # taList = execute(query, 'get', conn)
+
+                # if len(taList['result']) > 0:
 
             # print('Password', password)
             print(items)
@@ -6934,16 +7097,16 @@ class ManifestNotification_CLASS(Resource):
             return response, 200
 
         except:
-            msg = Message(
-                subject="Notifications failed MyLife",
-                sender="support@manifestmy.life",
-                recipients=['pmarathay@gmail.com', 'anu.sandhu7893@gmail.com'],
-            )
+            # msg = Message(
+            #     subject="Notifications failed MyLife",
+            #     sender="support@manifestmy.life",
+            #     recipients=['pmarathay@gmail.com', 'anu.sandhu7893@gmail.com'],
+            # )
 
-            msg.body = (
-                "Problem in Manifest MyLife notification! Please check what's wrong")
-            print(msg.body)
-            mail.send(msg)
+            # msg.body = (
+            #     "Problem in Manifest MyLife notification! Please check what's wrong")
+            # print(msg.body)
+            # mail.send(msg)
             raise BadRequest(
                 'ManifestNotification_CRON Request failed, please try again later.')
         finally:
@@ -8294,33 +8457,46 @@ class update_guid_notification(Resource):
                 print(data)
 
                 if ta_people_query['result']:
-                    query = " " \
-                            "UPDATE ta_people " \
-                            "SET ta_guid_device_id_notification  = (SELECT JSON_MERGE_PRESERVE(ta_guid_device_id_notification," + data + ")) " \
-                            "WHERE ta_unique_id = '" + ta_people_query['result'][0]['ta_unique_id'] + "';" \
-                            ""
+
+                    print(ta_people_query['result'][0]['ta_email_id'],
+                          data, ta_people_query['result'][0]['ta_unique_id'])
+                    ta_email = ta_people_query['result'][0]['ta_email_id']
+                    print(ta_email)
+                    query = """UPDATE ta_people SET ta_guid_device_id_notification = (SELECT JSON_MERGE_PRESERVE(cust_guid_device_id_notification," +  \'""" + data + """\' + "))
+                     WHERE ta_email_id = \'""" + ta_email + """\';"""
+
+                    # query = """UPDATE ta_people
+                    # SET ta_guid_device_id_notification = \'""" + data + """\'
+                    # WHERE ta_email_id = \'""" + ta_email + """\';
+                    #     """
+                    # query = " " \
+                    #     "INSERT INTO ta_people " \
+                    #     "SET ta_guid_device_id_notification  = (SELECT JSON_MERGE_PRESERVE(ta_guid_device_id_notification," + '12' + ")) " \
+                    #     "WHERE ta_email_id = '" + ta_email + "';" \
+                    #     ""
+
                     res = execute(query, 'post', conn)
-                    print(res)
+                    print("Update Query1: ", res)
 
-                if items['result']:
-                    query1 = " " \
-                        "UPDATE users " \
-                        "SET cust_guid_device_id_notification  = (SELECT JSON_MERGE_PRESERVE(cust_guid_device_id_notification," + data + ")) " \
-                        "WHERE user_unique_id = '" + uid + "';" \
-                        ""
-                    items = execute(query1, 'post', conn)
-                    print("Update Query: ", items)
+                    if items['result']:
+                        query1 = " " \
+                            "UPDATE users " \
+                            "SET cust_guid_device_id_notification  = (SELECT JSON_MERGE_PRESERVE(cust_guid_device_id_notification," + data + ")) " \
+                            "WHERE user_unique_id = '" + uid + "';" \
+                            ""
+                        items = execute(query1, 'post', conn)
+                        print("Update Query2: ", items)
 
-                    if items['code'] == 281:
-                        items['code'] = 200
-                        items['message'] = 'Device_id notification and GUID updated'
+                        if items['code'] == 281:
+                            items['code'] = 200
+                            items['message'] = 'Device_id notification and GUID updated'
+                        else:
+                            items['message'] = 'check sql query'
+
                     else:
-                        items['message'] = 'check sql query'
+                        items['message'] = 'UID does not exists'
 
-                else:
-                    items['message'] = 'UID does not exists'
-
-                return items
+                    return items, res
 
             elif action == 'update':
                 print("In Update")
@@ -8455,6 +8631,9 @@ api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
 # api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
 api.add_resource(GRAI, '/api/v2/grai/<string:user_id>')
+api.add_resource(CurrentNotifications,
+                 '/api/v2/CurrentNotifications/<string:user_id>')
+
 api.add_resource(ActionsInstructions,
                  '/api/v2/actionsInstructions/<string:gr_id>')  # working
 # working 092821
@@ -8471,6 +8650,8 @@ api.add_resource(TimeSettings, '/api/v2/timeSettings/<string:user_id>')
 
 # working 092821
 api.add_resource(ListAllTA, '/api/v2/listAllTA/<string:user_id>')
+
+api.add_resource(ListAllTAUser, '/api/v2/ListAllTAUser/<string:user_id>')
 # working 092821
 api.add_resource(ListAllTAForCopy, '/api/v2/listAllTAForCopy')
 api.add_resource(ListAllUsersForCopy,
