@@ -544,9 +544,7 @@ class CurrentNotifications(Resource):
             # Get all goals and routines of the user
             query = """SELECT -- *
                         n.*,
-                        gr.gr_title, is_available, is_complete, is_in_progress, is_displayed_today, is_persistent, gr_start_day_and_time, gr_end_day_and_time,
-                        u.time_zone, cust_guid_device_id_notification,
-                        ta.ta_guid_device_id_notification
+                       gr_start_day_and_time, gr_end_day_and_time
                     FROM manifest_mylife.notifications n
                     LEFT JOIN manifest_mylife.goals_routines gr
                         ON gr_at_id = gr_unique_id
@@ -557,6 +555,9 @@ class CurrentNotifications(Resource):
                     WHERE is_complete != 'True'
                         AND is_available = 'True'
                         AND is_displayed_today = "True"
+                        AND (before_is_enable != "False"
+                        OR during_is_enable != "False"
+                        OR after_is_enable != "False")
                     AND user_ta_id= \'""" + user_id + """\';"""
             # print(query)
             items = execute(query, 'get', conn)
@@ -566,74 +567,178 @@ class CurrentNotifications(Resource):
             notificaton = items['result']
             print(notificaton)
             updated_notificaton = []
+            final_notificaton = []
             if len(notificaton) == 0:
-                response['message'] = 'No notifications'
+                response['message'] = 'successful'
+                response['result'] = notificaton
                 return response
 
             else:
                 print("In else clause")
                 for notify in notificaton:
-                    print(notify)
+
+                    start_time = datetime.strptime(
+                        notify['gr_start_day_and_time'], '%Y-%m-%d %I:%M:%S %p').time()
+                    print(start_time, type(start_time))
+                    end_time = datetime.strptime(
+                        notify['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p').time()
+                    print(end_time, type(end_time))
+
+                    now_timestamp = str(datetime.now(
+                        pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + str(datetime.now(
+                            pytz.timezone(timezone)).strftime("%I:%M:%S %p"))
+
+                    now_time = datetime.strptime(
+                        now_timestamp, '%Y-%m-%d %I:%M:%S %p').time()
+                    print(now_time, type(now_time))
+                    print(start_time < now_time)
+                    print(end_time > now_time)
+                    if (start_time < now_time) and (end_time > now_time):
+                        print('here')
+                        notify['start_time'] = str(
+                            start_time.strftime("%H:%M:%S %p"))
+                        updated_notificaton.append(notify)
+                        print("notify: ", notify)
+                print('here123', updated_notificaton)
+                updated_notificaton.sort(
+                    key=lambda x: x['start_time'])
+                print('here2', updated_notificaton)
+                print(updated_notificaton == [])
+                for goal in updated_notificaton:
+                    del goal['start_time']
+                items['result'] = updated_notificaton
+                print('here3', items['result'])
+                print(updated_notificaton == [])
+                if(updated_notificaton == []):
+                    response['message'] = 'successful'
+                    response['result'] = updated_notificaton
+                    return response
+                else:
+                    updated_notificaton = updated_notificaton[0]
+                    print('notify', updated_notificaton)
                     now_timestamp = str(datetime.now(pytz.timezone(timezone)).strftime(
-                        "%Y-%m-%d")) + " " + str(datetime.now(pytz.timezone(timezone)).strftime("%H:%M:%S %p"))
+                        "%Y-%m-%d")) + " " + str(datetime.now(pytz.timezone(timezone)).strftime("%I:%M:%S %p"))
                     now_time = datetime.strptime(
                         now_timestamp, '%Y-%m-%d %H:%M:%S %p')
-                    print(now_time, type(now_time))
-
+                    print('now_time', now_time)
                     time_zero = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
                         "%Y-%m-%d")) + " " + '00:00:00'), "%Y-%m-%d %H:%M:%S")
 
-                    before_time = (datetime.strptime(
-                        notify['gr_start_day_and_time'], "%Y-%m-%d %H:%M:%S %p") - datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                            "%Y-%m-%d")) + " " + notify['before_time']), "%Y-%m-%d %H:%M:%S"))
+                    start_time = updated_notificaton['gr_start_day_and_time'].split(
+                        ' ')
+                    start_time = start_time[1]
+                    start_time = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + start_time), "%Y-%m-%d %H:%M:%S")
+
+                    end_time = updated_notificaton['gr_end_day_and_time'].split(
+                        ' ')
+                    end_time = end_time[1]
+                    end_time = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + end_time), "%Y-%m-%d %H:%M:%S")
+
+                    before_time = (start_time - datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + updated_notificaton['before_time']), "%Y-%m-%d %H:%M:%S"))
                     before_time = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
                         "%Y-%m-%d")) + " " + str(before_time)), "%Y-%m-%d %H:%M:%S"))
                     print('Before time', before_time, type(before_time))
-                    before_diff = now_time-before_time
-                    before_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                        "%Y-%m-%d")) + " " + str(before_diff)), "%Y-%m-%d %H:%M:%S")).time()
-                    print('Before diff', before_diff, type(before_diff))
+                    if(before_time > now_time or updated_notificaton['before_time'] == '00:00:00'):
+                        print('before time skipped')
+                        before_diff = time_zero
+                        before_diff = before_diff.time()
+                        print('Before diff', before_diff, type(before_diff))
+                    else:
+                        before_diff = now_time-before_time
+                        before_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + str(before_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                        print('Before diff', before_diff, type(before_diff))
 
-                    during_time = (datetime.strptime(
-                        notify['gr_start_day_and_time'], "%Y-%m-%d %H:%M:%S %p") - time_zero + datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                            "%Y-%m-%d")) + " " + notify['during_time']), "%Y-%m-%d %H:%M:%S"))
+                    during_time = (start_time - time_zero + datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + updated_notificaton['during_time']), "%Y-%m-%d %H:%M:%S"))
                     print('During time', during_time, type(during_time))
-                    during_diff = now_time-during_time
-                    during_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                        "%Y-%m-%d")) + " " + str(during_diff)), "%Y-%m-%d %H:%M:%S")).time()
-                    print('During diff', during_diff)
+                    if(during_time > now_time or updated_notificaton['during_time'] == '00:00:00'):
+                        print('during time skipped')
+                        during_diff = time_zero
+                        during_diff = during_diff.time()
+                        print('During diff', during_diff, type(during_diff))
+                    else:
+                        during_diff = now_time-during_time
+                        during_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + str(during_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                        print('During diff', during_diff)
 
-                    after_time = (datetime.strptime(
-                        notify['gr_end_day_and_time'], "%Y-%m-%d %H:%M:%S %p") - time_zero + datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                            "%Y-%m-%d")) + " " + notify['after_time']), "%Y-%m-%d %H:%M:%S"))
+                    after_time = (end_time - time_zero + datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        "%Y-%m-%d")) + " " + updated_notificaton['after_time']), "%Y-%m-%d %H:%M:%S"))
                     print('After time', after_time, type(after_time))
-                    after_diff = now_time-after_time
-                    after_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                        "%Y-%m-%d")) + " " + str(after_diff)), "%Y-%m-%d %H:%M:%S")).time()
-                    print('After diff', after_diff)
+                    if(after_time > now_time or updated_notificaton['after_time'] == '00:00:00'):
+                        print('after time skipped')
+                        after_diff = time_zero
+                        after_diff = after_diff.time()
+                        print('After diff', after_diff, type(after_diff))
+                    else:
+                        after_diff = now_time-after_time
+                        after_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + str(after_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                        print('After diff', after_diff, type(after_diff))
 
                     check = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
                         "%Y-%m-%d")) + " " + '02:00:00'), "%Y-%m-%d %H:%M:%S")).time()
-                    print(check, type(check))
+                    print(check, type(check), before_time.time())
+                    print(before_diff < check)
+                    if (before_diff != time_zero.time() and before_diff < check):
+                        print('elif before time not zero',
+                              before_diff)
+                        print('before in zone')
+                        final_notificaton = [
+                            {'current_notification': updated_notificaton['before_message']}]
+                        if(during_diff != time_zero.time() and during_diff < before_diff):
+                            print('during in zone')
+                            final_notificaton = [
+                                {'current_notification': updated_notificaton['during_message']}]
+                            if(after_diff != time_zero.time() and after_diff < before_diff):
+                                print('after in zone')
+                                final_notificaton = [
+                                    {'current_notification': updated_notificaton['after_message']}]
 
-                    print(check > before_diff)
-                    if ((before_diff) > check) or ((during_diff) > check) or ((after_diff) > check):
-                        print('true')
-                        # print(now_time, start_time, end_time)
-                        # notify['start_time'] = str(
-                        #     start_time.strftime("%I:%M:%S %p"))
+                            # return final_notificaton
+
+                        elif(after_diff != time_zero.time() and after_diff < before_diff):
+                            print('after in zone')
+                            final_notificaton = [
+                                {'current_notification': updated_notificaton['after_message']}]
+                            # return final_notificaton
+                        else:
+
+                            final_notificaton = [
+                                {'current_notification': updated_notificaton['before_message']}]
+                            # return final_notificaton
+
+                    elif (during_diff != time_zero.time() and during_diff < check):
+                        print('elif during time', during_diff)
+                        print('during in zone')
+                        final_notificaton = [
+                            {'current_notification': updated_notificaton['during_message']}]
+                        if(after_diff != time_zero.time() and after_diff < before_diff):
+                            print('after in zone')
+                            final_notificaton = [
+                                {'current_notification': updated_notificaton['after_message']}]
+                            # return final_notificaton
+                        else:
+                            final_notificaton = [
+                                {'current_notification': updated_notificaton['during_message']}]
+
+                    elif (after_diff != time_zero.time() and after_diff < check):
+                        print('elif after time', after_diff)
+                        print('after in zone')
+                        final_notificaton = [
+                            {'current_notification': updated_notificaton['after_message']}]
+                        # return final_notificaton
+
                     else:
-                        updated_notificaton.append(notify)
-                        print("notify: ", notify)
+                        print("updated_notificaton: ", updated_notificaton)
 
-                # print('here', updated_notificaton)
-                # updated_notificaton.sort(
-                #     key=lambda x: x['start_time'])
-                print('here', updated_notificaton)
-                # for goal in updated_notificaton:
-                #     del goal['start_time']
-                items['result'] = updated_notificaton
-
+                print('here', final_notificaton)
+                items['result'] = final_notificaton
                 response['message'] = 'successful'
                 response['result'] = items['result']
 
@@ -654,33 +759,106 @@ class GRAI(Resource):
 
             conn = connect()
 
-            # Get all goals and routines of the user
+            # Get all routines of the user
             query = """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + \
-                """\' AND is_available = 'True' AND is_displayed_today = 'True';"""
+                """\' AND is_available = 'True' AND is_displayed_today = 'True' AND is_persistent='True' AND is_complete='False' ;"""
 
             items = execute(query, 'get', conn)
             timezone_query = execute(
                 """SELECT time_zone FROM users where user_unique_id = \'""" + user_id + """\';""", 'get', conn)
             timezone = timezone_query['result'][0]['time_zone']
-            goal_routine_response = items['result']
-            # print(goal_routine_response)
-            updated_goal_routine_response = []
-            if len(goal_routine_response) == 0:
-                response['message'] = 'No goals'
-                return response
+            routine_response = items['result']
+            # print(routine_response)
+            updated_routine_response = []
+            updated_goal_response = []
+            if len(routine_response) == 0:
+                response['message'] = 'No routines'
+                # return response
+                # Get all routines of the user
+                query = """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + \
+                    """\' AND is_available = 'True' AND is_displayed_today = 'True' AND is_persistent='False' AND is_complete='False';"""
+
+                items = execute(query, 'get', conn)
+
+                goal_response = items['result']
+                if len(goal_response) == 0:
+                    response['message'] = 'No routines'
+                    return response
+                else:
+                    print("In goals else clause")
+                    for goal in goal_response:
+                        print('in goals')
+                        start_time = datetime.strptime(
+                            goal['gr_start_day_and_time'], '%Y-%m-%d %I:%M:%S %p').time()
+                        print('start_time', start_time, type(start_time))
+                        print('strptime')
+                        # print(start_time[1], start_time[2])
+
+                        end_time = datetime.strptime(
+                            goal['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p').time()
+                        print('end_time', end_time, type(end_time))
+                        # print(end_time[1], end_time[2])
+
+                        now_timestamp = str(datetime.now(
+                            pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + str(datetime.now(
+                                pytz.timezone(timezone)).strftime("%I:%M:%S %p"))
+
+                        now_time = datetime.strptime(
+                            now_timestamp, '%Y-%m-%d %I:%M:%S %p').time()
+                        print('now_time', now_time, type(now_time))
+
+                        # print(goal)
+                        if (start_time < now_time) and (end_time > now_time):
+                            print('true')
+                            print(now_time, start_time, end_time)
+                            goal['start_time'] = str(
+                                start_time.strftime("%I:%M:%S %p"))
+                            updated_goal_response.append(goal)
+                            print("goal: ", goal)
+
+                    # print('here', updated_goal_response)
+                    updated_goal_response.sort(
+                        key=lambda x: x['start_time'])
+                    print('here', updated_goal_response)
+                    for goal in updated_goal_response:
+                        del goal['start_time']
+                    items['result'] = updated_goal_response
+                    # Get all notification details
+                    for i in range(len(updated_goal_response)):
+                        gr_id = updated_goal_response[i]['gr_unique_id']
+                        # print('here', gr_id)
+                        res_actions = execute(
+                            """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
+
+                        items['result'][i]['actions_tasks'] = list(
+                            res_actions['result'])
+                        # print('here', items['result'][i]['actions_tasks'])
+                        if len(res_actions['result']) > 0:
+                            action_response = res_actions['result']
+                            # print('here', action_response)
+                            for j in range(len(action_response)):
+                                # print('here', action_response[j]['at_unique_id'])
+                                res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
+                                                  action_response[j]['at_unique_id'] + """\' ORDER BY is_sequence;""", 'get', conn)
+                                # print(res_ins)
+                                items['result'][i]['actions_tasks'][j]['instructions_steps'] = list(
+                                    res_ins['result'])
+                response['message'] = 'successful'
+                response['result'] = items['result']
 
             else:
                 print("In else clause")
-                for routine in goal_routine_response:
+                for routine in routine_response:
 
                     start_time = datetime.strptime(
-                        routine['gr_start_day_and_time'], '%Y-%m-%d %H:%M:%S %p').time()
-                    print(start_time, type(start_time))
+                        routine['gr_start_day_and_time'], '%Y-%m-%d %I:%M:%S %p').time()
+                    print('start_time', start_time, type(start_time))
                     # print(start_time[1], start_time[2])
 
                     end_time = datetime.strptime(
-                        routine['gr_end_day_and_time'], '%Y-%m-%d %H:%M:%S %p').time()
-                    print(end_time, type(end_time))
+                        routine['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p').time()
+                    print('end_time', end_time, type(end_time))
                     # print(end_time[1], end_time[2])
 
                     now_timestamp = str(datetime.now(
@@ -689,8 +867,8 @@ class GRAI(Resource):
                             pytz.timezone(timezone)).strftime("%I:%M:%S %p"))
 
                     now_time = datetime.strptime(
-                        now_timestamp, '%Y-%m-%d %H:%M:%S %p').time()
-                    print(now_time, type(now_time))
+                        now_timestamp, '%Y-%m-%d %I:%M:%S %p').time()
+                    print('now_time', now_time, type(now_time))
 
                     # print(routine)
                     if (start_time < now_time) and (end_time > now_time):
@@ -698,39 +876,114 @@ class GRAI(Resource):
                         print(now_time, start_time, end_time)
                         routine['start_time'] = str(
                             start_time.strftime("%I:%M:%S %p"))
-                        updated_goal_routine_response.append(routine)
+                        updated_routine_response.append(routine)
                         print("Routine: ", routine)
 
-                # print('here', updated_goal_routine_response)
-                updated_goal_routine_response.sort(
+                # print('here', updated_routine_response)
+                updated_routine_response.sort(
                     key=lambda x: x['start_time'])
-                print('here', updated_goal_routine_response)
-                for goal in updated_goal_routine_response:
-                    del goal['start_time']
-                items['result'] = updated_goal_routine_response
-                # Get all notification details
-                for i in range(len(updated_goal_routine_response)):
-                    gr_id = updated_goal_routine_response[i]['gr_unique_id']
-                    print('here', gr_id)
-                    res_actions = execute(
-                        """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
+                print('here', updated_routine_response)
+                if(len(updated_routine_response) == 0):
+                    response['message'] = 'No routines'
+                    query = """SELECT * FROM goals_routines WHERE user_id = \'""" + user_id + \
+                        """\' AND is_available = 'True' AND is_displayed_today = 'True' AND is_persistent='False' AND is_complete='False';"""
 
-                    items['result'][i]['actions_tasks'] = list(
-                        res_actions['result'])
-                    print('here', items['result'][i]['actions_tasks'])
-                    if len(res_actions['result']) > 0:
-                        action_response = res_actions['result']
-                        print('here', action_response)
-                        for j in range(len(action_response)):
-                            print('here', action_response[j]['at_unique_id'])
-                            res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
-                                              action_response[j]['at_unique_id'] + """\' ORDER BY is_sequence;""", 'get', conn)
-                            print(res_ins)
-                            items['result'][i]['actions_tasks'][j]['instructions_steps'] = list(
-                                res_ins['result'])
+                    items = execute(query, 'get', conn)
 
-                response['message'] = 'successful'
-                response['result'] = items['result']
+                    goal_response = items['result']
+                    if len(goal_response) == 0:
+                        response['message'] = 'No routines'
+                        return response
+                    else:
+                        print("In goals else clause")
+                        for goal in goal_response:
+                            print('in goals')
+                            start_time = datetime.strptime(
+                                goal['gr_start_day_and_time'], '%Y-%m-%d %I:%M:%S %p').time()
+                            print('start_time', start_time, type(start_time))
+                            print('strptime')
+                            # print(start_time[1], start_time[2])
+
+                            end_time = datetime.strptime(
+                                goal['gr_end_day_and_time'], '%Y-%m-%d %I:%M:%S %p').time()
+                            print('end_time', end_time, type(end_time))
+                            # print(end_time[1], end_time[2])
+
+                            now_timestamp = str(datetime.now(
+                                pytz.timezone(timezone)).strftime(
+                                "%Y-%m-%d")) + " " + str(datetime.now(
+                                    pytz.timezone(timezone)).strftime("%I:%M:%S %p"))
+
+                            now_time = datetime.strptime(
+                                now_timestamp, '%Y-%m-%d %I:%M:%S %p').time()
+
+                            print('now_time', now_time, type(now_time))
+
+                            # print(goal)
+                            if (start_time < now_time) and (end_time > now_time):
+                                print('true')
+                                print(now_time, start_time, end_time)
+                                goal['start_time'] = str(
+                                    start_time.strftime("%I:%M:%S %p"))
+                                updated_goal_response.append(goal)
+                                print("goal: ", goal)
+
+                        # print('here', updated_goal_response)
+                        updated_goal_response.sort(
+                            key=lambda x: x['start_time'])
+                        print('here', updated_goal_response)
+                        for goal in updated_goal_response:
+                            del goal['start_time']
+                        items['result'] = updated_goal_response
+                        # Get all notification details
+                        for i in range(len(updated_goal_response)):
+                            gr_id = updated_goal_response[i]['gr_unique_id']
+                            # print('here', gr_id)
+                            res_actions = execute(
+                                """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
+
+                            items['result'][i]['actions_tasks'] = list(
+                                res_actions['result'])
+                            # print('here', items['result'][i]['actions_tasks'])
+                            if len(res_actions['result']) > 0:
+                                action_response = res_actions['result']
+                                # print('here', action_response)
+                                for j in range(len(action_response)):
+                                    # print('here', action_response[j]['at_unique_id'])
+                                    res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
+                                                      action_response[j]['at_unique_id'] + """\' ORDER BY is_sequence;""", 'get', conn)
+                                    # print(res_ins)
+                                    items['result'][i]['actions_tasks'][j]['instructions_steps'] = list(
+                                        res_ins['result'])
+                    response['message'] = 'successful'
+                    response['result'] = items['result']
+                else:
+                    for goal in updated_routine_response:
+                        del goal['start_time']
+                    items['result'] = updated_routine_response
+                    # Get all notification details
+                    for i in range(len(updated_routine_response)):
+                        gr_id = updated_routine_response[i]['gr_unique_id']
+                        # print('here', gr_id)
+                        res_actions = execute(
+                            """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
+
+                        items['result'][i]['actions_tasks'] = list(
+                            res_actions['result'])
+                        # print('here', items['result'][i]['actions_tasks'])
+                        if len(res_actions['result']) > 0:
+                            action_response = res_actions['result']
+                            # print('here', action_response)
+                            for j in range(len(action_response)):
+                                # print('here', action_response[j]['at_unique_id'])
+                                res_ins = execute("""SELECT * FROM instructions_steps WHERE at_id = \'""" +
+                                                  action_response[j]['at_unique_id'] + """\' ORDER BY is_sequence;""", 'get', conn)
+                                # print(res_ins)
+                                items['result'][i]['actions_tasks'][j]['instructions_steps'] = list(
+                                    res_ins['result'])
+
+                    response['message'] = 'successful'
+                    response['result'] = items['result']
 
             return response, 200
         except:
@@ -8458,13 +8711,18 @@ class update_guid_notification(Resource):
 
                 if ta_people_query['result']:
 
-                    print(ta_people_query['result'][0]['ta_email_id'],
-                          data, ta_people_query['result'][0]['ta_unique_id'])
-                    ta_email = ta_people_query['result'][0]['ta_email_id']
-                    print(ta_email)
-                    query = """UPDATE ta_people SET ta_guid_device_id_notification = (SELECT JSON_MERGE_PRESERVE(cust_guid_device_id_notification," +  \'""" + data + """\' + "))
-                     WHERE ta_email_id = \'""" + ta_email + """\';"""
+                    print(data, type(data))
+                    ta_id = ta_people_query['result'][0]['ta_unique_id']
+                    print(ta_id, str(data))
+                    name = 'abc'
+                    query = """UPDATE ta_people SET ta_guid_device_id_notification =  \'""" + str(test) + """\'
+                     WHERE ta_unique_id = \'""" + ta_id + """\';"""
 
+                    # query = " " \
+                    #         "UPDATE ta_people " \
+                    #         "SET ta_guid_device_id_notification  = (SELECT JSON_MERGE_PRESERVE(ta_guid_device_id_notification," + data + ")) " \
+                    #         "WHERE ta_unique_id = '" + ta_id + "';" \
+                    #         ""
                     # query = """UPDATE ta_people
                     # SET ta_guid_device_id_notification = \'""" + data + """\'
                     # WHERE ta_email_id = \'""" + ta_email + """\';
