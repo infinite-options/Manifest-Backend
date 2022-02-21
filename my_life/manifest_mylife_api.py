@@ -566,12 +566,12 @@ class CurrentNotifications(Resource):
             timezone_query = execute(
                 """SELECT time_zone FROM users where user_unique_id = \'""" + user_id + """\';""", 'get', conn)
             timezone = timezone_query['result'][0]['time_zone']
-            updated_notificaton = items['result']
+            notificatons = items['result']
 
-            # print(updated_notificaton)
+            # print(notificatons)
             # get action tasks/ instruction steps if they exist
-            for i in range(len(updated_notificaton)):
-                gr_id = updated_notificaton[i]['gr_unique_id']
+            for i in range(len(notificatons)):
+                gr_id = notificatons[i]['gr_unique_id']
                 print('here', gr_id)
                 res_actions = execute(
                     """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + gr_id + """\';""", 'get', conn)
@@ -589,25 +589,25 @@ class CurrentNotifications(Resource):
                         # print(res_ins)
                         items['result'][i]['actions_tasks'][j]['instructions_steps'] = list(
                             res_ins['result'])
-            updated_notificaton = items['result']
-
+            notificatons = items['result']
+            updated_notificatons = []
             final_notificaton = []
 
             # if no notifications
-            if len(updated_notificaton) == 0:
+            if len(notificatons) == 0:
                 response['message'] = 'successful'
-                response['result'] = updated_notificaton
+                response['result'] = notificatons
                 return response
             # check if the exisiting notifications fit criteria
             else:
                 print("In else clause")
-                for notify in updated_notificaton:
+                for notify in notificatons:
                     print('here notify', notify)
-                    # for goal in updated_notificaton:
+                    # for goal in notificatons:
                     #     del goal['start_time']
-                    # items['result'] = updated_notificaton
+                    # items['result'] = notificatons
 
-                    # updated_notificaton = updated_notificaton[-1]
+                    # notificatons = notificatons[-1]
                     # now timestamp
                     now_timestamp = str(datetime.now(pytz.timezone(timezone)).strftime(
                         "%Y-%m-%d")) + " " + str(datetime.now(pytz.timezone(timezone)).strftime("%I:%M:%S %p"))
@@ -681,12 +681,12 @@ class CurrentNotifications(Resource):
                     check = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
                         "%Y-%m-%d")) + " " + '02:00:00'), "%Y-%m-%d %H:%M:%S")).time()
                     print(check, type(check), before_time.time())
-                    print('final_notification', final_notificaton)
+                    print('updated_notificatons', updated_notificatons)
                     if (before_diff != time_zero.time() and before_diff < check):
                         print('elif before time not zero',
                               before_diff)
                         print('before in zone')
-                        # final_notificaton = final_notificaton.append(
+                        # updated_notificatons = updated_notificatons.append(
                         #     {'current_routine': notify, 'current_notification': notify['before_message']})
 
                         if(during_diff != time_zero.time() and during_diff < before_diff):
@@ -694,24 +694,24 @@ class CurrentNotifications(Resource):
 
                             if(after_diff != time_zero.time() and after_diff < during_diff):
                                 print('after in zone during')
-                                final_notificaton = final_notificaton + [
+                                updated_notificatons = updated_notificatons + [
                                     {'current_routine': notify, 'current_notification': notify['after_message']}]
                             else:
-                                final_notificaton = final_notificaton + [
+                                updated_notificatons = updated_notificatons + [
                                     {'current_routine': notify, 'current_notification': notify['during_message']}]
 
-                            # return final_notificaton
+                            # return updated_notificatons
 
                         elif(after_diff != time_zero.time() and after_diff < before_diff):
                             print('after in zone')
-                            final_notificaton = final_notificaton + [
+                            updated_notificatons = updated_notificatons + [
                                 {'current_routine': notify, 'current_notification': notify['after_message']}]
-                            # return final_notificaton
+                            # return updated_notificatons
                         else:
 
-                            final_notificaton = final_notificaton + [
+                            updated_notificatons = updated_notificatons + [
                                 {'current_routine': notify, 'current_notification': notify['before_message']}]
-                        # return final_notificaton
+                        # return updated_notificatons
 
                     elif (during_diff != time_zero.time() and during_diff < check):
                         print('elif during time', during_diff)
@@ -719,34 +719,114 @@ class CurrentNotifications(Resource):
 
                         if(after_diff != time_zero.time() and after_diff < during_diff):
                             print('after in zone')
-                            final_notificaton = final_notificaton + [
+                            updated_notificatons = updated_notificatons + [
                                 {'current_routine': notify, 'current_notification': notify['after_message']}]
-                            # return final_notificaton
+                            # return updated_notificatons
                         else:
                             print('during in zone else')
-                            final_notificaton = final_notificaton + [
+                            updated_notificatons = updated_notificatons + [
                                 {'current_routine': notify, 'current_notification': notify['during_message']}]
-                        # return final_notificaton
+                        # return updated_notificatons
 
                     elif (after_diff != time_zero.time() and after_diff < check):
                         print('elif after time', after_diff)
                         print('after in zone')
-                        final_notificaton = final_notificaton + [
+                        updated_notificatons = updated_notificatons + [
                             {'current_routine': notify, 'current_notification': notify['after_message']}]
-                        # return final_notificaton
+                        # return updated_notificatons
 
                     else:
                         print("notify: ", notify)
 
-            print('here final notification', final_notificaton)
-            if len(final_notificaton) == 0:
+            print('here updated notification', updated_notificatons)
+            if len(updated_notificatons) == 0:
+                print('in if no notifications')
                 response['message'] = 'successful'
-                response['result'] = final_notificaton
+                response['result'] = updated_notificatons
+                return response
+            elif len(updated_notificatons) == 1:
+                print('in elif 1 notifications')
+                response['message'] = 'successful'
+                response['result'] = [updated_notificatons[0]]
                 return response
             else:
-                items['result'] = final_notificaton[0]
-                response['message'] = 'successful'
-                response['result'] = items['result']
+                print('in else more than 1 notifications')
+                for i in range(len(updated_notificatons)):
+                    for j in range(i + 1, len(updated_notificatons)):
+                        # now timestamp
+                        print(updated_notificatons[i]['current_routine']['gr_start_day_and_time'],
+                              updated_notificatons[j]['current_routine']['gr_start_day_and_time'])
+
+                        # now timestamp
+                        now_timestamp = str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + str(datetime.now(pytz.timezone(timezone)).strftime("%I:%M:%S %p"))
+                        print('now_timestamp', now_timestamp)
+                        now_time = datetime.strptime(
+                            now_timestamp, '%Y-%m-%d %I:%M:%S %p')
+                        print('now_time', now_time)
+                        # zero timestamp
+                        time_zero = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + '00:00:00'), "%Y-%m-%d %H:%M:%S")
+                        # routine start time
+                        start_time_i = updated_notificatons[i]['current_routine']['gr_start_day_and_time'].split(
+                            ' ')
+                        start_time_i = start_time_i[1] + " " + start_time_i[2]
+                        start_time_i = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + start_time_i), "%Y-%m-%d %I:%M:%S %p")
+                        print('start_time_i', start_time_i)
+
+                        start_time_j = updated_notificatons[j]['current_routine']['gr_start_day_and_time'].split(
+                            ' ')
+                        start_time_j = start_time_j[1] + " " + start_time_j[2]
+                        start_time_j = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + start_time_j), "%Y-%m-%d %I:%M:%S %p")
+                        print('start_time_j', start_time_j)
+
+                        # routine end time
+                        end_time_i = updated_notificatons[i]['current_routine']['gr_end_day_and_time'].split(
+                            ' ')
+                        end_time_i = end_time_i[1] + " " + end_time_i[2]
+                        end_time_i = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + end_time_i), "%Y-%m-%d %I:%M:%S %p")
+                        print('end_time_i', end_time_i)
+                        end_time_j = updated_notificatons[j]['current_routine']['gr_end_day_and_time'].split(
+                            ' ')
+                        end_time_j = end_time_j[1] + " " + end_time_j[2]
+                        end_time_j = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + end_time_j), "%Y-%m-%d %I:%M:%S %p")
+                        print('end_time_j', end_time_j)
+
+                        i_start_diff = now_time-start_time_i
+                        i_start_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + str(i_start_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                        print('I diff start', i_start_diff, type(i_start_diff))
+
+                        j_start_diff = now_time-start_time_j
+                        j_start_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                            "%Y-%m-%d")) + " " + str(j_start_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                        print('J diff start', j_start_diff, type(j_start_diff))
+
+                        # i_end_diff = now_time-end_time_i
+                        # i_end_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        #     "%Y-%m-%d")) + " " + str(i_end_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                        # print('I diff end', i_end_diff, type(i_end_diff))
+
+                        # j_end_diff = now_time-end_time_j
+                        # j_end_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
+                        #     "%Y-%m-%d")) + " " + str(j_end_diff)), "%Y-%m-%d %H:%M:%S")).time()
+                        # print('J diff end', j_end_diff, type(j_end_diff))
+
+                        if(i_start_diff < j_start_diff):
+                            print('in if')
+                            final_notificaton = updated_notificatons[i]
+                        else:
+                            print('in else')
+                            final_notificaton = updated_notificatons[j]
+
+                    items['result'] = [final_notificaton]
+                    # print(items['result'])
+                    response['message'] = 'successful'
+                    response['result'] = items['result']
 
             return response, 200
         except:
@@ -2785,48 +2865,60 @@ class CopyGR(Resource):
 
             goal_routine_response = items['result']
             print(goal_routine_response)
-            time = goal_routine_response[0]['gr_start_day_and_time'].split(',')
-            print(time)
-            # time[1] = time[1][1:]
-            # print(time[1])
+            # time = goal_routine_response[0]['gr_start_day_and_time'].split(',')
+            # print(time)
+            # # time[1] = time[1][1:]
+            # # print(time[1])
 
-            time1 = goal_routine_response[0]['gr_end_day_and_time'].split(',')
-            print(time1)
+            # time1 = goal_routine_response[0]['gr_end_day_and_time'].split(',')
+            # print(time1)
             # time1[1] = time1[1][1:]
             # print(time1[1])
+            start_time = goal_routine_response[0]['gr_start_day_and_time'].split(
+                ' ')
+            start_time = start_time[1] + " " + start_time[2]
+            start_time = str(datetime.now(pytz.timezone(timezone)).strftime(
+                "%Y-%m-%d")) + " " + start_time
+            print('start_time', start_time)
+            # routine end time
+            end_time = goal_routine_response[0]['gr_end_day_and_time'].split(
+                ' ')
+            end_time = end_time[1] + " " + end_time[2]
+            end_time = str(datetime.now(pytz.timezone(timezone)).strftime(
+                "%Y-%m-%d")) + " " + end_time
+            print('end_time', end_time)
+            # datetime_str = goal_routine_response[0]['gr_start_day_and_time']
+            # print(datetime_str)
+            # datetime_str = datetime_str.replace(",", "")
+            # print(datetime_str)
+            # datetime_object1 = datetime.strptime(
+            #     datetime_str, '%Y-%m-%d %I:%M:%S %p')
+            # print(datetime_object1)
 
-            datetime_str = goal_routine_response[0]['gr_start_day_and_time']
-            print(datetime_str)
-            datetime_str = datetime_str.replace(",", "")
-            print(datetime_str)
-            datetime_object1 = datetime.strptime(
-                datetime_str, '%Y-%m-%d %I:%M:%S %p')
-            print(datetime_object1)
+            # datetime_str = goal_routine_response[0]['gr_end_day_and_time']
+            # print(datetime_str)
+            # datetime_str = datetime_str.replace(",", "")
+            # print(datetime_str)
+            # datetime_object2 = datetime.strptime(
+            #     datetime_str, '%Y-%m-%d %I:%M:%S %p')
+            # print(datetime_object2)
 
-            datetime_str = goal_routine_response[0]['gr_end_day_and_time']
-            print(datetime_str)
-            datetime_str = datetime_str.replace(",", "")
-            print(datetime_str)
-            datetime_object2 = datetime.strptime(
-                datetime_str, '%Y-%m-%d %I:%M:%S %p')
-            print(datetime_object2)
-
-            diff = datetime_object2 - datetime_object1
-            print(diff)
-            now_timestamp = datetime.now(pytz.timezone(timezone))
-            print(now_timestamp)
-            start_day_and_time = now_timestamp
-            print(start_day_and_time)
-            # while running locally on windows use '#' instead of '-' in the format string
-            start_date_time = str(start_day_and_time.strftime(
-                "%Y-%m-%d")) + " " + str(start_day_and_time.strftime("%I:%M:%S %p"))
-            print(start_date_time)
-            end_day_and_time = start_day_and_time + diff
-            print(end_day_and_time)
-            # while running locally on windows use '#' instead of '-' in the format string
-            end_date_time = str(end_day_and_time.strftime(
-                "%Y-%m-%d")) + " " + str(end_day_and_time.strftime("%I:%M:%S %p"))
-            print(end_date_time)
+            # diff = datetime_object2 - datetime_object1
+            # print(diff)
+            # now_timestamp = datetime.now(pytz.timezone(timezone))
+            # print(now_timestamp)
+            # start_day_and_time = now_timestamp
+            # print(start_day_and_time)
+            # # while running locally on windows use '#' instead of '-' in the format string
+            # start_date_time = str(start_day_and_time.strftime(
+            #     "%Y-%m-%d")) + " " + str(start_day_and_time.strftime("%I:%M:%S %p"))
+            # print(start_date_time)
+            # end_day_and_time = start_day_and_time + diff
+            # print(end_day_and_time)
+            # # while running locally on windows use '#' instead of '-' in the format string
+            # end_date_time = str(end_day_and_time.strftime(
+            #     "%Y-%m-%d")) + " " + str(end_day_and_time.strftime("%I:%M:%S %p"))
+            # print(end_date_time)
             # New Goal/Routine ID
             query = ["CALL get_gr_id;"]
             new_gr_id_response = execute(query[0],  'get', conn)
@@ -2851,11 +2943,11 @@ class CopyGR(Resource):
                            repeat_every = \'""" + str(goal_routine_response[0]['repeat_every']) + """\',
                            repeat_frequency = \'""" + str(goal_routine_response[0]['repeat_frequency']) + """\',
                            repeat_occurences = \'""" + str(goal_routine_response[0]['repeat_occurences']) + """\',
-                           gr_start_day_and_time = \'""" + str(goal_routine_response[0]['gr_start_day_and_time']) + """\',
+                           gr_start_day_and_time = \'""" + str(start_time) + """\',
                            repeat_week_days = \'""" + goal_routine_response[0]['repeat_week_days'] + """\',
-                           gr_datetime_completed = \'""" + goal_routine_response[0]['gr_datetime_completed'] + """\',
-                           gr_datetime_started = \'""" + goal_routine_response[0]['gr_datetime_started'] + """\',
-                           gr_end_day_and_time = \'""" + str(goal_routine_response[0]['gr_end_day_and_time']) + """\',
+                           gr_datetime_completed = \'""" + '' + """\',
+                           gr_datetime_started = \'""" + '' + """\',
+                           gr_end_day_and_time = \'""" + str(end_time) + """\',
                            gr_expected_completion_time = \'""" + goal_routine_response[0]['gr_expected_completion_time'] + """\';""", 'post', conn)
             print("After insert")
 
@@ -2870,7 +2962,7 @@ class CopyGR(Resource):
             print(notifications)
 
             person_id = ""
-            if notifications[0]['user_ta_id'] == '1':
+            if notifications[0]['user_ta_id'][0:1] == '1':
                 person_id = user_id
                 print("User id", person_id)
             else:
@@ -2901,7 +2993,7 @@ class CopyGR(Resource):
                 "CALL get_notification_id;",  'get', conn)
             new_notfication_id = new_notification_id_response['result'][0]['new_id']
             print(new_notfication_id)
-            if notifications[1]['user_ta_id'] == '1':
+            if notifications[1]['user_ta_id'][0:1] == '1':
                 person_id = user_id
                 print("User id", person_id)
             else:
@@ -2912,18 +3004,18 @@ class CopyGR(Resource):
                        SET notification_id = \'""" + new_notfication_id + """\',
                            user_ta_id = \'""" + person_id + """\',
                            gr_at_id = \'""" + new_gr_id + """\',
-                           before_is_enable = \'""" + notifications[0]['before_is_enable'] + """\',
-                           before_is_set = \'""" + notifications[0]['before_is_set'] + """\',
-                           before_message = \'""" + notifications[0]['before_message'] + """\',
-                           before_time = \'""" + notifications[0]['before_time'] + """\',
-                           during_is_enable = \'""" + notifications[0]['during_is_enable'] + """\',
-                           during_is_set = \'""" + notifications[0]['during_is_set'] + """\',
-                           during_message = \'""" + notifications[0]['during_message'] + """\',
-                           during_time = \'""" + notifications[0]['during_time'] + """\',
-                           after_is_enable = \'""" + notifications[0]['after_is_enable'] + """\',
-                           after_is_set = \'""" + notifications[0]['after_is_set'] + """\',
-                           after_message = \'""" + notifications[0]['after_message'] + """\',
-                           after_time = \'""" + notifications[0]['after_time'] + """\';""", 'post', conn)
+                           before_is_enable = \'""" + notifications[1]['before_is_enable'] + """\',
+                           before_is_set = \'""" + notifications[1]['before_is_set'] + """\',
+                           before_message = \'""" + notifications[1]['before_message'] + """\',
+                           before_time = \'""" + notifications[1]['before_time'] + """\',
+                           during_is_enable = \'""" + notifications[1]['during_is_enable'] + """\',
+                           during_is_set = \'""" + notifications[1]['during_is_set'] + """\',
+                           during_message = \'""" + notifications[1]['during_message'] + """\',
+                           during_time = \'""" + notifications[1]['during_time'] + """\',
+                           after_is_enable = \'""" + notifications[1]['after_is_enable'] + """\',
+                           after_is_set = \'""" + notifications[1]['after_is_set'] + """\',
+                           after_message = \'""" + notifications[1]['after_message'] + """\',
+                           after_time = \'""" + notifications[1]['after_time'] + """\';""", 'post', conn)
 
             res_actions = execute(
                 """SELECT * FROM actions_tasks WHERE goal_routine_id = \'""" + goal_routine_id + """\';""", 'get', conn)
@@ -2949,8 +3041,8 @@ class CopyGR(Resource):
                                    is_must_do = \'""" + action_response[j]['is_must_do'] + """\',
                                    at_photo = \'""" + action_response[j]['at_photo'] + """\',
                                    is_timed = \'""" + action_response[j]['is_timed'] + """\',
-                                   at_datetime_completed = \'""" + action_response[j]['at_datetime_completed'] + """\',
-                                   at_datetime_started = \'""" + action_response[j]['at_datetime_started'] + """\',
+                                   at_datetime_completed = \'""" + '' + """\',
+                                   at_datetime_started = \'""" + '' + """\',
                                    at_expected_completion_time = \'""" + action_response[j]['at_expected_completion_time'] + """\',
                                    at_available_start_time = \'""" + action_response[j]['at_available_start_time'] + """\',
                                    at_available_end_time =  \'""" + action_response[j]['at_available_end_time'] + """\' ;""", 'post', conn)
@@ -2976,7 +3068,7 @@ class CopyGR(Resource):
                                            at_id = \'""" + NewATID + """\',
                                            is_sequence = \'""" + str(instructions[k]['is_sequence']) + """\',
                                            is_available = \'""" + instructions[k]['is_available'] + """\',
-                                           is_complete = \'""" + instructions[k]['is_complete'] + """\',
+                                           is_complete = \'""" + 'False' + """\',
                                            is_in_progress = \'""" + instructions[k]['is_in_progress'] + """\',
                                            is_photo = \'""" + instructions[k]['is_photo'] + """\',
                                            is_timed = \'""" + instructions[k]['is_timed'] + """\',
