@@ -84,6 +84,9 @@ app.config['MAIL_DEFAULT_SENDER'] = 'support@manifestmy.life'
 
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
+
+app.config["MAIL_SUPPRESS_SEND"] = False
+
 # app.config['MAIL_DEBUG'] = True
 # app.config['MAIL_SUPPRESS_SEND'] = False
 # app.config['TESTING'] = False
@@ -3696,6 +3699,35 @@ class ListAllUsersForCopy(Resource):
         finally:
             disconnect(conn)
 
+
+class ListAllAdminUsers(Resource):
+    def get(self):
+        print("In ListAllAdminUsers")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+
+            # Get all Users
+
+            userResponse = execute(""" SELECT DISTINCT user_unique_id
+                                        , CONCAT(user_first_name, SPACE(1), user_last_name) as name
+                                        , user_email_id
+                                        FROM manifest_mylife.users 
+                                        JOIN manifest_mylife.relationship on user_unique_id = user_uid
+                                        WHERE ta_people_id='200-000001'
+                                        ORDER BY user_first_name ASC;""", 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = userResponse['result']
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 # Add another TA for a user
 
 
@@ -4078,6 +4110,78 @@ class UserTADetails(Resource):
         finally:
             disconnect(conn)
 
+
+class AssociateUser(Resource):
+    def post(self):
+        print("In AssociateUser")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+            data = request.get_json(force=True)
+            timestamp = getNow()
+            user_id = data['user_id']
+            ta_people_id = data['ta_people_id']
+
+            query = ["Call get_relation_id;"]
+            new_relation_id_response = execute(query[0], 'get', conn)
+            new_relation_id = new_relation_id_response['result'][0]['new_id']
+
+            # Add new relationship
+            query.append("""INSERT INTO relationship
+                            SET id = \'""" + str(new_relation_id) + """\',
+                                r_timestamp = \'""" + str(timestamp) + """\',
+                                ta_people_id = \'""" + str(ta_people_id) + """\',
+                                user_uid = \'""" + str(user_id) + """\',
+                                relation_type = \'""" + 'Advisor' + """\',
+                                ta_have_pic = \'""" + 'False' + """\',
+                                ta_picture = \'""" + '' + """\',
+                                important = \'""" + 'True' + """\',
+                                advisor = \'""" + str(1) + """\';""")
+
+            items = execute(query[1], 'post', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items
+
+            execute("""DELETE FROM relationship
+                        WHERE user_uid = \'""" + user_id + """\' AND
+                        ta_people_id = '200-000001' ;""", 'post', conn)
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+# Delete Important people
+
+
+class DeletePeople(Resource):
+    def post(self):
+        print("In DeletePeople")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+            data = request.get_json(force=True)
+            user_id = data['user_id']
+            ta_people_id = data['ta_people_id']
+
+            execute("""DELETE FROM relationship
+                        WHERE user_uid = \'""" + user_id + """\' AND
+                        ta_people_id = \'""" + ta_people_id + """\' ;""", 'post', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 # Delete Important people
 
 
@@ -4407,22 +4511,43 @@ class TASocialSignUP(Resource):
                                             WHERE ta_email_id = \'""" + email_id + """\';""", 'get', conn)
 
             if len(ta_id_response['result']) > 0:
+                print('TA exists')
                 response['message'] = "Email ID already exists."
 
             else:
+                print('in else')
                 new_ta_id_response = execute(
                     "CALL get_ta_people_id;", 'get', conn)
                 new_ta_id = new_ta_id_response['result'][0]['new_id']
                 user_info_query = execute(
                     """SELECT * FROM users WHERE user_email_id = \'""" + email_id + """\';""", 'get', conn)
                 print(user_info_query)
+                guid = 'null'
                 user_info = user_info_query['result']
                 print(user_info)
-                guid = 'null'
 
                 if user_info:
+                    print('in if')
                     guid = user_info[0]['cust_guid_device_id_notification']
 
+                    execute("""INSERT INTO ta_people
+                            SET ta_unique_id = \'""" + new_ta_id + """\',
+                                ta_timestamp = \'""" + ts + """\',
+                                ta_email_id = \'""" + email_id + """\',
+                                ta_first_name = \'""" + first_name + """\',
+                                ta_last_name = \'""" + last_name + """\',
+                                employer = \'""" + employer + """\',
+                                ta_time_zone = \'""" + ta_time_zone + """\',
+                                ta_google_auth_token = \'""" + ta_google_auth_token + """\',
+                                ta_social_id = \'""" + ta_social_id + """\',
+                                ta_google_refresh_token = \'""" + ta_google_refresh_token + """\',
+                                ta_access_expires_in = \'""" + ta_access_expires_in + """\',
+                                ta_phone_number = \'""" + phone_number + """\',
+                                ta_guid_device_id_notification = \'""" + guid + """\';""", 'post', conn)
+                    response['message'] = 'successful'
+                    response['result'] = new_ta_id
+                else:
+                    print('in else')
                     execute("""INSERT INTO ta_people
                             SET ta_unique_id = \'""" + new_ta_id + """\',
                                 ta_timestamp = \'""" + ts + """\',
@@ -7054,6 +7179,29 @@ class ResetBadge(Resource):
 # NOTIFICATION CRON JOB FUNCTIONS AND SUBFUCTIONS
 
 
+def send_mail(notify_id, user_id, gr_title):
+    print("In send_mail")
+    # print(msg,tag)
+
+    try:
+        conn = connect()
+        msg = Message(
+            subject="Notifications failed MyLife",
+            sender="support@manifestmy.life",
+            recipients=['anu.sandhu7893@gmail.com'])
+
+        msg.body = (
+            "Problem in Manifest MyLife notification! Please check what's wrong" + "\n"
+            "Routine: " + str(gr_title) + "\n"
+            "Notification id: " + str(notify_id) + "\n"
+            "User or TA id: " + str(user_id))
+        print(msg.body)
+        mail.send(msg)
+
+    except:
+        print("No email")
+
+
 def notify(msg, tag, user_id, badge):
     print("In Notify")
     # print(msg,tag)
@@ -7217,78 +7365,111 @@ def ManifestNotification_CRON():
         # print(notifications)
 
         for n in notifications['result']:
+            print(n)
+            try:
+                # NOTE:  CHECK is_available and is_displayed_today BEFORE PROCEEDING
 
-            # NOTE:  CHECK is_available and is_displayed_today BEFORE PROCEEDING
+                print("\nNotification Info:", n['notification_id'])
+                if n['user_ta_id'][0] == '1':
+                    guid = n['cust_guid_device_id_notification']
+                else:
+                    guid = n['ta_guid_device_id_notification']
+                # print(guid, type(guid))
 
-            # print("\nNotification Info:", n['notification_id'])
-            if n['user_ta_id'][0] == '1':
-                guid = n['cust_guid_device_id_notification']
-            else:
-                guid = n['ta_guid_device_id_notification']
-            # print(guid, type(guid))
+                # Check if guid is NONE.  Skip Notifications if no guid
+                if guid != None:
 
-            # Check if guid is NONE.  Skip Notifications if no guid
-            if guid != None:
+                    # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
-                # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+                    time_zone = n['time_zone']
+                    # print(time_zone, type(time_zone))
+                    start_time = ProcessTime(
+                        n['gr_start_day_and_time'], time_zone)
+                    # print("FUNCTION RETURNS: ", start_time)
 
-                time_zone = n['time_zone']
-                # print(time_zone, type(time_zone))
-                start_time = ProcessTime(n['gr_start_day_and_time'], time_zone)
-                # print("FUNCTION RETURNS: ", start_time)
+                    end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
+                    # print("FUNCTION RETURNS: ", end_time)
 
-                end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
-                # print("FUNCTION RETURNS: ", end_time)
+                    # CALCULATE TIME DIFFERENCE VS UTC
+                    # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+                    if n['before_is_enable'].lower() == 'true':
+                        # print(n['before_is_enable'], n['before_time'], type(n['before_time']))
+                        notification_time = start_time - \
+                            timedelta(seconds=ProcessDuration(
+                                n['before_time']))
+                        # print("Notification Time: ", notification_time)
+                        notification_time_diff = cur_UTC - notification_time
+                        # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                        # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                        if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
+                            print("\nBEFORE Notification Criteria met")
+                            for id in getGUID(guid):
+                                # id = getGUID(n)
+                                print("GUID 2: ", id)
+                                if (id != ''):
+                                    if(n['before_message'] != ''):
+                                        notify(
+                                            n['before_message'], id, n['user_ta_id'], n['notification_badge_num'])
+                                    else:
+                                        notify(
+                                            n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
 
-                # CALCULATE TIME DIFFERENCE VS UTC
-                # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
-                if n['before_is_enable'].lower() == 'true':
-                    # print(n['before_is_enable'], n['before_time'], type(n['before_time']))
-                    notification_time = start_time - \
-                        timedelta(seconds=ProcessDuration(n['before_time']))
-                    # print("Notification Time: ", notification_time)
-                    notification_time_diff = cur_UTC - notification_time
-                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                    if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        # print("\nBEFORE Notification Criteria met")
-                        for id in getGUID(guid):
-                            # id = getGUID(n)
-                            if (id != ''):
-                                notify(
-                                    n['before_message'], id, n['user_ta_id'], n['notification_badge_num'])
+                    if n['during_is_enable'].lower() == 'true':
+                        # print(n['during_is_enable'], n['during_time'], type(n['during_time']))
+                        notification_time = start_time + \
+                            timedelta(seconds=ProcessDuration(
+                                n['during_time']))
+                        # print("Notification Time: ", notification_time)
+                        notification_time_diff = cur_UTC - notification_time
+                        # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                        # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                        if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
+                            # print("\nDURING Notification Criteria met")
+                            for id in getGUID(guid):
+                                # id = getGUID(n)
+                                if (id != ''):
+                                    if(n['during_message'] != ''):
+                                        notify(
+                                            n['during_message'], id, n['user_ta_id'], n['notification_badge_num'])
+                                    else:
+                                        notify(
+                                            n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
 
-                if n['during_is_enable'].lower() == 'true':
-                    # print(n['during_is_enable'], n['during_time'], type(n['during_time']))
-                    notification_time = start_time + \
-                        timedelta(seconds=ProcessDuration(n['during_time']))
-                    # print("Notification Time: ", notification_time)
-                    notification_time_diff = cur_UTC - notification_time
-                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                    if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        # print("\nDURING Notification Criteria met")
-                        for id in getGUID(guid):
-                            # id = getGUID(n)
-                            if (id != ''):
-                                notify(
-                                    n['during_message'], id, n['user_ta_id'], n['notification_badge_num'])
+                    if n['after_is_enable'].lower() == 'true':
+                        # print(n['after_is_enable'], n['after_time'], type(n['after_time']))
+                        notification_time = end_time + \
+                            timedelta(seconds=ProcessDuration(n['after_time']))
+                        # print("Notification Time: ", notification_time)
+                        notification_time_diff = cur_UTC - notification_time
+                        # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                        # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                        if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
+                            # print("\nAFTER Notification Criteria met")
+                            for id in getGUID(guid):
+                                # id = getGUID(n)
 
-                if n['after_is_enable'].lower() == 'true':
-                    # print(n['after_is_enable'], n['after_time'], type(n['after_time']))
-                    notification_time = end_time + \
-                        timedelta(seconds=ProcessDuration(n['after_time']))
-                    # print("Notification Time: ", notification_time)
-                    notification_time_diff = cur_UTC - notification_time
-                    # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                    # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                    if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                        # print("\nAFTER Notification Criteria met")
-                        for id in getGUID(guid):
-                            # id = getGUID(n)
-                            if (id != ''):
-                                notify(
-                                    n['after_message'], id, n['user_ta_id'], n['notification_badge_num'])
+                                if (id != ''):
+                                    if(n['after_message'] != ''):
+                                        notify(
+                                            n['after_message'], id, n['user_ta_id'], n['notification_badge_num'])
+                                    else:
+                                        notify(
+                                            n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
+
+            except:
+                print('error', n['notification_id'], n['user_ta_id'])
+                send_mail(n['notification_id'], n['user_ta_id'], n['gr_title'])
+                # msg = Message(
+                #     subject="Notifications failed MyLife CRON",
+                #     sender="support@manifestmy.life",
+                #     recipients=['anu.sandhu7893@gmail.com'])
+
+                # msg.body = (
+                #     "Problem in Manifest MyLife notification! Please check what's wrong" + "\n"
+                #     "Notification id: " + str(n['notification_id']) + "\n"
+                #     "User or TA id: " + str(n['user_ta_id']))
+                # print(msg.body)
+                # mail.send(msg)
 
         print("Successfully completed Notification CRON Function")
         return response, 200
@@ -7354,97 +7535,129 @@ class ManifestNotification_CLASS(Resource):
             # print(notifications)
 
             for n in notifications['result']:
+                print(n)
+                # CHECK is_available and is_displayed_today BEFORE PROCEEDING
+                try:
+                    print("\nNotification Info:", n['notification_id'])
+                    if n['user_ta_id'][0] == '1':
+                        guid = n['cust_guid_device_id_notification']
 
-                # NOTE:  CHECK is_available and is_displayed_today BEFORE PROCEEDING
+                    else:
+                        guid = n['ta_guid_device_id_notification']
+                        print(n['user_ta_id'][0])
+                    print("GUID: ", guid, type(guid))
+                    # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
 
-                print("\nNotification Info:", n['notification_id'])
-                if n['user_ta_id'][0] == '1':
-                    guid = n['cust_guid_device_id_notification']
-                    print(n['user_ta_id'][0])
-                else:
-                    guid = n['ta_guid_device_id_notification']
-                    print(n['user_ta_id'][0])
-                print("GUID: ", guid, type(guid))
-                # print(n['before_is_enable'], n['during_is_enable'], n['after_is_enable'])
+                    # Check if guid is NONE.  Skip Notifications if no guid
+                    if guid != None:
 
-                # Check if guid is NONE.  Skip Notifications if no guid
-                if guid != None:
+                        time_zone = n['time_zone']
+                        print(time_zone, type(time_zone))
+                        start_time = ProcessTime(
+                            n['gr_start_day_and_time'], time_zone)
+                        print("FUNCTION RETURNS: ", start_time)
 
-                    time_zone = n['time_zone']
-                    print(time_zone, type(time_zone))
-                    start_time = ProcessTime(
-                        n['gr_start_day_and_time'], time_zone)
-                    print("FUNCTION RETURNS: ", start_time)
+                        end_time = ProcessTime(
+                            n['gr_end_day_and_time'], time_zone)
+                        print("FUNCTION RETURNS: ", end_time)
 
-                    end_time = ProcessTime(n['gr_end_day_and_time'], time_zone)
-                    print("FUNCTION RETURNS: ", end_time)
+                        # CALCULATE TIME DIFFERENCE VS UTC
+                        if n['before_is_enable'].lower() == 'true':
+                            print(n['before_is_enable'], n['before_time'],
+                                  type(n['before_time']))
+                            notification_time = start_time - \
+                                timedelta(seconds=ProcessDuration(
+                                    n['before_time']))
+                            print("Notification Time: ", notification_time)
+                            notification_time_diff = cur_UTC - notification_time
+                            print("Time Difference vs UTC: ", notification_time_diff, type(
+                                notification_time_diff))
+                            print('time_diff in seconds:', notification_time_diff.total_seconds(), type(
+                                notification_time_diff.total_seconds()))
+                            print("GUID1: ", guid)
+                            if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
 
-                    # CALCULATE TIME DIFFERENCE VS UTC
-                    print(n['before_is_enable'],
-                          n['during_is_enable'], n['after_is_enable'])
-                    if n['before_is_enable'].lower() == 'true':
-                        print(n['before_is_enable'], n['before_time'],
-                              type(n['before_time']))
-                        notification_time = start_time - \
-                            timedelta(seconds=ProcessDuration(
-                                n['before_time']))
-                        print("Notification Time: ", notification_time)
-                        notification_time_diff = cur_UTC - notification_time
-                        print("Time Difference vs UTC: ", notification_time_diff, type(
-                            notification_time_diff))
-                        print('time_diff in seconds:', notification_time_diff.total_seconds(), type(
-                            notification_time_diff.total_seconds()))
-                        print("GUID1: ", guid)
-                        if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                                print("\nBEFORE Notification Criteria met")
+                                for id in getGUID(guid):
 
-                            print("\nBEFORE Notification Criteria met")
-                            for id in getGUID(guid):
+                                    print("GUID 2: ", id)
+                                    # id = getGUID(n)
 
-                                print("GUID 2: ", id)
-                                # id = getGUID(n)
-                                if (id != ''):
-                                    # print("About to send before notification", n['before_message'],id)
-                                    notify(n['before_message'], id)
-                                    # print("Sent before notification", n['before_message'],id)
+                                    if (id != ''):
+                                        if(n['before_message'] != ''):
+                                            notify(
+                                                n['before_message'], id, n['user_ta_id'], n['notification_badge_num'])
+                                        else:
+                                            notify(
+                                                n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
+                                        # print("Sent before notification", n['before_message'],id)
 
-                    if n['during_is_enable'].lower() == 'true':
-                        # print(n['during_is_enable'], n['during_time'], type(n['during_time']))
-                        notification_time = start_time + \
-                            timedelta(seconds=ProcessDuration(
-                                n['during_time']))
-                        # print("Notification Time: ", notification_time)
-                        notification_time_diff = cur_UTC - notification_time
-                        # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                        # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                        if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                            print("\nDURING Notification Criteria met")
-                            for id in getGUID(guid):
-                                print("GUID: ", id)
-                                # id = getGUID(n)
-                                if (id != ''):
-                                    # print("About to send during notification", n['during_message'],id)
-                                    notify(n['during_message'], id)
-                                    # print("Sent during notification", n['during_message'],id)
+                        if n['during_is_enable'].lower() == 'true':
+                            # print(n['during_is_enable'], n['during_time'], type(n['during_time']))
+                            notification_time = start_time + \
+                                timedelta(seconds=ProcessDuration(
+                                    n['during_time']))
+                            # print("Notification Time: ", notification_time)
+                            notification_time_diff = cur_UTC - notification_time
+                            # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                            # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                            if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                                print("\nDURING Notification Criteria met")
+                                for id in getGUID(guid):
+                                    print("GUID: ", id)
 
-                    if n['after_is_enable'].lower() == 'true':
-                        # print(n['after_is_enable'], n['after_time'], type(n['after_time']))
-                        notification_time = end_time + \
-                            timedelta(seconds=ProcessDuration(n['after_time']))
-                        # print("Notification Time: ", notification_time)
-                        notification_time_diff = cur_UTC - notification_time
-                        # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
-                        # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
-                        if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                            print("\nAFTER Notification Criteria met")
-                            for id in getGUID(guid):
-                                print("GUID: ", id)
-                                # id = getGUID(n)
-                                if (id != ''):
-                                    # print("About to send after notification", n['after_message'],id)
-                                    notify(n['after_message'], id)
-                                    # print("Sent after notification", n['after_message'],id)
+                                    # id = getGUID(n)
+                                    if (id != ''):
+                                        if(n['during_message'] != ''):
+                                            notify(
+                                                n['during_message'], id, n['user_ta_id'], n['notification_badge_num'])
+                                        else:
+                                            notify(
+                                                n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
+                                        # print("Sent during notification", n['during_message'],id)
+
+                        if n['after_is_enable'].lower() == 'true':
+                            # print(n['after_is_enable'], n['after_time'], type(n['after_time']))
+                            notification_time = end_time + \
+                                timedelta(seconds=ProcessDuration(
+                                    n['after_time']))
+                            # print("Notification Time: ", notification_time)
+                            notification_time_diff = cur_UTC - notification_time
+                            # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
+                            # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
+                            if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
+                                print("\nAFTER Notification Criteria met")
+                                for id in getGUID(guid):
+                                    print("GUID: ", id)
+
+                                    # id = getGUID(n)
+                                    if (id != ''):
+                                        if(n['after_message'] != ''):
+                                            notify(
+                                                n['after_message'], id, n['user_ta_id'], n['notification_badge_num'])
+                                        else:
+                                            notify(
+                                                n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
+                                        # print("Sent after notification", n['after_message'],id)
+                except:
+                    print('error')
+
+                    send_mail(n['notification_id'],
+                              n['user_ta_id'], n['gr_title'])
+                    # msg = Message(
+                    #     subject="Notifications failed MyLife CLASS",
+                    #     sender="support@manifestmy.life",
+                    #     recipients=['anu.sandhu7893@gmail.com'])
+
+                    # msg.body = (
+                    #     "Problem in Manifest MyLife notification! Please check what's wrong" + "\n"
+                    #     "Notification id: " + str(n['notification_id']) + "\n"
+                    #     "User or TA id: " + str(n['user_ta_id']))
+                    # print(msg.body)
+                    # mail.send(msg)
 
             print("Successfully completed Notification CRON Function")
+            print(response)
             return response, 200
 
         except:
@@ -8916,7 +9129,84 @@ class update_guid_notification(Resource):
             disconnect(conn)
 
 
+class updateGUIDNotification(Resource):
+
+    def post(self):
+        print("In Update GUID Notification")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+            data = request.get_json(force=True)
+            print(data)
+
+            uid = data['user_unique_id']
+            notification = data['notification']
+
+            print("In Update")
+
+            query = """
+                SELECT cust_guid_device_id_notification
+                FROM users
+                WHERE user_unique_id = \'""" + uid + """\';
+                """
+            items = execute(query, 'get', conn)
+            print("Get Query: ", items)
+
+            print("Items Result: ", items['result'])
+            print("Items detailed Result: ",
+                  items['result'][0]['cust_guid_device_id_notification'])
+
+            json_guid = json.loads(
+                items['result'][0]['cust_guid_device_id_notification'])
+            print("JSON GUID BEFORE: ", json_guid)
+
+            # for i, vals in enumerate(json_guid):
+            #     print(i, vals)
+            #     if vals == None or vals == 'null':
+            #         continue
+            #     if vals['guid'] == data['guid']:
+            #         json_guid[i]['notification'] = data['notification']
+            #         break
+
+            print("JSON GUID AFTER: ", json_guid)
+
+            if json_guid[0] == None:
+                json_guid[0] = 'null'
+            print(json_guid)
+            json_guid[-1] = {
+                'guid': json_guid[-1]['guid'],
+                'notification': data['notification']
+            }
+            guid = str(json_guid)
+            print("String GUID: ", guid)
+            guid = guid.replace("'", '"')
+            print("GUID Replaced: ", guid)
+
+            query = """
+                    UPDATE  users  
+                    SET
+                    cust_guid_device_id_notification = \'""" + guid + """\'
+                    WHERE ( user_unique_id  = '""" + uid + """' );
+                    """
+            items = execute(query, 'post', conn)
+            print("Update Query: ", items)
+            if items['code'] != 281:
+                items['message'] = 'guid not updated check sql query and data'
+
+            else:
+                items['message'] = 'guid updated'
+            return items
+
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 # Returns Mobile app version number
+
+
 class GetVersionNumber(Resource):
     def get(self):
         print("In GetVersionNumber")
@@ -9013,6 +9303,8 @@ api.add_resource(ListAllTAForCopy, '/api/v2/listAllTAForCopy')
 api.add_resource(ListAllUsersForCopy,
                  '/api/v2/listAllUsersForCopy')  # working 092821
 
+api.add_resource(ListAllAdminUsers,
+                 '/api/v2/ListAllAdminUsers')
 # working  092821
 api.add_resource(ListAllPeople, '/api/v2/listPeople/<string:user_id>')
 
@@ -9091,6 +9383,7 @@ api.add_resource(GetVersionNumber, '/api/v2/getVersionNumber')  # working
 
 # POST requests
 api.add_resource(AnotherTAAccess, '/api/v2/anotherTAAccess')  # working  092821
+api.add_resource(AssociateUser, '/api/v2/AssociateUser')
 api.add_resource(AddNewAT, '/api/v2/addAT')  # working 092721
 api.add_resource(AddNewIS, '/api/v2/addIS')  # working 092721
 api.add_resource(AddNewGR, '/api/v2/addGR')  # working 092721
@@ -9132,6 +9425,8 @@ api.add_resource(ExistingUser, '/api/v2/existingUser')
 api.add_resource(ResetGR, '/api/v2/resetGR/<string:gr_id>')
 api.add_resource(update_guid_notification,
                  '/api/v2/updateGuid/<string:action>')
+api.add_resource(updateGUIDNotification,
+                 '/api/v2/updateGUIDNotification')
 api.add_resource(AboutHistory, '/api/v2/changeAboutMeHistory')
 api.add_resource(Announcements, '/api/v2/Announcements/<string:user_id>')
 api.add_resource(UpdateMotivation, '/api/v2/updateMotivation')
