@@ -9066,6 +9066,23 @@ class update_guid_notification(Resource):
                         items['message'] = 'UID does not exists'
 
                     return items, res
+                else:
+                    if items['result']:
+                        query1 = " " \
+                            "UPDATE users " \
+                            "SET cust_guid_device_id_notification  = (SELECT JSON_MERGE_PRESERVE(cust_guid_device_id_notification," + data + ")) " \
+                            "WHERE user_unique_id = '" + uid + "';" \
+                            ""
+                        items = execute(query1, 'post', conn)
+                        print("Update Query2: ", items)
+
+                        if items['code'] == 281:
+                            items['code'] = 200
+                            items['message'] = 'Device_id notification and GUID updated'
+                        else:
+                            items['message'] = 'check sql query'
+
+                    return items
 
             elif action == 'update':
                 print("In Update")
@@ -9142,6 +9159,7 @@ class updateGUIDNotification(Resource):
             print(data)
 
             uid = data['user_unique_id']
+            guid = data['guid']
             notification = data['notification']
 
             print("In Update")
@@ -9162,35 +9180,33 @@ class updateGUIDNotification(Resource):
                 items['result'][0]['cust_guid_device_id_notification'])
             print("JSON GUID BEFORE: ", json_guid)
 
-            # for i, vals in enumerate(json_guid):
-            #     print(i, vals)
-            #     if vals == None or vals == 'null':
-            #         continue
-            #     if vals['guid'] == data['guid']:
-            #         json_guid[i]['notification'] = data['notification']
-            #         break
+            for i, vals in enumerate(json_guid):
+                print(i, vals)
+                if vals == None or vals == 'null':
+                    continue
+                if vals['guid'] == data['guid']:
+                    json_guid[i]['notification'] = data['notification']
+                    continue
 
             print("JSON GUID AFTER: ", json_guid)
 
-            if json_guid[0] == None:
-                json_guid[0] = 'null'
-            print(json_guid)
-            json_guid[-1] = {
-                'guid': json_guid[-1]['guid'],
-                'notification': data['notification']
-            }
-            guid = str(json_guid)
-            print("String GUID: ", guid)
-            guid = guid.replace("'", '"')
-            print("GUID Replaced: ", guid)
+            if json_guid == None:
+                json_guid = 'null'
+                print(json_guid)
+            else:
 
-            query = """
-                    UPDATE  users  
-                    SET
-                    cust_guid_device_id_notification = \'""" + guid + """\'
-                    WHERE ( user_unique_id  = '""" + uid + """' );
-                    """
-            items = execute(query, 'post', conn)
+                guid = str(json_guid)
+                print("String GUID: ", guid)
+                guid = guid.replace("'", '"')
+                print("GUID Replaced: ", guid)
+
+                query = """
+                        UPDATE  users  
+                        SET
+                        cust_guid_device_id_notification = \'""" + guid + """\'
+                        WHERE ( user_unique_id  = '""" + uid + """' );
+                        """
+                items = execute(query, 'post', conn)
             print("Update Query: ", items)
             if items['code'] != 281:
                 items['message'] = 'guid not updated check sql query and data'
