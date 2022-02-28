@@ -691,29 +691,46 @@ class CurrentNotifications(Resource):
                         print('before in zone')
                         # updated_notificatons = updated_notificatons.append(
                         #     {'current_routine': notify, 'current_notification': notify['before_message']})
-
+                        print('notiyfy grtitle', notify['gr_title'])
                         if(during_diff != time_zero.time() and during_diff < before_diff):
                             print('during in zone')
 
                             if(after_diff != time_zero.time() and after_diff < during_diff):
                                 print('after in zone during')
-                                updated_notificatons = updated_notificatons + [
-                                    {'current_routine': notify, 'current_notification': notify['after_message']}]
+                                if notify['after_message'] == '':
+                                    updated_notificatons = updated_notificatons + [
+                                        {'current_routine': notify, 'current_notification': notify['gr_title']}]
+                                else:
+                                    updated_notificatons = updated_notificatons + [
+                                        {'current_routine': notify, 'current_notification': notify['after_message']}]
                             else:
-                                updated_notificatons = updated_notificatons + [
-                                    {'current_routine': notify, 'current_notification': notify['during_message']}]
+                                if notify['during_message'] == '':
+                                    updated_notificatons = updated_notificatons + [
+                                        {'current_routine': notify, 'current_notification': notify['gr_title']}]
+                                else:
+                                    updated_notificatons = updated_notificatons + [
+                                        {'current_routine': notify, 'current_notification': notify['during_message']}]
 
                             # return updated_notificatons
 
                         elif(after_diff != time_zero.time() and after_diff < before_diff):
                             print('after in zone')
-                            updated_notificatons = updated_notificatons + [
-                                {'current_routine': notify, 'current_notification': notify['after_message']}]
+
+                            if notify['after_message'] == '':
+                                updated_notificatons = updated_notificatons + [
+                                    {'current_routine': notify, 'current_notification': notify['gr_title']}]
+                            else:
+                                updated_notificatons = updated_notificatons + [
+                                    {'current_routine': notify, 'current_notification': notify['after_message']}]
                             # return updated_notificatons
                         else:
+                            if notify['before_message'] == '':
+                                updated_notificatons = updated_notificatons + [
+                                    {'current_routine': notify, 'current_notification': notify['gr_title']}]
+                            else:
+                                updated_notificatons = updated_notificatons + [
+                                    {'current_routine': notify, 'current_notification': notify['before_message']}]
 
-                            updated_notificatons = updated_notificatons + [
-                                {'current_routine': notify, 'current_notification': notify['before_message']}]
                         # return updated_notificatons
 
                     elif (during_diff != time_zero.time() and during_diff < check):
@@ -722,20 +739,32 @@ class CurrentNotifications(Resource):
 
                         if(after_diff != time_zero.time() and after_diff < during_diff):
                             print('after in zone')
-                            updated_notificatons = updated_notificatons + [
-                                {'current_routine': notify, 'current_notification': notify['after_message']}]
+                            if notify['after_message'] == '':
+                                updated_notificatons = updated_notificatons + [
+                                    {'current_routine': notify, 'current_notification': notify['gr_title']}]
+                            else:
+                                updated_notificatons = updated_notificatons + [
+                                    {'current_routine': notify, 'current_notification': notify['after_message']}]
                             # return updated_notificatons
                         else:
                             print('during in zone else')
-                            updated_notificatons = updated_notificatons + [
-                                {'current_routine': notify, 'current_notification': notify['during_message']}]
+                            if notify['during_message'] == '':
+                                updated_notificatons = updated_notificatons + [
+                                    {'current_routine': notify, 'current_notification': notify['gr_title']}]
+                            else:
+                                updated_notificatons = updated_notificatons + [
+                                    {'current_routine': notify, 'current_notification': notify['during_message']}]
                         # return updated_notificatons
 
                     elif (after_diff != time_zero.time() and after_diff < check):
                         print('elif after time', after_diff)
                         print('after in zone')
-                        updated_notificatons = updated_notificatons + [
-                            {'current_routine': notify, 'current_notification': notify['after_message']}]
+                        if notify['after_message'] == '':
+                            updated_notificatons = updated_notificatons + [
+                                {'current_routine': notify, 'current_notification': notify['gr_title']}]
+                        else:
+                            updated_notificatons = updated_notificatons + [
+                                {'current_routine': notify, 'current_notification': notify['after_message']}]
                         # return updated_notificatons
 
                     else:
@@ -785,20 +814,6 @@ class CurrentNotifications(Resource):
                             "%Y-%m-%d")) + " " + start_time_j), "%Y-%m-%d %I:%M:%S %p")
                         print('start_time_j', start_time_j)
 
-                        # routine end time
-                        end_time_i = updated_notificatons[i]['current_routine']['gr_end_day_and_time'].split(
-                            ' ')
-                        end_time_i = end_time_i[1] + " " + end_time_i[2]
-                        end_time_i = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                            "%Y-%m-%d")) + " " + end_time_i), "%Y-%m-%d %I:%M:%S %p")
-                        print('end_time_i', end_time_i)
-                        end_time_j = updated_notificatons[j]['current_routine']['gr_end_day_and_time'].split(
-                            ' ')
-                        end_time_j = end_time_j[1] + " " + end_time_j[2]
-                        end_time_j = datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                            "%Y-%m-%d")) + " " + end_time_j), "%Y-%m-%d %I:%M:%S %p")
-                        print('end_time_j', end_time_j)
-
                         i_start_diff = now_time-start_time_i
                         i_start_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
                             "%Y-%m-%d")) + " " + str(i_start_diff)), "%Y-%m-%d %H:%M:%S")).time()
@@ -808,16 +823,6 @@ class CurrentNotifications(Resource):
                         j_start_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
                             "%Y-%m-%d")) + " " + str(j_start_diff)), "%Y-%m-%d %H:%M:%S")).time()
                         print('J diff start', j_start_diff, type(j_start_diff))
-
-                        # i_end_diff = now_time-end_time_i
-                        # i_end_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                        #     "%Y-%m-%d")) + " " + str(i_end_diff)), "%Y-%m-%d %H:%M:%S")).time()
-                        # print('I diff end', i_end_diff, type(i_end_diff))
-
-                        # j_end_diff = now_time-end_time_j
-                        # j_end_diff = (datetime.strptime((str(datetime.now(pytz.timezone(timezone)).strftime(
-                        #     "%Y-%m-%d")) + " " + str(j_end_diff)), "%Y-%m-%d %H:%M:%S")).time()
-                        # print('J diff end', j_end_diff, type(j_end_diff))
 
                         if(i_start_diff < j_start_diff):
                             print('in if')
@@ -7255,11 +7260,28 @@ def getGUID(guid):
     # GET UNIQUE LIST OF GUIDS
     s = ''
     print('inside getGUID')
-    print(guid)
+    print(guid, type(guid))
     l = []
     print("Initialize GUID List: ", l)
-    if 'guid' in guid:
-        guid_list = guid.split(' ')
+    json_guid = json.loads(
+        guid)
+    for i, vals in enumerate(json_guid):
+        print(i, vals)
+        if vals == None or vals == 'null':
+            print(guid)
+            guid = ['null']
+            print(guid)
+            continue
+        if vals['notification'] == 'True' or vals['notification'] == 'TRUE':
+            print(guid)
+            guid.append(vals)
+            print(guid)
+            continue
+    print('guid', guid, type(guid))
+    if 'guid' in str(guid):
+        print('in if')
+        guid_list = str(guid).split(' ')
+        print("List after split:")
         print("List after split: ", guid_list)
         print("guid_list_len: ", len(guid_list))
         if(len(guid_list) > 1):
@@ -9000,7 +9022,8 @@ class update_guid_notification(Resource):
                         WHERE user_unique_id = \'""" + uid + """\'
                         """
                 items = execute(query, 'get', conn)
-                print("Get Query: ", items)
+                print("Get Query: ", items['result'][0]
+                      ['cust_guid_device_id_notification'])
 
                 ta_query = """SELECT * FROM ta_people
                                 WHERE ta_email_id = \'""" + items['result'][0]['user_email_id'] + """\'"""
@@ -9010,7 +9033,7 @@ class update_guid_notification(Resource):
 
                 del data['user_unique_id']
 
-                flag = 0
+                # flag = 0
 
                 json_guid = json.loads(
                     items['result'][0]['cust_guid_device_id_notification'])
@@ -9183,6 +9206,7 @@ class updateGUIDNotification(Resource):
             for i, vals in enumerate(json_guid):
                 print(i, vals)
                 if vals == None or vals == 'null':
+                    json_guid[i] = 'null'
                     continue
                 if vals['guid'] == data['guid']:
                     json_guid[i]['notification'] = data['notification']
@@ -9190,8 +9214,8 @@ class updateGUIDNotification(Resource):
 
             print("JSON GUID AFTER: ", json_guid)
 
-            if json_guid == None:
-                json_guid = 'null'
+            if json_guid == None or json_guid == 'null':
+                json_guid[0] = 'null'
                 print(json_guid)
             else:
 
