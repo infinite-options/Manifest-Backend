@@ -5576,6 +5576,12 @@ class Login(Resource):
                                user_picture = \'""" + '' + """\',
                                user_social_media = \'""" + signup_platform + """\',
                                new_account = \'""" + 'True' + """\',
+                               day_start =  \'""" + "00:00" + """\', 
+                               day_end =  \'""" + "23:59" + """\',  
+                               morning_time =  \'""" + "06:00" + """\', 
+                               afternoon_time =  \'""" + "11:00" + """\', 
+                               evening_time =  \'""" + "16:00" + """\', 
+                               night_time =  \'""" + "21:00" + """\',
                                cust_guid_device_id_notification = \'""" + 'null' + """\';""", 'post', conn)
 
                 NewRelationIDresponse = execute(
