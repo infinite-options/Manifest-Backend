@@ -3461,6 +3461,27 @@ class CopyGR(Resource):
 #         finally:
 #             disconnect(conn)
 
+class Debug(Resource):
+    def get(self):
+        print("In All Users")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+
+            # All users of a TA
+            debug = 'True'
+            response = {
+                "message": "Debug endpoint call successful!",
+                "result": debug
+            }
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 
 #  -- USER AND TA RELATED ENDPOINTS    -----------------------------------------
 
@@ -4679,6 +4700,7 @@ class CreateNewUser(Resource):
             print("In try", data)
             email_id = data['email_id']
             print(email_id)
+            password = data['password']
             first_name = data['first_name']
             print(first_name)
             last_name = data['last_name']
@@ -4699,6 +4721,12 @@ class CreateNewUser(Resource):
             user_id_response = execute("""SELECT user_unique_id FROM users
                                             WHERE user_email_id = \'""" + email_id + """\';""", 'get', conn)
 
+            salt = os.urandom(32)
+
+            dk = hashlib.pbkdf2_hmac('sha256',  password.encode(
+                'utf-8'), salt, 100000, dklen=128)
+            key = (salt + dk).hex()
+
             if len(user_id_response['result']) > 0:
                 execute("""UPDATE users
                            SET
@@ -4706,6 +4734,7 @@ class CreateNewUser(Resource):
                                google_auth_token = \'""" + google_auth_token + """\',
                                google_refresh_token = \'""" + google_refresh_token + """\',
                                access_expires_in = \'""" + access_expires_in + """\',
+                               password_hashed = \'""" + key + """\',
                                day_start =  \'""" + "00:00" + """\', 
                                day_end =  \'""" + "23:59" + """\',  
                                morning_time =  \'""" + "06:00" + """\', 
@@ -4730,6 +4759,7 @@ class CreateNewUser(Resource):
                 response['message'] = 'User already exists'
 
             else:
+
                 user_id_response = execute("CAll get_user_id;", 'get', conn)
                 new_user_id = user_id_response['result'][0]['new_id']
 
@@ -4740,6 +4770,7 @@ class CreateNewUser(Resource):
                                user_first_name = \'""" + first_name + """\',
                                user_last_name = \'""" + last_name + """\',
                                social_id = \'""" + social_id + """\',
+                               password_hashed = \'""" + key + """\',
                                google_auth_token = \'""" + google_auth_token + """\',
                                google_refresh_token = \'""" + google_refresh_token + """\',
                                access_expires_in = \'""" + access_expires_in + """\',
@@ -5316,7 +5347,7 @@ class GetTAEmailId(Resource):
 
             temp = False
             emails = execute(
-                """SELECT ta_email_id from ta_people where ta_unique_id = \'""" + ta_email_id + """\';""", 'get', conn)
+                """SELECT ta_email_id from ta_people where ta_email_id = \'""" + ta_email_id + """\';""", 'get', conn)
             if len(emails['result']) > 0:
                 response['message'] = emails['result'][0]['ta_email_id']
             else:
@@ -5328,6 +5359,29 @@ class GetTAEmailId(Resource):
         finally:
             disconnect(conn)
 
+
+class GetUserEmailId(Resource):
+    def get(self, user_email_id):
+        print("In GetUserEmailID")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+
+            temp = False
+            emails = execute(
+                """SELECT user_email_id from users where user_email_id = \'""" + user_email_id + """\';""", 'get', conn)
+            if len(emails['result']) > 0:
+                response['message'] = emails['result'][0]['user_email_id']
+            else:
+                response['message'] = 'User ID doesnt exist'
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
 
 # get user tokens
 
@@ -9365,6 +9419,9 @@ api.add_resource(TASocialLogin, '/api/v2/loginSocialTA/<string:email_id>')
 api.add_resource(TaTokenEmail, '/api/v2/taTokenEmail/<string:ta_email_id>')
 
 api.add_resource(GetTAEmailId, '/api/v2/GetTAEmailId/<string:ta_email_id>')
+api.add_resource(
+    GetUserEmailId, '/api/v2/GetUserEmailId/<string:user_email_id>')
+
 api.add_resource(Usertoken, '/api/v2/usersToken/<string:user_id>')
 api.add_resource(UpdateUserAccessToken,
                  '/api/v2/UpdateUserAccessToken/<string:user_id>')
@@ -9482,7 +9539,7 @@ api.add_resource(UpdateImportant, '/api/v2/updateImportant')
 api.add_resource(DeleteUser, '/api/v2/deleteUser')
 api.add_resource(UpdateVersionNumber, '/api/v2/updateVersionNumber')
 api.add_resource(CopyGR, '/api/v2/copyGR')  # working
-
+api.add_resource(Debug, '/api/v2/debug')
 api.add_resource(TimeFunction, '/api/v2/TimeFunction')
 
 # api.add_resource(ChangeSublist, '/api/v2/changeSub/<string:user_id>')
