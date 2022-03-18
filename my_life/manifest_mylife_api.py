@@ -3996,6 +3996,8 @@ class CreateNewPeople(Resource):
                                ta_last_name = \'""" + last_name + """\',
                                employer = \'""" + people_employer + """\',
                                password_hashed = \'""" + '' + """\',
+                                password_salt= \'""" + '' + """\',
+                               password_algorithm=\'""" + '' + """\',
                                ta_phone_number = \'""" + people_phone_number + """\',
                                ta_time_zone = \'""" + ta_time_zone + """\';""", 'post', conn)
 
@@ -4020,6 +4022,8 @@ class CreateNewPeople(Resource):
                                 ta_last_name = \'""" + last_name + """\',
                                 employer = \'""" + people_employer + """\',
                                 password_hashed = \'""" + '' + """\',
+                                 password_salt= \'""" + '' + """\',
+                               password_algorithm=\'""" + '' + """\',
                                 ta_phone_number = \'""" + people_phone_number + """\',
                                 ta_time_zone = \'""" + ta_time_zone + """\';""", 'post', conn)
                     print('before relationship insert')
@@ -4462,11 +4466,11 @@ class NewTA(Resource):
 
             else:
 
-                salt = os.urandom(32)
+                salt = (datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
 
-                dk = hashlib.pbkdf2_hmac('sha256',  password.encode(
-                    'utf-8'), salt, 100000, dklen=128)
-                key = (salt + dk).hex()
+                password = sha512(
+                    (data['password'] + salt).encode()).hexdigest()
+                algorithm = 'SHA512'
 
                 new_ta_id_response = execute(
                     "CALL get_ta_people_id;", 'get', conn)
@@ -4489,7 +4493,9 @@ class NewTA(Resource):
                                ta_first_name = \'""" + first_name + """\',
                                ta_last_name = \'""" + last_name + """\',
                                employer = \'""" + employer + """\',
-                               password_hashed = \'""" + key + """\',
+                               password_hashed = \'""" + password + """\',
+                               password_salt= \'""" + salt + """\',
+                               password_algorithm=\'""" + algorithm + """\',
                                ta_phone_number = \'""" + phone_number + """\',
                                ta_time_zone = \'""" + ta_time_zone + """\',
                                ta_guid_device_id_notification = \'""" + guid + """\';""", 'post', conn)
@@ -4699,70 +4705,85 @@ class CreateNewUser(Resource):
             data = request.get_json(force=True)
             print("In try", data)
             email_id = data['email_id']
-            print(email_id)
             password = data['password']
             first_name = data['first_name']
-            print(first_name)
             last_name = data['last_name']
-            print(last_name)
             time_zone = data['time_zone']
-            print(time_zone)
             ta_people_id = data['ta_people_id']
-            print(ta_people_id)
             google_auth_token = data['google_auth_token']
-            print(google_auth_token)
             social_id = data['social_id']
-            print(social_id)
             google_refresh_token = data['google_refresh_token']
-            print(google_refresh_token)
             access_expires_in = data['access_expires_in']
-            print(access_expires_in)
 
             user_id_response = execute("""SELECT user_unique_id FROM users
                                             WHERE user_email_id = \'""" + email_id + """\';""", 'get', conn)
+            salt = ''
+            password = ''
+            algorithm = ''
+            user_social_media = ''
+            if len(google_auth_token) > 0:
+                print('in if')
+                user_social_media = 'GOOGLE'
+            elif len(social_id) > 22:
+                print('in elif')
+                user_social_media = 'APPLE'
+            else:
+                print('in else')
+                # salt = os.urandom(32)
+                # dk = hashlib.pbkdf2_hmac('sha256',  password.encode(
+                #     'utf-8'), salt, 100000, dklen=128)
+                # key = (salt + dk).hex()
+                salt = (datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
 
-            salt = os.urandom(32)
-
-            dk = hashlib.pbkdf2_hmac('sha256',  password.encode(
-                'utf-8'), salt, 100000, dklen=128)
-            key = (salt + dk).hex()
+                password = sha512(
+                    (data['password'] + salt).encode()).hexdigest()
+                algorithm = 'SHA512'
 
             if len(user_id_response['result']) > 0:
-                execute("""UPDATE users
-                           SET
-                               social_id = \'""" + social_id + """\',
-                               google_auth_token = \'""" + google_auth_token + """\',
-                               google_refresh_token = \'""" + google_refresh_token + """\',
-                               access_expires_in = \'""" + access_expires_in + """\',
-                               password_hashed = \'""" + key + """\',
-                               day_start =  \'""" + "00:00" + """\', 
-                               day_end =  \'""" + "23:59" + """\',  
-                               morning_time =  \'""" + "06:00" + """\', 
-                               afternoon_time =  \'""" + "11:00" + """\', 
-                               evening_time =  \'""" + "16:00" + """\', 
-                               night_time =  \'""" + "21:00" + """\'
-                            WHERE user_unique_id = \'""" + user_id_response['result'][0]['user_unique_id'] + """\';""", 'post', conn)
+                print('in if')
+                # execute("""UPDATE users
+                #            SET
+                #                social_id = \'""" + social_id + """\',
+                #                google_auth_token = \'""" + google_auth_token + """\',
+                #                google_refresh_token = \'""" + google_refresh_token + """\',
+                #                access_expires_in = \'""" + access_expires_in + """\',
+                #                password_salt= \'""" + salt + """\',
+                #                password_algorithm=\'""" + 'SHA256' + """\',
+                #                password_hashed = \'""" + key + """\',
+                #                day_start =  \'""" + "00:00" + """\',
+                #                day_end =  \'""" + "23:59" + """\',
+                #                morning_time =  \'""" + "06:00" + """\',
+                #                afternoon_time =  \'""" + "11:00" + """\',
+                #                evening_time =  \'""" + "16:00" + """\',
+                #                night_time =  \'""" + "21:00" + """\'
+                #             WHERE user_unique_id = \'""" + user_id_response['result'][0]['user_unique_id'] + """\';""", 'post', conn)
 
-                NewRelationIDresponse = execute(
-                    "Call get_relation_id;", 'get', conn)
-                NewRelationID = NewRelationIDresponse['result'][0]['new_id']
-                execute("""INSERT INTO relationship
-                        SET id = \'""" + NewRelationID + """\',
-                            r_timestamp = \'""" + timestamp + """\',
-                            ta_people_id = \'""" + ta_people_id + """\',
-                            user_uid = \'""" + user_id_response['result'][0]['user_unique_id'] + """\',
-                            relation_type = \'""" + 'Advisor' + """\',
-                            ta_have_pic = \'""" + 'False' + """\',
-                            ta_picture = \'""" + '' + """\',
-                            important = \'""" + 'True' + """\',
-                            advisor = \'""" + str(1) + """\';""", 'post', conn)
+                # NewRelationIDresponse = execute(
+                #     "Call get_relation_id;", 'get', conn)
+                # NewRelationID = NewRelationIDresponse['result'][0]['new_id']
+                # execute("""INSERT INTO relationship
+                #         SET id = \'""" + NewRelationID + """\',
+                #             r_timestamp = \'""" + timestamp + """\',
+                #             ta_people_id = \'""" + ta_people_id + """\',
+                #             user_uid = \'""" + user_id_response['result'][0]['user_unique_id'] + """\',
+                #             relation_type = \'""" + 'Advisor' + """\',
+                #             ta_have_pic = \'""" + 'False' + """\',
+                #             ta_picture = \'""" + '' + """\',
+                #             important = \'""" + 'True' + """\',
+                #             advisor = \'""" + str(1) + """\';""", 'post', conn)
                 response['message'] = 'User already exists'
 
             else:
+                print('in else')
+                # salt = os.urandom(32)
+
+                # dk = hashlib.pbkdf2_hmac('sha256',  password.encode(
+                #     'utf-8'), salt, 100000, dklen=128)
+                # key = (salt + dk).hex()
 
                 user_id_response = execute("CAll get_user_id;", 'get', conn)
                 new_user_id = user_id_response['result'][0]['new_id']
-
+                print(new_user_id)
                 execute("""INSERT INTO users
                            SET user_unique_id = \'""" + new_user_id + """\',
                                user_timestamp = \'""" + timestamp + """\',
@@ -4770,14 +4791,16 @@ class CreateNewUser(Resource):
                                user_first_name = \'""" + first_name + """\',
                                user_last_name = \'""" + last_name + """\',
                                social_id = \'""" + social_id + """\',
-                               password_hashed = \'""" + key + """\',
+                               password_hashed = \'""" + password + """\',
+                               password_salt= \'""" + salt + """\',
+                               password_algorithm=\'""" + algorithm + """\',
                                google_auth_token = \'""" + google_auth_token + """\',
                                google_refresh_token = \'""" + google_refresh_token + """\',
                                access_expires_in = \'""" + access_expires_in + """\',
                                time_zone = \'""" + time_zone + """\',
                                user_have_pic = \'""" + 'False' + """\',
                                user_picture = \'""" + '' + """\',
-                               user_social_media = \'""" + 'GOOGLE' + """\',
+                               user_social_media = \'""" + user_social_media + """\',
                                new_account = \'""" + 'True' + """\',
                                day_start =  \'""" + "00:00" + """\', 
                                day_end =  \'""" + "23:59" + """\',   
@@ -5698,6 +5721,44 @@ class Login(Resource):
                 items['message'] = "Authenticated successfully."
                 items['code'] = 200
                 return items
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+class AndroidLoginCheck(Resource):
+    def post(self):
+        print('In AndroidLoginCheck')
+        response = {}
+        try:
+            conn = connect()
+            data = request.get_json(force=True)
+            timestamp = getNow()
+            email = data['email']
+            birthdate = data['birthdate']
+            print(data)
+            query = """
+                        SELECT user_unique_id,
+                            user_last_name,
+                            user_first_name,
+                            user_email_id,
+                            user_social_media,
+                            google_auth_token,
+                            google_refresh_token
+                        FROM users
+                        WHERE user_email_id = \'""" + email + """\' and user_birth_date = \'""" + birthdate + """\';
+                        """
+
+            items = execute(query, 'get', conn)
+            print(items)
+            if len(items['result']) > 0:
+                response = 'True'
+            else:
+                response = 'False'
+
+            return response
+
         except:
             raise BadRequest('Request failed, please try again later.')
         finally:
@@ -9517,6 +9578,7 @@ api.add_resource(UpdateATWatchMobile, '/api/v2/updateATWatchMobile')
 api.add_resource(UpdateISWatchMobile, '/api/v2/updateISWatchMobile')
 
 api.add_resource(Login, '/api/v2/login')
+api.add_resource(AndroidLoginCheck, '/api/v2/AndroidLoginCheck')
 api.add_resource(AccessRefresh, '/api/v2/updateAccessRefresh')
 
 api.add_resource(UpdateAboutMe2, '/api/v2/update')
