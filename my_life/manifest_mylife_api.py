@@ -464,7 +464,7 @@ class GetGoals(Resource):
         finally:
             disconnect(conn)
 
-            
+ # Get users provided the goal/routine ID           
 class GetUsersbyRoutine(Resource):
     def get(self,goal_routine_id):
         print("in GetUsersbyRoutine")
@@ -498,6 +498,7 @@ class GetUsersbyRoutine(Resource):
         finally:
             disconnect(conn)
 
+# Get all the routines/goals provided the key word 
 class GetRoutinebyName(Resource):
     def get(self,key_word):
         print("in GetRoutinebyName")
@@ -525,7 +526,37 @@ class GetRoutinebyName(Resource):
                 'Get Similar Routines Request failed, please try again later.')
         finally:
             disconnect(conn)
+# Get all similar routines under the same login TA
+class TAGetSimilarRoutines(Resource):
+    def get(self,key_word,ta_id):
+        print("in TAGetSimilarRoutines")
+        response = {}
+        items = {}
+        try:
 
+            conn = connect()
+
+            # get all similar routines
+            query = """
+                SELECT *
+                from manifest_mylife.goals_routines gr 
+                join manifest_mylife.relationship r
+                on gr.user_id = r.user_uid
+                WHERE gr.gr_title like \'"""+'%' + key_word + '%'+"""\'
+                and r.ta_people_id = \'""" + ta_id + """\';
+            """
+
+            items = execute(query, 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response,200
+        except:
+            raise BadRequest(
+                'Get TA similar routines failed , please try again later.')
+        finally:
+            disconnect(conn)
 
 class GAI(Resource):
     def get(self, user_id):
@@ -9498,6 +9529,7 @@ api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 
 api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
 api.add_resource(GetRoutinebyName,'/api/v2/getgrbyname/<string:key_word>')
+api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/<string:key_word>/<string:ta_id>') 
 
 
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
