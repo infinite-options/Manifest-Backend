@@ -464,7 +464,67 @@ class GetGoals(Resource):
         finally:
             disconnect(conn)
 
-# Returns Goals with actions/tasks and instructions/steps
+            
+class GetUsersbyRoutine(Resource):
+    def get(self,goal_routine_id):
+        print("in GetUsersbyRoutine")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            # Get all uers sharing the same routine ID 
+            query = """
+                SELECT *,
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "in_progress"
+                        ELSE "not started"
+                    END AS status
+                FROM goals_routines 
+                WHERE gr_unique_id = \'""" + goal_routine_id + """\';
+            """
+
+            items = execute(query, 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response,200
+        except:
+            raise BadRequest(
+                'Get User Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+class GetRoutinebyName(Resource):
+    def get(self,key_word):
+        print("in GetRoutinebyName")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            # get all similar routines
+            query = """
+                SELECT *
+                FROM goals_routines 
+                WHERE gr_title like \'"""+'%' + key_word + '%'+"""\';
+            """
+
+            items = execute(query, 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response,200
+        except:
+            raise BadRequest(
+                'Get Similar Routines Request failed, please try again later.')
+        finally:
+            disconnect(conn)
 
 
 class GAI(Resource):
@@ -9435,6 +9495,11 @@ api.add_resource(GetGoals, '/api/v2/getgoals/<string:user_id>')
 # working web 101121
 api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 # working Mobile only 092821
+
+api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
+api.add_resource(GetRoutinebyName,'/api/v2/getgrbyname/<string:key_word>')
+
+
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
 # api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
 api.add_resource(GRAI, '/api/v2/grai/<string:user_id>')
