@@ -2937,7 +2937,7 @@ class DeleteIS(Resource):
 #         finally:
 #             disconnect(conn)
 
-
+# That's copy
 class CopyGR(Resource):
     def post(self):
         print("In copyGR ")
