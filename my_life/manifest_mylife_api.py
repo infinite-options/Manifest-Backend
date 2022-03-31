@@ -527,25 +527,37 @@ class GetRoutinebyName(Resource):
         finally:
             disconnect(conn)
 class TAGetSimilarRoutines(Resource):
-    def get(self,key_word):
+    def get(self):
         print("in TAGetSimilarRoutines")
         response = {}
         items = {}
+        key_word = request.form.get('key_word')
         ta_id = request.form.get('ta_people_id')
+        user_id = request.form.get('user_id')
+        ta_name = request.form.get('TA_name')
         try:
 
             conn = connect()
 
-            # get all similar routines
             query = """
-                SELECT *
+                with temp as(
+                SELECT *, concat(tp.ta_first_name,' ',tp.ta_last_name) as ta_name
                 from manifest_mylife.goals_routines gr 
-                join manifest_mylife.relationship r
-                on gr.user_id = r.user_uid
-                WHERE gr.gr_title like \'"""+'%' + key_word + '%'+"""\'
+                join manifest_mylife.relationship r on gr.user_id = r.user_uid
+                join manifest_mylife.ta_people tp on r.ta_people_id = tp.ta_unique_id)
+                select * from temp 
+                where 1 = 1
                 """
+                
+            if key_word != "":
+                query +=  """and gr_title like \'"""+'%' + key_word + '%'+"""\' """
             if ta_id != "":
-                query = query + """ and r.ta_people_id = \'""" + ta_id + """\'"""
+                query +=  """ and ta_people_id = \'""" + ta_id + """\'"""
+            if user_id != "":
+                query += """ and user_id = \'""" + user_id + """\'"""
+            if ta_name != "":
+                query += """and ta_name like \'"""+'%' + ta_name + '%'+"""\' """
+
 
             items = execute(query, 'get', conn)
 
@@ -555,7 +567,7 @@ class TAGetSimilarRoutines(Resource):
             return response,200
         except:
             raise BadRequest(
-                'Get TA similar routines failed , please try again later.')
+                'Get similar routines failed , please try again later.')
         finally:
             disconnect(conn)
 
@@ -9530,7 +9542,7 @@ api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 
 api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
 api.add_resource(GetRoutinebyName,'/api/v2/getgrbyname/<string:key_word>')
-api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/<string:key_word>') 
+api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/') 
 
 
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
