@@ -526,12 +526,12 @@ class GetRoutinebyName(Resource):
                 'Get Similar Routines Request failed, please try again later.')
         finally:
             disconnect(conn)
-# Get all similar routines under the same login TA
 class TAGetSimilarRoutines(Resource):
-    def get(self,key_word,ta_id):
+    def get(self,key_word):
         print("in TAGetSimilarRoutines")
         response = {}
         items = {}
+        ta_id = request.form.get('ta_people_id')
         try:
 
             conn = connect()
@@ -543,8 +543,9 @@ class TAGetSimilarRoutines(Resource):
                 join manifest_mylife.relationship r
                 on gr.user_id = r.user_uid
                 WHERE gr.gr_title like \'"""+'%' + key_word + '%'+"""\'
-                and r.ta_people_id = \'""" + ta_id + """\';
-            """
+                """
+            if ta_id != "":
+                query = query + """ and r.ta_people_id = \'""" + ta_id + """\'"""
 
             items = execute(query, 'get', conn)
 
@@ -9529,7 +9530,7 @@ api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 
 api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
 api.add_resource(GetRoutinebyName,'/api/v2/getgrbyname/<string:key_word>')
-api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/<string:key_word>/<string:ta_id>') 
+api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/<string:key_word>') 
 
 
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
