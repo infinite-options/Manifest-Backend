@@ -532,31 +532,73 @@ class TAGetSimilarRoutines(Resource):
         response = {}
         items = {}
         key_word = request.form.get('key_word')
-        ta_id = request.form.get('ta_people_id')
-        user_id = request.form.get('user_id')
-        ta_name = request.form.get('TA_name')
+
+        ta_id,ta_name,user_id,user_name = '','','',''
+        ta_info = request.form.get('ta_info')
+        if "-" in ta_info:
+            ta_id = ta_info
+        else:
+            ta_name = ta_info
+
+        user_info = request.form.get('user_info')
+        if '-' in user_info:
+            user_id = user_info
+        else:
+            user_name = user_info
+
+
+
         try:
 
             conn = connect()
 
             query = """
-                with temp as(
-                SELECT *, concat(tp.ta_first_name,' ',tp.ta_last_name) as ta_name
-                from manifest_mylife.goals_routines gr 
-                join manifest_mylife.relationship r on gr.user_id = r.user_uid
-                join manifest_mylife.ta_people tp on r.ta_people_id = tp.ta_unique_id)
-                select * from temp 
-                where 1 = 1
+                        with temp as(SELECT 
+                        gr.gr_unique_id,
+                        gr.gr_title,
+                        gr.user_id,
+                        r.ta_people_id,
+                        concat(tp.ta_first_name,' ',tp.ta_last_name) as ta_name,
+                        concat(u.user_first_name, ' ', u.user_last_name) as user_name,
+                        gr.is_available,
+                        gr.is_complete,
+                        gr.is_in_progress,
+                        gr.is_displayed_today,
+                        gr.is_persistent,
+                        gr.is_sublist_available,
+                        gr.is_timed,
+                        gr.gr_photo,
+                        gr.gr_start_day_and_time,
+                        gr.gr_end_day_and_time,
+                        gr.repeat,
+                        gr.repeat_type,
+                        gr.repeat_ends_on,
+                        gr.repeat_occurences,
+                        gr.repeat_every,
+                        gr.repeat_frequency,
+                        gr.repeat_week_days,
+                        gr.gr_datetime_started,
+                        gr.gr_datetime_completed,
+                        gr.gr_expected_completion_time
+
+                        FROM manifest_mylife.goals_routines gr
+                        join manifest_mylife.relationship r on gr.user_id = r.user_uid
+                        join manifest_mylife.ta_people tp on r.ta_people_id = tp.ta_unique_id
+                        join manifest_mylife.users u on u.user_unique_id = gr.user_id)
+                        select * from temp
+                        where 1 = 1 
                 """
                 
             if key_word != "":
                 query +=  """and gr_title like \'"""+'%' + key_word + '%'+"""\' """
             if ta_id != "":
                 query +=  """ and ta_people_id = \'""" + ta_id + """\'"""
-            if user_id != "":
-                query += """ and user_id = \'""" + user_id + """\'"""
             if ta_name != "":
                 query += """and ta_name like \'"""+'%' + ta_name + '%'+"""\' """
+            if user_id != "":
+                query += """ and user_id = \'""" + user_id + """\'"""
+            if user_name != "":
+                query += """and user_name like \'"""+'%' + user_name + '%'+"""\' """
 
 
             items = execute(query, 'get', conn)
