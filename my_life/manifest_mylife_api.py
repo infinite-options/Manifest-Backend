@@ -9556,7 +9556,6 @@ api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 # working Mobile only 092821
 
 api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
-api.add_resource(GetRoutinebyName,'/api/v2/getgrbyname/<string:key_word>')
 api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/') 
 
 
