@@ -498,34 +498,7 @@ class GetUsersbyRoutine(Resource):
         finally:
             disconnect(conn)
 
-# Get all the routines/goals provided the key word 
-class GetRoutinebyName(Resource):
-    def get(self,key_word):
-        print("in GetRoutinebyName")
-        response = {}
-        items = {}
-        try:
-
-            conn = connect()
-
-            # get all similar routines
-            query = """
-                SELECT *
-                FROM goals_routines 
-                WHERE gr_title like \'"""+'%' + key_word + '%'+"""\';
-            """
-
-            items = execute(query, 'get', conn)
-
-            response['message'] = 'successful'
-            response['result'] = items['result']
-
-            return response,200
-        except:
-            raise BadRequest(
-                'Get Similar Routines Request failed, please try again later.')
-        finally:
-            disconnect(conn)
+# Get all the routines/goals provided the key word, username/id, taname/id
 class TAGetSimilarRoutines(Resource):
     def get(self):
         print("in TAGetSimilarRoutines")
