@@ -586,6 +586,37 @@ class TAGetSimilarRoutines(Resource):
         finally:
             disconnect(conn)
 
+class getDuplicateRelationships(Resource):
+    def get(self):
+        print("in getDuplicateRelationships")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            query = """
+                with t as (select ta_people_id,user_uid,count(*)
+                from manifest_mylife.relationship 
+                group by ta_people_id,user_uid having count(*) > 1)
+                select * from manifest_mylife.relationship org
+                join t on org.ta_people_id = t.ta_people_id
+                and org.user_uid = t.user_uid
+                order by org.ta_people_id;
+                """
+            items = execute(query, 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response,200
+        except:
+            raise BadRequest(
+                'Get similar routines failed , please try again later.')
+        finally:
+            disconnect(conn)
+
+
 class GAI(Resource):
     def get(self, user_id):
         print("In GAI")
@@ -9557,6 +9588,7 @@ api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 
 api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
 api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/') 
+api.add_resource(getDuplicateRelationships,'/api/v2/relationships/')
 
 
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
