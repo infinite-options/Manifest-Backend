@@ -16,6 +16,7 @@ from flask_cors import CORS
 
 import boto3
 import os.path
+import jwt
 
 from googleapiclient.discovery import build
 import google_auth_oauthlib.flow
@@ -3538,8 +3539,10 @@ class ListAllTA(Resource):
                                 , ta_first_name
                                 , ta_last_name
                                 , ta_email_id
+                                , ta_time_zone
+                                , r.relation_type
                         FROM ta_people
-                        JOIN relationship on ta_unique_id = ta_people_id
+                        JOIN relationship r on ta_unique_id = ta_people_id
                         WHERE user_uid = \'""" + user_id + """\'
                         and advisor = '1';"""
 
@@ -3549,8 +3552,10 @@ class ListAllTA(Resource):
                                 , ta_first_name
                                 , ta_last_name
                                 , ta_email_id
+                                , ta_time_zone
+                                , r.relation_type 
                         FROM ta_people
-                        JOIN relationship on ta_unique_id = ta_people_id
+                        JOIN relationship r on ta_unique_id = ta_people_id
                         WHERE advisor = '1';"""
 
             # Get all TA People
@@ -3559,6 +3564,7 @@ class ListAllTA(Resource):
                                 , ta_first_name
                                 , ta_last_name
                                 , ta_email_id
+                                , ta_time_zone
                          FROM ta_people;"""
 
             # Get all TA People who also has at least one relationship
@@ -3567,9 +3573,10 @@ class ListAllTA(Resource):
                                 , ta_first_name
                                 , ta_last_name
                                 , ta_email_id
-
+                                , ta_time_zone
+                                , r.relation_type
                         FROM ta_people
-                        JOIN relationship on ta_unique_id = ta_people_id;"""
+                        JOIN relationship r on ta_unique_id = ta_people_id;"""
 
             idTAResponse = execute(query, 'get', conn)
             allTAResponse = execute(query2, 'get', conn)
@@ -3621,8 +3628,10 @@ class ListAllTAUser(Resource):
                                 , ta_first_name
                                 , ta_last_name
                                 , ta_email_id
+                                , ta_time_zone
+                                , r.relation_type
                         FROM ta_people
-                        JOIN relationship on ta_unique_id = ta_people_id
+                        JOIN relationship r on ta_unique_id = ta_people_id
                         WHERE user_uid = \'""" + user_id + """\'
                         and advisor = '1';"""
 
@@ -3813,18 +3822,17 @@ class ListAllPeople(Resource):
 
             query = """SELECT user_uid
                             , CONCAT(user_first_name, SPACE(1), user_last_name) as user_name
-                            , ta_people_id
-                            , ta_email_id as email
-                            , ta_time_zone as time_zone
-                            , ta_have_pic as have_pic
-                            , important as important
-                            , employer as employer
-                            , CONCAT(ta_first_name, SPACE(1), ta_last_name) as name
-                            , ta_phone_number as phone_number
-                            , ta_picture as pic
-                            , relation_type as relationship
-                            , ta_time_zone as time_zone
-                        FROM relationship
+                            , r.ta_people_id
+                            , ta.ta_email_id as email
+                            , ta.ta_time_zone as time_zone
+                            , r.ta_have_pic as have_pic
+                            , r.important as important
+                            , ta.employer as employer
+                            , CONCAT(ta.ta_first_name, SPACE(1), ta.ta_last_name) as name
+                            , ta.ta_phone_number as phone_number
+                            , r.ta_picture as pic
+                            , r.relation_type as relationship
+                        FROM relationship r
                         JOIN
                         ta_people ta
                         ON ta_people_id = ta_unique_id
@@ -5564,7 +5572,278 @@ class UpdateAccessToken(Resource):
             disconnect(conn)
 
 
+class TaAppleLogin (Resource):
+
+    def post(self):
+        response = {}
+        items = {}
+        try:
+            conn = connect()
+            token = request.form.get('id_token')
+            access_token = request.form.get('code')
+            # print(token)
+            if token:
+                # print('INN')
+                data = jwt.decode(token, verify=False)
+                #print('data-----', data)
+                email = data.get('email')
+
+                #print(data, email)
+                if email is not None:
+                    sub = data['sub']
+                    query = """
+                    SELECT ta_unique_id,
+                        ta_last_name,
+                        ta_first_name,
+                        ta_email_id,
+                        password_hashed,
+                        email_verified,
+                        ta_social_media,
+                        ta_google_auth_token,
+                        ta_google_refresh_token,
+                        ta_social_id
+                    FROM ta_people ta
+                    WHERE ta_social_id = \'""" + sub + """\';
+                    """
+                    items = execute(query, 'get', conn)
+                    # print(items)
+
+                    if items['code'] != 280:
+                        items['message'] = "Internal error"
+                        return items
+
+                    # new customer
+
+                    if not items['result']:
+                        #print('New customer')
+                        items['message'] = "Social_id doesn't exists Please go to the signup page"
+                        get_user_id_query = "CALL get_ta_people_id();"
+                        NewUserIDresponse = execute(
+                            get_user_id_query, 'get', conn)
+
+                        if NewUserIDresponse['code'] == 490:
+                            string = " Cannot get new User id. "
+                            #print("*" * (len(string) + 10))
+                            #print(string.center(len(string) + 10, "*"))
+                            #print("*" * (len(string) + 10))
+                            response['message'] = "Internal Server Error."
+                            response['code'] = 500
+                            return response
+
+                        NewUserID = NewUserIDresponse['result'][0]['new_id']
+                        ta_social_signup = 'APPLE'
+                        #print('NewUserID', NewUserID)
+
+                        customer_insert_query = """
+                                    INSERT INTO ta_people 
+                                    (
+                                        ta_unique_id,
+                                        ta_timestamp,
+                                        ta_email_id,
+                                        ta_social_media,
+                                        ta_google_refresh_token,
+                                        ta_google_auth_token,
+                                        ta_social_id,
+                                        ta_social_timestamp
+                                    )
+                                    VALUES
+                                    (
+                                    
+                                        \'""" + NewUserID + """\',
+                                        \'""" + (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") + """\',
+                                        \'""" + email + """\',
+                                        \'""" + ta_social_signup + """\',
+                                        \'""" + access_token + """\',
+                                        \'""" + access_token + """\',
+                                        \'""" + sub + """\',
+                                        DATE_ADD(now() , INTERVAL 1 DAY)
+                                    );"""
+
+                        item = execute(customer_insert_query, 'post', conn)
+
+                        # print('INSERT')
+
+                        if item['code'] != 281:
+                            item['message'] = 'Check insert sql query'
+                            return item
+                        #print('successful redirect to signup')
+                        return redirect("https://manifestmy.life" + NewUserID)
+
+                    # Existing customer
+
+                    # print('existing-------')
+                    # print(items['result'][0]['user_social_media'])
+                    # print(items['result'][0]['social_id'])
+
+                    if items['result'][0]['ta_social_media'] != "APPLE":
+                        # print('1-----')
+                        items['message'] = "Wrong social media used for signup. Use \'" + \
+                            items['result'][0]['ta_social_media'] + "\'."
+                        items['code'] = 400
+                        return redirect("https://manifestmy.life" + items['result'][0]['ta_social_media'])
+
+                    elif items['result'][0]['ta_social_id'] != sub:
+                        # print('20-----')
+                        items['message'] = "ta_social_id mismatch"
+                        items['code'] = 400
+                        return redirect("https://servingfresh.me/")
+
+                    else:
+                        #print('successful redirect to farms')
+                        return redirect("https://servingfresh.me/?id=" + items['result'][0]['ta_unique_id'])
+
+                else:
+                    items['message'] = "ta_Social_id not returned by Apple LOGIN"
+                    items['code'] = 400
+                    return items
+
+            else:
+                response = {
+                    "message": "Token not found in Apple's Response",
+                    "code": 400
+                }
+                return response
+        except:
+            raise BadRequest("Request failed, please try again later.")
+
+
+class UserAppleLogin (Resource):
+
+    def post(self):
+        response = {}
+        items = {}
+        try:
+            conn = connect()
+            token = request.form.get('id_token')
+            access_token = request.form.get('code')
+            # print(token)
+            if token:
+                # print('INN')
+                data = jwt.decode(token, verify=False)
+                #print('data-----', data)
+                email = data.get('email')
+
+                #print(data, email)
+                if email is not None:
+                    sub = data['sub']
+                    query = """
+                    SELECT user_unique_id,
+                        user_last_name,
+                        user_first_name,
+                        user_email_id,
+                        password_hashed,
+                        email_verified,
+                        user_social_media,
+                        google_auth_token,
+                        google_refresh_token,
+                        social_id
+                    FROM users user
+                    WHERE social_id = \'""" + sub + """\';
+                    """
+                    items = execute(query, 'get', conn)
+                    # print(items)
+
+                    if items['code'] != 280:
+                        items['message'] = "Internal error"
+                        return items
+
+                    # new customer
+
+                    if not items['result']:
+                        #print('New customer')
+                        items['message'] = "Social_id doesn't exists Please go to the signup page"
+                        get_user_id_query = "CALL get_user_id();"
+                        NewUserIDresponse = execute(
+                            get_user_id_query, 'get', conn)
+
+                        if NewUserIDresponse['code'] == 490:
+                            string = " Cannot get new User id. "
+                            #print("*" * (len(string) + 10))
+                            #print(string.center(len(string) + 10, "*"))
+                            #print("*" * (len(string) + 10))
+                            response['message'] = "Internal Server Error."
+                            response['code'] = 500
+                            return response
+
+                        NewUserID = NewUserIDresponse['result'][0]['new_id']
+                        user_social_signup = 'APPLE'
+                        #print('NewUserID', NewUserID)
+
+                        customer_insert_query = """
+                                    INSERT INTO users
+                                    (
+                                        user_unique_id,
+                                        user_timesusermp,
+                                        user_email_id,
+                                        user_social_media,
+                                        google_refresh_token,
+                                        google_auth_token,
+                                        social_id,
+                                        user_social_timestamp
+                                    )
+                                    VALUES
+                                    (
+                                    
+                                        \'""" + NewUserID + """\',
+                                        \'""" + (datetime.now()).strftime("%Y-%m-%d %H:%M:%S") + """\',
+                                        \'""" + email + """\',
+                                        \'""" + user_social_signup + """\',
+                                        \'""" + access_token + """\',
+                                        \'""" + access_token + """\',
+                                        \'""" + sub + """\',
+                                        DATE_ADD(now() , INTERVAL 1 DAY)
+                                    );"""
+
+                        item = execute(customer_insert_query, 'post', conn)
+
+                        # print('INSERT')
+
+                        if item['code'] != 281:
+                            item['message'] = 'Check insert sql query'
+                            return item
+                        #print('successful redirect to signup')
+                        return redirect("https://manifestmy.life" + NewUserID)
+
+                    # Existing customer
+
+                    # print('existing-------')
+                    # print(items['result'][0]['user_social_media'])
+                    # print(items['result'][0]['social_id'])
+
+                    if items['result'][0]['user_social_media'] != "APPLE":
+                        # print('1-----')
+                        items['message'] = "Wrong social media used for signup. Use \'" + \
+                            items['result'][0]['user_social_media'] + "\'."
+                        items['code'] = 400
+                        return redirect("https://manifestmy.life" + items['result'][0]['user_social_media'])
+
+                    elif items['result'][0]['user_social_id'] != sub:
+                        # print('20-----')
+                        items['message'] = "user_social_id mismatch"
+                        items['code'] = 400
+                        return redirect("https://servingfresh.me/")
+
+                    else:
+                        #print('successful redirect to farms')
+                        return redirect("https://servingfresh.me/?id=" + items['result'][0]['user_unique_id'])
+
+                else:
+                    items['message'] = "user_Social_id not returned by Apple LOGIN"
+                    items['code'] = 400
+                    return items
+
+            else:
+                response = {
+                    "message": "Token not found in Apple's Response",
+                    "code": 400
+                }
+                return response
+        except:
+            raise BadRequest("Request failed, please try again later.")
+
 # CHECK THAT THIS IS ONLY USED FOR MOBILE LOGIN
+
+
 class Login(Resource):
     def post(self):
         print("In Login")
@@ -9578,6 +9857,9 @@ api.add_resource(UpdateATWatchMobile, '/api/v2/updateATWatchMobile')
 api.add_resource(UpdateISWatchMobile, '/api/v2/updateISWatchMobile')
 
 api.add_resource(Login, '/api/v2/login')
+api.add_resource(TaAppleLogin, '/api/v2/TaAppleLogin')
+api.add_resource(UserAppleLogin, '/api/v2/UserAppleLogin')
+
 api.add_resource(AndroidLoginCheck, '/api/v2/AndroidLoginCheck')
 api.add_resource(AccessRefresh, '/api/v2/updateAccessRefresh')
 
