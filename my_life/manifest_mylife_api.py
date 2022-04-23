@@ -465,7 +465,157 @@ class GetGoals(Resource):
         finally:
             disconnect(conn)
 
-# Returns Goals with actions/tasks and instructions/steps
+ # Get users provided the goal/routine ID           
+class GetUsersbyRoutine(Resource):
+    def get(self,goal_routine_id):
+        print("in GetUsersbyRoutine")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            # Get all uers sharing the same routine ID 
+            query = """
+                SELECT *,
+                    CASE
+                        WHEN is_complete = "True" THEN  "completed"
+                        WHEN is_in_progress = "True" THEN  "in_progress"
+                        ELSE "not started"
+                    END AS status
+                FROM goals_routines 
+                WHERE gr_unique_id = \'""" + goal_routine_id + """\';
+            """
+
+            items = execute(query, 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response,200
+        except:
+            raise BadRequest(
+                'Get User Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+# Get all the routines/goals provided the key word, username/id, taname/id
+class TAGetSimilarRoutines(Resource):
+    def get(self):
+        print("in TAGetSimilarRoutines")
+        response = {}
+        items = {}
+        key_word = request.form.get('key_word')
+
+        ta_id,ta_name,user_id,user_name = '','','',''
+        ta_info = request.form.get('ta_info')
+        if "-" in ta_info:
+            ta_id = ta_info
+        else:
+            ta_name = ta_info
+
+        user_info = request.form.get('user_info')
+        if '-' in user_info:
+            user_id = user_info
+        else:
+            user_name = user_info
+
+
+
+        try:
+
+            conn = connect()
+
+            query = """
+                        with temp as(SELECT 
+                        gr.gr_unique_id,
+                        gr.gr_title,
+                        gr.user_id,
+                        r.ta_people_id,
+                        concat(tp.ta_first_name,' ',tp.ta_last_name) as ta_name,
+                        concat(u.user_first_name, ' ', u.user_last_name) as user_name,
+                        gr.is_available,
+                        gr.is_complete,
+                        gr.is_in_progress,
+                        gr.is_displayed_today,
+                        gr.is_persistent,
+                        gr.is_sublist_available,
+                        gr.is_timed,
+                        gr.gr_photo,
+                        gr.gr_start_day_and_time,
+                        gr.gr_end_day_and_time,
+                        gr.repeat,
+                        gr.repeat_type,
+                        gr.repeat_ends_on,
+                        gr.repeat_occurences,
+                        gr.repeat_every,
+                        gr.repeat_frequency,
+                        gr.repeat_week_days,
+                        gr.gr_datetime_started,
+                        gr.gr_datetime_completed,
+                        gr.gr_expected_completion_time
+
+                        FROM manifest_mylife.goals_routines gr
+                        join manifest_mylife.relationship r on gr.user_id = r.user_uid
+                        join manifest_mylife.ta_people tp on r.ta_people_id = tp.ta_unique_id
+                        join manifest_mylife.users u on u.user_unique_id = gr.user_id)
+                        select * from temp
+                        where 1 = 1 
+                """
+                
+            if key_word != "":
+                query +=  """and gr_title like \'"""+'%' + key_word + '%'+"""\' """
+            if ta_id != "":
+                query +=  """ and ta_people_id = \'""" + ta_id + """\'"""
+            if ta_name != "":
+                query += """and ta_name like \'"""+'%' + ta_name + '%'+"""\' """
+            if user_id != "":
+                query += """ and user_id = \'""" + user_id + """\'"""
+            if user_name != "":
+                query += """and user_name like \'"""+'%' + user_name + '%'+"""\' """
+
+
+            items = execute(query, 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response,200
+        except:
+            raise BadRequest(
+                'Get similar routines failed , please try again later.')
+        finally:
+            disconnect(conn)
+
+class getDuplicateRelationships(Resource):
+    def get(self):
+        print("in getDuplicateRelationships")
+        response = {}
+        items = {}
+        try:
+
+            conn = connect()
+
+            query = """
+                with t as (select ta_people_id,user_uid,count(*)
+                from manifest_mylife.relationship 
+                group by ta_people_id,user_uid having count(*) > 1)
+                select * from manifest_mylife.relationship org
+                join t on org.ta_people_id = t.ta_people_id
+                and org.user_uid = t.user_uid
+                order by org.ta_people_id;
+                """
+            items = execute(query, 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response,200
+        except:
+            raise BadRequest(
+                'Get similar routines failed , please try again later.')
+        finally:
+            disconnect(conn)
 
 
 class GAI(Resource):
@@ -2847,7 +2997,7 @@ class DeleteIS(Resource):
 #         finally:
 #             disconnect(conn)
 
-
+# That's copy
 class CopyGR(Resource):
     def post(self):
         print("In copyGR ")
@@ -9714,6 +9864,12 @@ api.add_resource(GetGoals, '/api/v2/getgoals/<string:user_id>')
 # working web 101121
 api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 # working Mobile only 092821
+
+api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
+api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/') 
+api.add_resource(getDuplicateRelationships,'/api/v2/relationships/')
+
+
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
 # api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
 api.add_resource(GRAI, '/api/v2/grai/<string:user_id>')
