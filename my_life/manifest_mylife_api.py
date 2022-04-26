@@ -465,9 +465,11 @@ class GetGoals(Resource):
         finally:
             disconnect(conn)
 
- # Get users provided the goal/routine ID           
+ # Get users provided the goal/routine ID
+
+
 class GetUsersbyRoutine(Resource):
-    def get(self,goal_routine_id):
+    def get(self, goal_routine_id):
         print("in GetUsersbyRoutine")
         response = {}
         items = {}
@@ -475,7 +477,7 @@ class GetUsersbyRoutine(Resource):
 
             conn = connect()
 
-            # Get all uers sharing the same routine ID 
+            # Get all uers sharing the same routine ID
             query = """
                 SELECT *,
                     CASE
@@ -492,7 +494,7 @@ class GetUsersbyRoutine(Resource):
             response['message'] = 'successful'
             response['result'] = items['result']
 
-            return response,200
+            return response, 200
         except:
             raise BadRequest(
                 'Get User Request failed, please try again later.')
@@ -500,6 +502,8 @@ class GetUsersbyRoutine(Resource):
             disconnect(conn)
 
 # Get all the routines/goals provided the key word, username/id, taname/id
+
+
 class TAGetSimilarRoutines(Resource):
     def get(self):
         print("in TAGetSimilarRoutines")
@@ -507,7 +511,7 @@ class TAGetSimilarRoutines(Resource):
         items = {}
         key_word = request.form.get('key_word')
 
-        ta_id,ta_name,user_id,user_name = '','','',''
+        ta_id, ta_name, user_id, user_name = '', '', '', ''
         ta_info = request.form.get('ta_info')
         if "-" in ta_info:
             ta_id = ta_info
@@ -519,8 +523,6 @@ class TAGetSimilarRoutines(Resource):
             user_id = user_info
         else:
             user_name = user_info
-
-
 
         try:
 
@@ -562,11 +564,11 @@ class TAGetSimilarRoutines(Resource):
                         select * from temp
                         where 1 = 1 
                 """
-                
+
             if key_word != "":
-                query +=  """and gr_title like \'"""+'%' + key_word + '%'+"""\' """
+                query += """and gr_title like \'"""+'%' + key_word + '%'+"""\' """
             if ta_id != "":
-                query +=  """ and ta_people_id = \'""" + ta_id + """\'"""
+                query += """ and ta_people_id = \'""" + ta_id + """\'"""
             if ta_name != "":
                 query += """and ta_name like \'"""+'%' + ta_name + '%'+"""\' """
             if user_id != "":
@@ -574,18 +576,18 @@ class TAGetSimilarRoutines(Resource):
             if user_name != "":
                 query += """and user_name like \'"""+'%' + user_name + '%'+"""\' """
 
-
             items = execute(query, 'get', conn)
 
             response['message'] = 'successful'
             response['result'] = items['result']
 
-            return response,200
+            return response, 200
         except:
             raise BadRequest(
                 'Get similar routines failed , please try again later.')
         finally:
             disconnect(conn)
+
 
 class getDuplicateRelationships(Resource):
     def get(self):
@@ -600,17 +602,41 @@ class getDuplicateRelationships(Resource):
                 with t as (select ta_people_id,user_uid,count(*)
                 from manifest_mylife.relationship 
                 group by ta_people_id,user_uid having count(*) > 1)
-                select * from manifest_mylife.relationship org
+                select org.*, CONCAT(ta.ta_first_name, SPACE(1), ta.ta_last_name) as ta_name, CONCAT(u.user_first_name, SPACE(1), u.user_last_name) as user_name from manifest_mylife.relationship org
                 join t on org.ta_people_id = t.ta_people_id
                 and org.user_uid = t.user_uid
-                order by org.ta_people_id;
+                JOIN manifest_mylife.ta_people ta ON
+                ta.ta_unique_id =  org.ta_people_id
+                JOIN manifest_mylife.users u ON
+                u.user_unique_id =  org.user_uid
+                order by org.ta_people_id
+                ;
                 """
             items = execute(query, 'get', conn)
 
             response['message'] = 'successful'
             response['result'] = items['result']
 
-            return response,200
+            return response, 200
+        except:
+            raise BadRequest(
+                'Get similar routines failed , please try again later.')
+        finally:
+            disconnect(conn)
+
+
+class deleteDuplicateRelationships(Resource):
+    def post(self, rel_id):
+        print("in deleteDuplicateRelationships")
+        response = {}
+        try:
+            conn = connect()
+            query = """DELETE FROM relationship WHERE id = \'""" + rel_id + """\';"""
+            items = execute(query, 'post', conn)
+
+            response['message'] = 'successful'
+
+            return response, 200
         except:
             raise BadRequest(
                 'Get similar routines failed , please try again later.')
@@ -2998,6 +3024,8 @@ class DeleteIS(Resource):
 #             disconnect(conn)
 
 # That's copy
+
+
 class CopyGR(Resource):
     def post(self):
         print("In copyGR ")
@@ -3774,13 +3802,13 @@ class ListAllTAUser(Resource):
 
             # Get all TA of the user
             query = """ SELECT DISTINCT ta_unique_id
-                                , CONCAT(ta_first_name, SPACE(1), ta_last_name) as name
-                                , ta_first_name
-                                , ta_last_name
-                                , ta_email_id
-                                , ta_time_zone
+                                , CONCAT(ta.ta_first_name, SPACE(1), ta.ta_last_name) as name
+                                , ta.ta_first_name
+                                , ta.ta_last_name
+                                , ta.ta_email_id
+                                , ta.ta_time_zone
                                 , r.relation_type
-                        FROM ta_people
+                        FROM ta_people ta
                         JOIN relationship r on ta_unique_id = ta_people_id
                         WHERE user_uid = \'""" + user_id + """\'
                         and advisor = '1';"""
@@ -9865,10 +9893,12 @@ api.add_resource(GetGoals, '/api/v2/getgoals/<string:user_id>')
 api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 # working Mobile only 092821
 
-api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
-api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/') 
-api.add_resource(getDuplicateRelationships,'/api/v2/relationships/')
-
+api.add_resource(GetUsersbyRoutine,
+                 '/api/v2/getusersbyroutine/<string:goal_routine_id>')
+api.add_resource(TAGetSimilarRoutines, '/api/v2/getsimilarroutines/')
+api.add_resource(getDuplicateRelationships, '/api/v2/relationships')
+api.add_resource(deleteDuplicateRelationships,
+                 '/api/v2/deleteRelationships/<string:rel_id>')
 
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
 # api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
