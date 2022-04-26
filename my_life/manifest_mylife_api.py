@@ -498,6 +498,7 @@ class GetUsersbyRoutine(Resource):
         finally:
             disconnect(conn)
 
+
 # Get all the routines/goals provided the key word, username/id, taname/id
 class TAGetSimilarRoutines(Resource):
     def get(self):
@@ -616,6 +617,46 @@ class getDuplicateRelationships(Resource):
         finally:
             disconnect(conn)
 
+class getTAsgivenUserName(Resource):
+    def get(self):
+        print("in getTAsgivenUserName")
+        user_full_name = request.form.get('user_full_name')
+        response = {}
+        items = {}
+        try:
+            conn = connect()
+            query = """
+                        with t as(
+                        select r.user_uid,r.ta_people_id,
+                        RTRIM(CONCAT(tp.ta_first_name,' ', tp.ta_last_name)) as ta_name,
+                        RTRIM(CONCAT(u.user_first_name,' ',u.user_last_name)) as user_name,
+                        tp.ta_email_id,
+                        tp.ta_phone_number,
+                        tp.employer,
+                        tp.ta_time_zone
+                        from manifest_mylife.relationship r
+                        join manifest_mylife.users u on r.user_uid = u.user_unique_id
+                        join manifest_mylife.ta_people tp on r.ta_people_id = tp.ta_unique_id)
+                        select distinct(ta_people_id),
+                        ta_name,
+                        ta_email_id,
+                        ta_phone_number,
+                        employer,
+                        ta_time_zone
+                        from t 
+                        where user_name = \'""" + user_full_name + """\';
+                """
+            items = execute(query, 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response,200
+        except:
+            raise BadRequest(
+                'Get all TAs for a user failed , please try again later.')
+        finally:
+            disconnect(conn)
 
 class GAI(Resource):
     def get(self, user_id):
@@ -5721,7 +5762,7 @@ class Login(Resource):
         response = {}
         try:
             conn = connect()
-            data = request.get_json(force=True)
+            data = request.get_json(force=True) 
             timestamp = getNow()
 
             email = data['email']
@@ -9589,6 +9630,7 @@ api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
 api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/') 
 api.add_resource(getDuplicateRelationships,'/api/v2/relationships/')
+api.add_resource(getTAsgivenUserName,'/api/v2/gettasgivenusername/')
 
 
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
