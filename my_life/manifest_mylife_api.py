@@ -616,11 +616,34 @@ class getDuplicateRelationships(Resource):
                 'Get similar routines failed , please try again later.')
         finally:
             disconnect(conn)
-
+class listAllUsersDropDownList(Resource):
+    def get(self):
+        response = {}
+        items = {}
+        try:
+            conn = connect()
+            query = """select distinct(u.user_unique_id),
+                    concat(u.user_first_name, ' ',u.user_last_name)
+                    from manifest_mylife.users u;"""
+            items = execute(query,'get',conn)
+            response['message'] = 'successful'
+            response['result'] = items['result']
+            return response,200
+        except:
+            raise BadRequest("Failed")
+        finally:
+            disconnect(conn)
 class getTAsgivenUserName(Resource):
     def get(self):
         print("in getTAsgivenUserName")
-        user_full_name = request.form.get('user_full_name')
+        user_info = request.form.get('user_full_name')
+        user_id,user_full_name = '',''
+
+        if "-" in user_info:
+            user_id = user_info
+        else:
+            user_full_name = user_info
+
         response = {}
         items = {}
         try:
@@ -643,9 +666,13 @@ class getTAsgivenUserName(Resource):
                         ta_phone_number,
                         employer,
                         ta_time_zone
-                        from t 
-                        where user_name = \'""" + user_full_name + """\';
-                """
+                        from t where 1 = 1"""
+
+            if user_id:
+                query +=  """ and user_uid = \'""" + user_id + """\'"""
+            if user_full_name:
+                query += """ and user_name = \'""" + user_full_name +"""\' ;"""
+
             items = execute(query, 'get', conn)
 
             response['message'] = 'successful'
@@ -655,6 +682,65 @@ class getTAsgivenUserName(Resource):
         except:
             raise BadRequest(
                 'Get all TAs for a user failed , please try again later.')
+        finally:
+            disconnect(conn)
+
+class NewExiTA(Resource):
+     def get(self):
+        user_info = request.form.get('user_full_name')
+        user_id,user_full_name = '',''
+        if "-" in user_info:
+            user_id = user_info
+        else:
+            user_full_name = user_info
+
+        response = {}
+        items = {}
+        try:
+            conn = connect()
+            query = """ 
+                        with temp as(
+                        with t as(
+                        select r.user_uid,r.ta_people_id,
+                        RTRIM(CONCAT(u.user_first_name,' ',u.user_last_name)) as user_name
+                        from manifest_mylife.relationship r
+                        join manifest_mylife.users u on r.user_uid = u.user_unique_id
+                        join manifest_mylife.ta_people tp on r.ta_people_id = tp.ta_unique_id)
+                        select distinct(ta_people_id),
+                        user_uid,
+                        user_name
+                        from t where 1 = 1 """
+            if user_id:
+                    query +=  """ and user_uid = \'""" + user_id +  """\'"""
+            if user_full_name:
+                query += """ and user_name = \'""" + user_full_name +  """\'"""
+
+            query += """)
+                        select 
+                        a.ta_unique_id,
+                        RTRIM(CONCAT(a.ta_first_name,' ', a.ta_last_name)) as ta_name,
+                        a.ta_email_id,
+                        a.ta_phone_number,
+                        case 
+                        when temp.user_uid IS NULL then 'New'
+                        else "Exi"
+                        end as TA_status,
+                        temp.user_uid,
+                        temp.user_name
+                        from manifest_mylife.ta_people a 
+						left join temp 
+                        on a.ta_unique_id = temp.ta_people_id
+                        order by TA_status ;"""
+
+            items = execute(query, 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+
+            return response,200
+        except:
+            raise BadRequest(
+                'Get all New and Existing TAs failed , please try again later.')
         finally:
             disconnect(conn)
 
@@ -5776,6 +5862,9 @@ class Login(Resource):
             time_zone = data['time_zone']
             print("time_zone: ", time_zone, type(time_zone))
 
+            if " "in user_first_name and user_last_name == "": # notsure whether should pu signup_plat form == apple here
+                user_first_name,user_last_name = user_first_name.split(" ") # tried testing it.....
+
             if email == "":
 
                 query = """
@@ -9627,10 +9716,14 @@ api.add_resource(GetGoals, '/api/v2/getgoals/<string:user_id>')
 api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 # working Mobile only 092821
 
-api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>')
+#working 2022 March,April
+api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>') # this is dead code
 api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/') 
 api.add_resource(getDuplicateRelationships,'/api/v2/relationships/')
 api.add_resource(getTAsgivenUserName,'/api/v2/gettasgivenusername/')
+api.add_resource(listAllUsersDropDownList,'/api/v2/listAllUsersDropDownList/')
+api.add_resource(NewExiTA,'/api/v2/NewExiTA/')
+##OK
 
 
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
@@ -9775,7 +9868,7 @@ api.add_resource(UpdateATWatchMobile, '/api/v2/updateATWatchMobile')
 # working Mobile only 092821
 api.add_resource(UpdateISWatchMobile, '/api/v2/updateISWatchMobile')
 
-api.add_resource(Login, '/api/v2/login')
+api.add_resource(Login, '/api/v2/login') # tested for creating new users 20220426
 api.add_resource(AndroidLoginCheck, '/api/v2/AndroidLoginCheck')
 api.add_resource(AccessRefresh, '/api/v2/updateAccessRefresh')
 
