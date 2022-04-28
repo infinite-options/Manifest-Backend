@@ -741,13 +741,15 @@ class NewExiTA(Resource):
                     query +=  """ and user_uid = \'""" + user_id +  """\'"""
             if user_full_name:
                 query += """ and user_name = \'""" + user_full_name +  """\'"""
-
+                
             query += """)
                         select 
                         a.ta_unique_id,
                         RTRIM(CONCAT(a.ta_first_name,' ', a.ta_last_name)) as ta_name,
                         a.ta_email_id,
                         a.ta_phone_number,
+                        a.ta_time_zone,
+                        users.time_zone,
                         users.user_have_pic,
                         users.user_picture,
                         case 
