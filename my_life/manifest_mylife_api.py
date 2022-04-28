@@ -745,7 +745,9 @@ class NewExiTA(Resource):
             if user_id:
                 query += """ and user_uid = \'""" + user_id + """\'"""
             if user_full_name:
-                query += """ and user_name = \'""" + user_full_name + """\'"""
+
+                query += """ and user_name = \'""" + user_full_name +  """\'"""
+                
 
             query += """)
                         select 
@@ -753,13 +755,19 @@ class NewExiTA(Resource):
                         RTRIM(CONCAT(a.ta_first_name,' ', a.ta_last_name)) as ta_name,
                         a.ta_email_id,
                         a.ta_phone_number,
+                        a.ta_time_zone,
+                        users.time_zone,
+                        users.user_have_pic,
+                        users.user_picture,
                         case 
                         when temp.user_uid IS NULL then 'New'
                         else "Exi"
                         end as TA_status,
                         temp.user_uid,
-                        temp.user_name
+                        temp.user_name as user_name
                         from manifest_mylife.ta_people a 
+                        join manifest_mylife.users
+                        on users.user_email_id = a.ta_email_id
 						left join temp 
                         on a.ta_unique_id = temp.ta_people_id
                         order by TA_status ;"""
