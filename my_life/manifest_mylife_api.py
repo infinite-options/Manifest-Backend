@@ -643,6 +643,8 @@ class deleteDuplicateRelationships(Resource):
                 'Get similar routines failed , please try again later.')
         finally:
             disconnect(conn)
+
+
 class listAllUsersDropDownList(Resource):
     def get(self):
         response = {}
@@ -652,19 +654,21 @@ class listAllUsersDropDownList(Resource):
             query = """select distinct(u.user_unique_id),
                     concat(u.user_first_name, ' ',u.user_last_name)
                     from manifest_mylife.users u;"""
-            items = execute(query,'get',conn)
+            items = execute(query, 'get', conn)
             response['message'] = 'successful'
             response['result'] = items['result']
-            return response,200
+            return response, 200
         except:
             raise BadRequest("Failed")
         finally:
             disconnect(conn)
+
+
 class getTAsgivenUserName(Resource):
-    def get(self):
+    def post(self):
         print("in getTAsgivenUserName")
         user_info = request.form.get('user_full_name')
-        user_id,user_full_name = '',''
+        user_id, user_full_name = '', ''
 
         if "-" in user_info:
             user_id = user_info
@@ -696,26 +700,27 @@ class getTAsgivenUserName(Resource):
                         from t where 1 = 1"""
 
             if user_id:
-                query +=  """ and user_uid = \'""" + user_id + """\'"""
+                query += """ and user_uid = \'""" + user_id + """\'"""
             if user_full_name:
-                query += """ and user_name = \'""" + user_full_name +"""\' ;"""
+                query += """ and user_name = \'""" + user_full_name + """\' ;"""
 
             items = execute(query, 'get', conn)
 
             response['message'] = 'successful'
             response['result'] = items['result']
 
-            return response,200
+            return response, 200
         except:
             raise BadRequest(
                 'Get all TAs for a user failed , please try again later.')
         finally:
             disconnect(conn)
 
+
 class NewExiTA(Resource):
-     def get(self):
+    def post(self):
         user_info = request.form.get('user_full_name')
-        user_id,user_full_name = '',''
+        user_id, user_full_name = '', ''
         if "-" in user_info:
             user_id = user_info
         else:
@@ -738,9 +743,9 @@ class NewExiTA(Resource):
                         user_name
                         from t where 1 = 1 """
             if user_id:
-                    query +=  """ and user_uid = \'""" + user_id +  """\'"""
+                query += """ and user_uid = \'""" + user_id + """\'"""
             if user_full_name:
-                query += """ and user_name = \'""" + user_full_name +  """\'"""
+                query += """ and user_name = \'""" + user_full_name + """\'"""
 
             query += """)
                         select 
@@ -764,12 +769,13 @@ class NewExiTA(Resource):
             response['message'] = 'successful'
             response['result'] = items['result']
 
-            return response,200
+            return response, 200
         except:
             raise BadRequest(
                 'Get all New and Existing TAs failed , please try again later.')
         finally:
             disconnect(conn)
+
 
 class GAI(Resource):
     def get(self, user_id):
@@ -6155,7 +6161,7 @@ class Login(Resource):
         response = {}
         try:
             conn = connect()
-            data = request.get_json(force=True) 
+            data = request.get_json(force=True)
             timestamp = getNow()
 
             email = data['email']
@@ -6169,8 +6175,10 @@ class Login(Resource):
             time_zone = data['time_zone']
             print("time_zone: ", time_zone, type(time_zone))
 
-            if " "in user_first_name and user_last_name == "": # notsure whether should pu signup_plat form == apple here
-                user_first_name,user_last_name = user_first_name.split(" ") # tried testing it.....
+            # notsure whether should pu signup_plat form == apple here
+            if " " in user_first_name and user_last_name == "":
+                # tried testing it.....
+                user_first_name, user_last_name = user_first_name.split(" ")
 
             if email == "":
 
@@ -10024,16 +10032,18 @@ api.add_resource(GetRoutines, '/api/v2/getroutines/<string:user_id>')
 # working Mobile only 092821
 
 
-#working 2022 March,April
-api.add_resource(GetUsersbyRoutine,'/api/v2/getusersbyroutine/<string:goal_routine_id>') # this is dead code
-api.add_resource(TAGetSimilarRoutines,'/api/v2/getsimilarroutines/') 
-api.add_resource(getDuplicateRelationships,'/api/v2/relationships/')
-api.add_resource(getTAsgivenUserName,'/api/v2/gettasgivenusername/')
-api.add_resource(listAllUsersDropDownList,'/api/v2/listAllUsersDropDownList/')
-api.add_resource(NewExiTA,'/api/v2/NewExiTA/')
+# working 2022 March,April
+# this is dead code
+api.add_resource(GetUsersbyRoutine,
+                 '/api/v2/getusersbyroutine/<string:goal_routine_id>')
+api.add_resource(TAGetSimilarRoutines, '/api/v2/getsimilarroutines/')
+api.add_resource(getDuplicateRelationships, '/api/v2/relationships/')
+api.add_resource(getTAsgivenUserName, '/api/v2/gettasgivenusername/')
+api.add_resource(listAllUsersDropDownList, '/api/v2/listAllUsersDropDownList/')
+api.add_resource(NewExiTA, '/api/v2/NewExiTA/')
 api.add_resource(deleteDuplicateRelationships,
                  '/api/v2/deleteRelationships/<string:rel_id>')
-##OK
+# OK
 
 api.add_resource(GAI, '/api/v2/gai/<string:user_id>')
 # api.add_resource(RTS, '/api/v2/rts/<string:user_id>')  # working NOT USED
@@ -10178,7 +10188,8 @@ api.add_resource(UpdateATWatchMobile, '/api/v2/updateATWatchMobile')
 api.add_resource(UpdateISWatchMobile, '/api/v2/updateISWatchMobile')
 
 
-api.add_resource(Login, '/api/v2/login') # tested for creating new users 20220426
+# tested for creating new users 20220426
+api.add_resource(Login, '/api/v2/login')
 
 api.add_resource(TaAppleLogin, '/api/v2/TaAppleLogin')
 api.add_resource(UserAppleLogin, '/api/v2/UserAppleLogin')
