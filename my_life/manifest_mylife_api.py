@@ -748,15 +748,16 @@ class NewExiTA(Resource):
             if user_full_name:
 
                 query += """ and user_name = \'""" + user_full_name +  """\'"""
-                
-                query += """), /*temp stores user_uid, all ta_people_id, user_name*/
-                        
-						tapic as(  /* tapic stores all ta_people_id,ta_picture*/
-                        select rr.ta_people_id,
-						max(rr.ta_picture) as ta_picture
-                        from manifest_mylife.relationship rr
-                        group by rr.ta_people_id
-                        )
+                #  temp stores user_uid, all ta_people_id, user_name
+
+                # tapic stores all ta people id, ta picture from icons table
+                query += """), 
+                        tapic as(
+                        select ta_id as ta_people_id,
+						url as ta_picture
+                        from manifest_mylife.icons rr
+                        group by rr.ta_id)
+
  						select 
                         a.ta_unique_id,
                         RTRIM(CONCAT(a.ta_first_name,' ', a.ta_last_name)) as ta_name,
@@ -770,7 +771,7 @@ class NewExiTA(Resource):
                         temp.user_uid,
                         temp.user_name
                         from manifest_mylife.ta_people a 
-                        join tapic
+                        left join tapic
                         on tapic.ta_people_id = a.ta_unique_id
 						left join temp 
                         on a.ta_unique_id = temp.ta_people_id
