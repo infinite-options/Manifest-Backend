@@ -746,11 +746,10 @@ class NewExiTA(Resource):
             if user_id:
                 query += """ and user_uid = \'""" + user_id + """\'"""
             if user_full_name:
-
                 query += """ and user_name = \'""" + user_full_name +  """\'"""
-                #  temp stores user_uid, all ta_people_id, user_name
+                #temp stores user_uid, all ta_people_id, user_name
 
-                # tapic stores all ta people id, ta picture from icons table
+                #tapic stores all ta people id, ta picture from icons table(there are only 5 of them now)
                 query += """), 
                         tapic as(
                         select ta_id as ta_people_id,
