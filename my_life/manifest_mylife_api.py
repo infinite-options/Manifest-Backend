@@ -652,7 +652,8 @@ class listAllUsersDropDownList(Resource):
         try:
             conn = connect()
             query = """select distinct(u.user_unique_id),
-                    concat(u.user_first_name, ' ',u.user_last_name)
+                    concat(u.user_first_name, ' ',u.user_last_name) as user_name,
+                    u.time_zone
                     from manifest_mylife.users u;"""
             items = execute(query, 'get', conn)
             response['message'] = 'successful'
