@@ -719,14 +719,17 @@ class getTAsgivenUserName(Resource):
 
 
 class NewExiTA(Resource):
-    def get(self):
+    def post(self):
         user_info = request.form.get('user_full_name')
+        print(user_info)
         user_id, user_full_name = '', ''
         if "-" in user_info:
             user_id = user_info
+            print('if')
         else:
             user_full_name = user_info
-
+            print('else')
+        print(user_id, user_full_name)
         response = {}
         items = {}
         try:
@@ -744,8 +747,38 @@ class NewExiTA(Resource):
                         user_name
                         from t where 1 = 1 """
             if user_id:
+                print('if2')
                 query += """ and user_uid = \'""" + user_id + """\'"""
+                print(query)
+                query += """), /*temp stores user_uid, all ta_people_id, user_name*/
+                        
+						tapic as(  /* tapic stores all ta_people_id,ta_picture*/
+                        select rr.ta_people_id,
+						max(rr.ta_picture) as ta_picture
+                        from manifest_mylife.relationship rr
+                        group by rr.ta_people_id
+                        )
+ 						select 
+                        a.ta_unique_id,
+                        RTRIM(CONCAT(a.ta_first_name,' ', a.ta_last_name)) as ta_name,
+                        a.ta_email_id,
+                        a.ta_phone_number,
+                        tapic.ta_picture,
+                        case 
+                        when temp.user_uid IS NULL then 'New'
+                        else "Exi"
+                        end as TA_status,
+                        temp.user_uid,
+                        temp.user_name
+                        from manifest_mylife.ta_people a 
+                        join tapic
+                        on tapic.ta_people_id = a.ta_unique_id
+						left join temp 
+                        on a.ta_unique_id = temp.ta_people_id
+                        order by TA_status;"""
+
             if user_full_name:
+
                 query += """ and user_name = \'""" + user_full_name +  """\'"""
                 #temp stores user_uid, all ta_people_id, user_name
 
@@ -756,6 +789,7 @@ class NewExiTA(Resource):
 						url as ta_picture
                         from manifest_mylife.icons rr
                         group by rr.ta_id)
+
 
  						select 
                         a.ta_unique_id,
