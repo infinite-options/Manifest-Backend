@@ -652,7 +652,8 @@ class listAllUsersDropDownList(Resource):
         try:
             conn = connect()
             query = """select distinct(u.user_unique_id),
-                    concat(u.user_first_name, ' ',u.user_last_name)
+                    concat(u.user_first_name, ' ',u.user_last_name) as user_name,
+                    u.time_zone
                     from manifest_mylife.users u;"""
             items = execute(query, 'get', conn)
             response['message'] = 'successful'
@@ -718,7 +719,7 @@ class getTAsgivenUserName(Resource):
 
 
 class NewExiTA(Resource):
-    def post(self):
+    def get(self):
         user_info = request.form.get('user_full_name')
         user_id, user_full_name = '', ''
         if "-" in user_info:
@@ -748,29 +749,32 @@ class NewExiTA(Resource):
 
                 query += """ and user_name = \'""" + user_full_name +  """\'"""
                 
-
-            query += """)
-                        select 
+                query += """), /*temp stores user_uid, all ta_people_id, user_name*/
+                        
+						tapic as(  /* tapic stores all ta_people_id,ta_picture*/
+                        select rr.ta_people_id,
+						max(rr.ta_picture) as ta_picture
+                        from manifest_mylife.relationship rr
+                        group by rr.ta_people_id
+                        )
+ 						select 
                         a.ta_unique_id,
                         RTRIM(CONCAT(a.ta_first_name,' ', a.ta_last_name)) as ta_name,
                         a.ta_email_id,
                         a.ta_phone_number,
-                        a.ta_time_zone,
-                        users.time_zone,
-                        users.user_have_pic,
-                        users.user_picture,
+                        tapic.ta_picture,
                         case 
                         when temp.user_uid IS NULL then 'New'
                         else "Exi"
                         end as TA_status,
                         temp.user_uid,
-                        temp.user_name as user_name
+                        temp.user_name
                         from manifest_mylife.ta_people a 
-                        join manifest_mylife.users
-                        on users.user_email_id = a.ta_email_id
+                        join tapic
+                        on tapic.ta_people_id = a.ta_unique_id
 						left join temp 
                         on a.ta_unique_id = temp.ta_people_id
-                        order by TA_status ;"""
+                        order by TA_status;"""
 
             items = execute(query, 'get', conn)
 
