@@ -779,10 +779,10 @@ class NewExiTA(Resource):
 
             if user_full_name:
 
-                query += """ and user_name = \'""" + user_full_name +  """\'"""
-                #temp stores user_uid, all ta_people_id, user_name
+                query += """ and user_name = \'""" + user_full_name + """\'"""
+                # temp stores user_uid, all ta_people_id, user_name
 
-                #tapic stores all ta people id, ta picture from icons table(there are only 5 of them now)
+                # tapic stores all ta people id, ta picture from icons table(there are only 5 of them now)
                 query += """), 
                         tapic as(
                         select ta_id as ta_people_id,
@@ -5929,6 +5929,76 @@ class UpdateAccessToken(Resource):
             disconnect(conn)
 
 
+class UserProfile(Resource):
+    # Fetches ALL DETAILS FOR A SPECIFIC USER
+
+    def get(self, id):
+        # def get(self):
+        response = {}
+        items = {}
+        #customer_uid = request.args['customer_uid']
+        print("user_id: ", id)
+        try:
+            conn = connect()
+            query = """
+                    SELECT *
+                    FROM M4ME.users u
+                    WHERE user_unique_id = \'""" + id + """\'
+                    """
+            items = execute(query, 'get', conn)
+            if items['result']:
+
+                items['message'] = 'Profile Loaded successful'
+                items['result'] = items['result']
+                items['code'] = 200
+                return items
+            else:
+                items['message'] = "USER UID doesn't exists"
+                items['result'] = items['result']
+                items['code'] = 404
+                return items
+
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+class TAProfile(Resource):
+    # Fetches ALL DETAILS FOR A SPECIFIC USER
+
+    def get(self, id):
+        # def get(self):
+        response = {}
+        items = {}
+        #customer_uid = request.args['customer_uid']
+        print("user_id: ", id)
+        try:
+            conn = connect()
+            query = """
+                    SELECT *
+                    FROM M4ME.ta_people ta
+                    WHERE t_unique_id = \'""" + id + """\'
+                    """
+            items = execute(query, 'get', conn)
+            if items['result']:
+
+                items['message'] = 'Profile Loaded successful'
+                items['result'] = items['result']
+                items['code'] = 200
+                return items
+            else:
+                items['message'] = "TA UID doesn't exists"
+                items['result'] = items['result']
+                items['code'] = 404
+                return items
+
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
 class TaAppleLogin (Resource):
 
     def post(self):
@@ -10237,8 +10307,10 @@ api.add_resource(UpdateISWatchMobile, '/api/v2/updateISWatchMobile')
 # tested for creating new users 20220426
 api.add_resource(Login, '/api/v2/login')
 
-api.add_resource(TaAppleLogin, '/api/v2/TaAppleLogin')
-api.add_resource(UserAppleLogin, '/api/v2/UserAppleLogin')
+api.add_resource(TaAppleLogin, '/api/v2/TaAppleLogin', '/')
+api.add_resource(UserAppleLogin, '/api/v2/UserAppleLogin', '/')
+api.add_resource(UserProfile, '/api/v2/UserProfile/<string:id>')
+api.add_resource(TAProfile, '/api/v2/TAProfile/<string:id>')
 
 api.add_resource(AndroidLoginCheck, '/api/v2/AndroidLoginCheck')
 api.add_resource(AccessRefresh, '/api/v2/updateAccessRefresh')
