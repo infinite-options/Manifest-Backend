@@ -5597,6 +5597,77 @@ class UpdatePeople(Resource):
         finally:
             disconnect(conn)
 
+
+class UpdateTA(Resource):
+    def post(self):
+        print("In UpdateTA")
+        response = {}
+        items = {}
+        try:
+            conn = connect()
+
+            timestamp = getNow()
+
+            ta_unique_id = request.form.get('ta_unique_id')
+            first_name = request.form.get('first_name')
+            last_name = request.form.get('last_name')
+            employer = request.form.get('employer')
+            phone_number = request.form.get('phone_number')
+            ta_time_zone = request.form.get("ta_time_zone")
+
+            # updates ta_people table
+            execute("""UPDATE  ta_people
+                        SET 
+                            ta_first_name = \'""" + first_name + """\'
+                            , ta_timestamp = \'""" + timestamp + """\'
+                            , ta_last_name = \'""" + last_name + """\'
+                            , ta_phone_number =  \'""" + phone_number + """\'
+                            , employer = \'""" + employer + """\'
+                            , ta_time_zone = \'""" + ta_time_zone + """\'
+                        WHERE ta_unique_id = \'""" + ta_unique_id + """\' ;""", 'post', conn)
+
+            response['message'] = 'successful'
+            response['result'] = 'Update to People successful'
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+
+class UpdateUser(Resource):
+    def post(self):
+        print("In UpdateUser")
+        response = {}
+        items = {}
+        try:
+            conn = connect()
+
+            timestamp = getNow()
+
+            user_unique_id = request.form.get('user_unique_id')
+            first_name = request.form.get('first_name')
+            last_name = request.form.get('last_name')
+            user_time_zone = request.form.get("user_time_zone")
+
+            # updates ta_people table
+            execute("""UPDATE  users
+                        SET 
+                            user_first_name = \'""" + first_name + """\'
+                            , user_timestamp = \'""" + timestamp + """\'
+                            , user_last_name = \'""" + last_name + """\'
+                            , time_zone = \'""" + user_time_zone + """\'
+                        WHERE user_unique_id = \'""" + user_unique_id + """\' ;""", 'post', conn)
+
+            response['message'] = 'successful'
+            response['result'] = 'Update to People successful'
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
 # Update new user
 
 
@@ -5942,7 +6013,7 @@ class UserProfile(Resource):
             conn = connect()
             query = """
                     SELECT *
-                    FROM M4ME.users u
+                    FROM users u
                     WHERE user_unique_id = \'""" + id + """\'
                     """
             items = execute(query, 'get', conn)
@@ -5977,8 +6048,8 @@ class TAProfile(Resource):
             conn = connect()
             query = """
                     SELECT *
-                    FROM M4ME.ta_people ta
-                    WHERE t_unique_id = \'""" + id + """\'
+                    FROM ta_people ta
+                    WHERE ta_unique_id = \'""" + id + """\'
                     """
             items = execute(query, 'get', conn)
             if items['result']:
@@ -6008,14 +6079,14 @@ class TaAppleLogin (Resource):
             conn = connect()
             token = request.form.get('id_token')
             access_token = request.form.get('code')
-            # print(token)
+            print(token)
             if token:
-                # print('INN')
+                print('INN')
                 data = jwt.decode(token, verify=False)
-                #print('data-----', data)
+                print('data-----', data)
                 email = data.get('email')
 
-                #print(data, email)
+                print(data, email)
                 if email is not None:
                     sub = data['sub']
                     query = """
@@ -6094,7 +6165,8 @@ class TaAppleLogin (Resource):
                             item['message'] = 'Check insert sql query'
                             return item
                         #print('successful redirect to signup')
-                        return redirect("https://manifestmy.life" + NewUserID)
+                        # return redirect("https://manifestmy.life/signup?id=" + NewUserID)
+                        return redirect("https://manifestmy.life/applesignup/" + NewUserID)
 
                     # Existing customer
 
@@ -6107,17 +6179,19 @@ class TaAppleLogin (Resource):
                         items['message'] = "Wrong social media used for signup. Use \'" + \
                             items['result'][0]['ta_social_media'] + "\'."
                         items['code'] = 400
-                        return redirect("https://manifestmy.life" + items['result'][0]['ta_social_media'])
+                        return redirect("https://manifestmy.life/")
 
                     elif items['result'][0]['ta_social_id'] != sub:
                         # print('20-----')
                         items['message'] = "ta_social_id mismatch"
                         items['code'] = 400
-                        return redirect("https://servingfresh.me/")
+                        return redirect("https://manifestmy.life/")
 
                     else:
                         #print('successful redirect to farms')
-                        return redirect("https://servingfresh.me/?id=" + items['result'][0]['ta_unique_id'])
+                        items['message'] = items['result'][0]['ta_email_id']
+                        items['code'] = 200
+                        return redirect("https://manifestmy.life/login?ta_email=" + items['result'][0]['ta_email_id'])
 
                 else:
                     items['message'] = "ta_Social_id not returned by Apple LOGIN"
@@ -6200,7 +6274,7 @@ class UserAppleLogin (Resource):
                                     INSERT INTO users
                                     (
                                         user_unique_id,
-                                        user_timesusermp,
+                                        user_timestamp,
                                         user_email_id,
                                         user_social_media,
                                         google_refresh_token,
@@ -6229,7 +6303,7 @@ class UserAppleLogin (Resource):
                             item['message'] = 'Check insert sql query'
                             return item
                         #print('successful redirect to signup')
-                        return redirect("https://manifestmy.life" + NewUserID)
+                        return redirect("https://manifestmy.life/applesignup/" + NewUserID)
 
                     # Existing customer
 
@@ -6242,17 +6316,17 @@ class UserAppleLogin (Resource):
                         items['message'] = "Wrong social media used for signup. Use \'" + \
                             items['result'][0]['user_social_media'] + "\'."
                         items['code'] = 400
-                        return redirect("https://manifestmy.life" + items['result'][0]['user_social_media'])
+                        return redirect("https://manifestmy.life/")
 
                     elif items['result'][0]['user_social_id'] != sub:
                         # print('20-----')
                         items['message'] = "user_social_id mismatch"
                         items['code'] = 400
-                        return redirect("https://servingfresh.me/")
+                        return redirect("https://manifestmy.life/")
 
                     else:
                         #print('successful redirect to farms')
-                        return redirect("https://servingfresh.me/?id=" + items['result'][0]['user_unique_id'])
+                        return redirect("https://manifestmy.life/login?user_uid=" + items['result'][0]['user_email_id'])
 
                 else:
                     items['message'] = "user_Social_id not returned by Apple LOGIN"
@@ -10318,6 +10392,9 @@ api.add_resource(AccessRefresh, '/api/v2/updateAccessRefresh')
 api.add_resource(UpdateAboutMe2, '/api/v2/update')
 api.add_resource(UploadIcons, '/api/v2/uploadIcons')
 api.add_resource(UpdatePeople, '/api/v2/updatePeople')
+api.add_resource(UpdateTA, '/api/v2/UpdateTA')
+api.add_resource(UpdateUser, '/api/v2/UpdateUser')
+
 # api.add_resource(ChangeHistory, '/api/v2/changeHistory/<string:user_id>')
 # api.add_resource(ChangeHistory_old, '/api/v2/changeHistory_annotated/<string:user_id>')
 api.add_resource(ExistingUser, '/api/v2/existingUser')
