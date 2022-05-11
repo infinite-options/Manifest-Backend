@@ -3794,7 +3794,7 @@ class CopyGR(Resource):
 #                                     res['result'])
 #                                 items['result'][i]['notifications'][j]['guid'] = guid_response[0]['ta_guid_device_id_notification']
 
-#                         # Get User Info if first notification is of user
+#
 #                         elif res['result'][j]['user_ta_id'][0] == '1' and res['result'][j]['user_ta_id'] in users:
 #                             query1 = """SELECT user_unique_id, cust_guid_device_id_notification FROM users where user_unique_id = \'""" + \
 #                                 res['result'][j]['user_ta_id'] + """\';"""
@@ -6166,7 +6166,10 @@ class TaAppleLogin (Resource):
                             return item
                         #print('successful redirect to signup')
                         # return redirect("https://manifestmy.life/signup?id=" + NewUserID)
+
                         return redirect("https://manifestmy.life/applesignup/" + NewUserID)
+
+                        # return redirect("http://localhost:3000/applesignup/" + NewUserID)
 
                     # Existing customer
 
@@ -6192,6 +6195,7 @@ class TaAppleLogin (Resource):
                         items['message'] = items['result'][0]['ta_email_id']
                         items['code'] = 200
                         return redirect("https://manifestmy.life/login?ta_email=" + items['result'][0]['ta_email_id'])
+                        # return redirect("http://localhost:3000/login?ta_email=" + items['result'][0]['ta_email_id'])
 
                 else:
                     items['message'] = "ta_Social_id not returned by Apple LOGIN"
@@ -6326,7 +6330,7 @@ class UserAppleLogin (Resource):
 
                     else:
                         #print('successful redirect to farms')
-                        return redirect("https://manifestmy.life/login?user_uid=" + items['result'][0]['user_email_id'])
+                        return redirect("https://manifestmy.life/login?user_email=" + items['result'][0]['user_email_id'])
 
                 else:
                     items['message'] = "user_Social_id not returned by Apple LOGIN"
