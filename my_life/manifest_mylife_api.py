@@ -2230,7 +2230,7 @@ class UpdateGR(Resource):
                                     , after_is_set = \'""" + str(user_after_is_set).title() + """\'
                                     , after_message = \'""" + str(user_after_message).replace("'", "''") + """\'
                                     , after_time  = \'""" + user_after_time + """\'
-                                WHERE gr_at_id = \'""" + id + """\' and user_ta_id = \'""" + user_id + """\';"""
+                                WHERE (gr_at_id = \'""" + id + """\' and user_ta_id = \'""" + user_id + """\') ;"""
             execute(query1, 'post', conn)
 
             noti_res = execute("""SELECT * FROM notifications WHERE gr_at_id = \'""" +
@@ -2269,12 +2269,7 @@ class UpdateGR(Resource):
                                 after_time = \'""" + ta_after_time + """\';""", 'post', conn)
             else:
                 # TA notfication
-                execute("""UPDATE notifications
-                             SET   
-                                    before_time = \'""" + ta_before_time + """\'
-                                    , during_time = \'""" + ta_during_time + """\'
-                                    , after_time  = \'""" + ta_after_time + """\'
-                                WHERE gr_at_id = \'""" + id + """\' and user_ta_id  != \'""" + user_id + """\';""", 'get', conn)
+
                 query2 = """UPDATE notifications
                                 SET   before_is_enable = \'""" + str(ta_before_is_enabled).title() + """\'
                                         , before_is_set  = \'""" + str(ta_before_is_set).title() + """\'
@@ -3293,7 +3288,7 @@ class CopyGR(Resource):
             print("Before insert")
             execute("""INSERT INTO goals_routines
                        SET gr_unique_id = \'""" + new_gr_id + """\',
-                           gr_title = \'""" + goal_routine_response[0]['gr_title'] + """\' ,
+                           gr_title = \'""" + goal_routine_response[0]['gr_title'] + ' copy' + """\' ,
                            user_id = \'""" + user_id + """\',
                            is_available = \'""" + goal_routine_response[0]['is_available'] + """\',
                            is_complete = \'""" + 'False' + """\' ,
