@@ -1,5 +1,5 @@
 # MANIFEST BACKEND PYTHON FILE
-# manifestmy.life and manifestmy.life
+# manifestmy.space and manifestmy.life
 # https://3s3sftsr90.execute-api.us-west-1.amazonaws.com/dev/api/v2/<enter_endpoint_details> for myspace
 # https://gyn3vgy3fb.execute-api.us-west-1.amazonaws.com/dev/api/v2/<enter_endpoint_details> for mylife
 
@@ -5855,6 +5855,7 @@ class TaTokenEmail(Resource):
                                 , ta_email_id
                                 , ta_google_auth_token
                                 ,ta_google_refresh_token
+                                ,ta_picture
                         FROM
                         ta_people WHERE ta_email_id = \'"""
                 + ta_email_id
@@ -7191,8 +7192,35 @@ class GetHistory(Resource):
             # TodayGoalsRoutines.post(self, user_id)
             # print("after Function call")
 
+            # APPARENTLY THIS QUERY RETURNS TOO MUCH DATA SO IN SOME CASES IT RETURNED AN ERROR 
+            # items = execute(
+            #     """SELECT * FROM manifest_mylife.history where user_id = \'""" + user_id + """\';""", 'get', conn)
+
             items = execute(
-                """SELECT * FROM history where user_id = \'""" + user_id + """\';""", 'get', conn)
+                """SELECT * FROM manifest_mylife.history where user_id = \'""" + user_id + """\' AND date_affected >= CURDATE() - INTERVAL 30 DAY AND date_affected <= CURDATE();""", 'get', conn)
+
+            response['message'] = 'successful'
+            response['result'] = items['result']
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+# USED TO TEST GetHistory
+class GetHistoryDateRange(Resource):
+    def get(self, user_id, date1_affected, date2_affected):
+        print("In GetHistory")
+        response = {}
+        try:
+            conn = connect()
+
+            # print("before Function call")
+            # TodayGoalsRoutines.post(self, user_id)
+            # print("after Function call")
+
+            items = execute(
+                """SELECT * FROM manifest_mylife.history where user_id = \'""" + user_id + """\' AND date_affected >= \'""" + date1_affected + """\' AND date_affected <= \'""" + date2_affected + """\';""", 'get', conn)
 
             response['message'] = 'successful'
             response['result'] = items['result']
@@ -10306,6 +10334,7 @@ api.add_resource(GetImages, '/api/v2/getImages/<string:user_id>')
 api.add_resource(GetPeopleImages, '/api/v2/getPeopleImages/<string:ta_id>')
 # working 092821
 api.add_resource(GetHistory, '/api/v2/getHistory/<string:user_id>')
+api.add_resource(GetHistoryDateRange, '/api/v2/getHistoryDateRange/<string:user_id>,<string:date1_affected>,<string:date2_affected>')
 # working Mobile only 092821
 api.add_resource(
     GetHistoryDate, '/api/v2/getHistoryDate/<string:user_id>,<string:date_affected>')
