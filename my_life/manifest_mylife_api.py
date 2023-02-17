@@ -5609,6 +5609,9 @@ class UpdateTA(Resource):
             employer = request.form.get('employer')
             phone_number = request.form.get('phone_number')
             ta_time_zone = request.form.get("ta_time_zone")
+            ta_picture = request.form.get("ta_photo_url")
+
+            print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone, ta_picture)
 
             # updates ta_people table
             execute("""UPDATE  ta_people
@@ -5619,6 +5622,7 @@ class UpdateTA(Resource):
                             , ta_phone_number =  \'""" + phone_number + """\'
                             , employer = \'""" + employer + """\'
                             , ta_time_zone = \'""" + ta_time_zone + """\'
+                            , ta_picture = \'""" + ta_picture + """\'
                         WHERE ta_unique_id = \'""" + ta_unique_id + """\' ;""", 'post', conn)
 
             response['message'] = 'successful'
