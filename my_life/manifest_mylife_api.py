@@ -5873,8 +5873,11 @@ class TaTokenEmail(Resource):
             response["ta_email_id"] = items["result"][0]["ta_email_id"]
             response["ta_google_auth_token"] = items["result"][0]["ta_google_auth_token"]
             response["ta_google_refresh_token"] = items["result"][0][
-                "ta_google_refresh_token"
+                "ta_google_refresh_token"]
+            response["ta_picture"] = items["result"][0][
+                "ta_picture"
             ]
+            response["result"] = items["result"][0]
 
             return response, 200
         except:
