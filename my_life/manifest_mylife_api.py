@@ -244,17 +244,20 @@ def serializeResponse(response):
 
 # Function to upload image to s3
 def allowed_file(filename):
+    # print("In allowed_file: ", filename)
     # Checks if the file is allowed to upload
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def helper_upload_img(file):
+    # print("In helper_upload_img 1: ", file)
     bucket = S3_BUCKET
     # creating key for image name
     salt = os.urandom(8)
     dk = hashlib.pbkdf2_hmac('sha256',  (file.filename).encode(
         'utf-8'), salt, 100000, dklen=64)
     key = (salt + dk).hex()
+    # print("In helper_upload_img 2: ", bucket, key, file.filename)
 
     if file and allowed_file(file.filename):
 
@@ -262,6 +265,7 @@ def helper_upload_img(file):
         filename = 'https://s3-us-west-1.amazonaws.com/' \
                    + str(bucket) + '/' + str(key)
 
+        # print("Back in Helper: ", filename)
         # uploading image to s3 bucket
         upload_file = s3.put_object(
             Bucket=bucket,
@@ -5609,12 +5613,22 @@ class UpdateTA(Resource):
             employer = request.form.get('employer')
             phone_number = request.form.get('phone_number')
             ta_time_zone = request.form.get("ta_time_zone")
-            ta_picture = request.form.get("ta_photo_url")
+            # print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone)
 
-            print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone, ta_picture)
+            ta_photo_url = request.form.get('ta_photo_url')
+            # print("Picture URL Input from Form: ", ta_photo_url)
+            ta_picture = request.files.get("ta_picture")
+            # print("Picture Input from Form: ", ta_picture)
+
+            if ta_picture.filename != '':
+                # print("Received a picture: ", ta_picture)
+                ta_photo_url = helper_upload_img(ta_picture)
+                print("After Image Helper: ", ta_photo_url)
+
+            # print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone, ta_photo_url)
 
             # updates ta_people table
-            execute("""UPDATE  ta_people
+            query = """UPDATE  ta_people
                         SET 
                             ta_first_name = \'""" + first_name + """\'
                             , ta_timestamp = \'""" + timestamp + """\'
@@ -5622,8 +5636,11 @@ class UpdateTA(Resource):
                             , ta_phone_number =  \'""" + phone_number + """\'
                             , employer = \'""" + employer + """\'
                             , ta_time_zone = \'""" + ta_time_zone + """\'
-                            , ta_picture = \'""" + ta_picture + """\'
-                        WHERE ta_unique_id = \'""" + ta_unique_id + """\' ;""", 'post', conn)
+                            , ta_picture = \'""" + str(ta_photo_url) + """\'
+                        WHERE ta_unique_id = \'""" + ta_unique_id + """\' ;"""
+
+            # print("Update TA Query: ", query)            
+            execute(query,'post', conn)
 
             response['message'] = 'successful'
             response['result'] = 'Update to People successful'
