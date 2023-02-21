@@ -5617,35 +5617,37 @@ class UpdateTA(Resource):
 
             ta_photo_url = request.form.get('ta_photo_url')
             # print("Picture URL Input from Form: ", ta_photo_url)
-            ta_picture = request.files.get("ta_picture")
-            # print("Picture Input from Form: ", ta_picture)
+            try: 
+                ta_picture = request.files.get("ta_picture")
+                # print("Picture Input from Form: ", ta_picture)
 
-            if ta_picture.filename != '':
-                # print("Received a picture: ", ta_picture)
-                ta_photo_url = helper_upload_img(ta_picture)
-                print("After Image Helper: ", ta_photo_url)
+                if ta_picture.filename != '':
+                    # print("Received a picture: ", ta_picture)
+                    ta_photo_url = helper_upload_img(ta_picture)
+                    print("After Image Helper: ", ta_photo_url)
 
-            # print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone, ta_photo_url)
+            finally:
+                # print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone, ta_photo_url)
 
-            # updates ta_people table
-            query = """UPDATE  ta_people
-                        SET 
-                            ta_first_name = \'""" + first_name + """\'
-                            , ta_timestamp = \'""" + timestamp + """\'
-                            , ta_last_name = \'""" + last_name + """\'
-                            , ta_phone_number =  \'""" + phone_number + """\'
-                            , employer = \'""" + employer + """\'
-                            , ta_time_zone = \'""" + ta_time_zone + """\'
-                            , ta_picture = \'""" + str(ta_photo_url) + """\'
-                        WHERE ta_unique_id = \'""" + ta_unique_id + """\' ;"""
+                # updates ta_people table
+                query = """UPDATE  ta_people
+                            SET 
+                                ta_first_name = \'""" + first_name + """\'
+                                , ta_timestamp = \'""" + timestamp + """\'
+                                , ta_last_name = \'""" + last_name + """\'
+                                , ta_phone_number =  \'""" + phone_number + """\'
+                                , employer = \'""" + employer + """\'
+                                , ta_time_zone = \'""" + ta_time_zone + """\'
+                                , ta_picture = \'""" + str(ta_photo_url) + """\'
+                            WHERE ta_unique_id = \'""" + ta_unique_id + """\' ;"""
 
-            # print("Update TA Query: ", query)            
-            execute(query,'post', conn)
+                # print("Update TA Query: ", query)            
+                execute(query,'post', conn)
 
-            response['message'] = 'successful'
-            response['result'] = 'Update to People successful'
+                response['message'] = 'successful'
+                response['result'] = 'Update to People successful'
 
-            return response, 200
+                return response, 200
         except:
             raise BadRequest('Request failed, please try again later.')
         finally:
