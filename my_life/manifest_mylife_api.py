@@ -7763,7 +7763,7 @@ class AboutMe(Resource):
                                 , ta_time_zone
                                 , CONCAT(ta_first_name, SPACE(1), ta_last_name) as people_name
                                 , ta_have_pic
-                                , ta_picture
+                                , relationship.ta_picture
                                 , important
                                 , user_uid
                                 , relation_type
