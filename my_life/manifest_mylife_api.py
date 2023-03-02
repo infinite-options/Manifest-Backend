@@ -8991,7 +8991,7 @@ def ManifestHistory_CRON():
             print("Current date in ", date_format, ": ", date, type(date))
 
             # THRESHOLD TIME
-            threshold_time = datetime(2000, 1, 1, 1, 0, 0, 0).time()
+            threshold_time = datetime(2000, 1, 1, 12, 0, 0, 0).time()
             print("Threshold time:   ", threshold_time, type(threshold_time))
 
             # DETERMINE IF WE SHOULD UPDATE USER HISTORY BASED ON THRESHOLD TIME (IE BEFORE 1AM)
@@ -9047,7 +9047,7 @@ def ManifestHistory_CRON():
                 # IF IT DOES EXIST THEN UPDATE HISTORY TABLE
                 else:
                     print("info exists in CRON Job  ==>  Prepare to UPDATE",
-                          currentGR['result'][0]['id'])
+                            currentGR['result'][0]['id'])
                     query = """
                         UPDATE manifest_mylife.history
                         SET id = \'""" + currentGR['result'][0]['id'] + """\',
@@ -9113,31 +9113,35 @@ def ManifestHistory_CRON():
 
                     # IF NO REPEAT, IS_DISPLAYED_TODAY IS TRUE ONLY IF CURRENT DATE = START DATE
                     if repeat.lower() == 'false':
+                    # if repeat_type.lower() != 'occur' || repeat_type.lower() != 'never' || repeat_type.lower() != 'on':
                         is_displayed_today = (start_date == cur_date)
                         print("Is_Displayed_Today: ", is_displayed_today)
 
                     # IF REPEAT
                     else:
-
+            
                         # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
                         if cur_date >= start_date:
-
                             # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
                             if repeat_type.lower() == 'occur':
                                 print("\nIn if after")
                                 if repeat_frequency.lower() == 'day':
-                                    repeat_occurences = repeat_occurences - 1
-                                    number_days = int(
-                                        repeat_occurences) * int(repeat_every)
-                                    repeat_ends_on = start_date + \
-                                        timedelta(days=number_days)
-                                    # print("Repeat Ends on: ", repeat_ends_on, type(repeat_ends_on))
-                                    # if repeat_ends_on < cur_date:
-                                    #     is_displayed_today = 'False'
-                                    #     print("Is_Displayed_Today: ", is_displayed_today)
-                                    # else:
-                                    #     is_displayed_today = 'True'
-                                    #     print("Is_Displayed_Today: ", is_displayed_today)
+                                    if repeat_occurences == '':
+                                        repeat_ends_on = cur_date
+                                    else:
+                                        repeat_occurences = int(
+                                            repeat_occurences) - 1
+                                        number_days = int(
+                                            repeat_occurences) * int(repeat_every)
+                                        repeat_ends_on = start_date + \
+                                            timedelta(days=number_days)
+                                        # print("Repeat Ends on: ", repeat_ends_on, type(repeat_ends_on))
+                                        # if repeat_ends_on < cur_date:
+                                        #     is_displayed_today = 'False'
+                                        #     print("Is_Displayed_Today: ", is_displayed_today)
+                                        # else:
+                                        #     is_displayed_today = 'True'
+                                        #     print("Is_Displayed_Today: ", is_displayed_today)
 
                             # IF REPEAT NEVER ENDS
                             elif repeat_type.lower() == 'never':
@@ -9156,8 +9160,10 @@ def ManifestHistory_CRON():
                                 # repeat_ends_on = repeat_ends[:24]
                                 # print(repeat_ends_on)
                                 # repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
-                                repeat_ends_on = datetime.strptime(
-                                    repeat_ends_on, "%Y-%m-%d").date()
+                                if repeat_ends_on == '':
+                                        repeat_ends_on = cur_date
+                                else:
+                                    repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
                                 # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
                                 # if repeat_ends_on < cur_date:
                                 #     is_displayed_today = 'False'
@@ -9166,20 +9172,20 @@ def ManifestHistory_CRON():
                                 #     is_displayed_today = 'True'
                                 #     print("Is_Displayed_Today: ", is_displayed_today)
 
-                            print("\nRepeat End on: ", repeat_ends_on,
-                                  type(repeat_ends_on))
+                            print("\nRepeat End on: ",
+                                    repeat_ends_on, type(repeat_ends_on))
                             if repeat_ends_on < cur_date:
                                 is_displayed_today = 'False'
                                 print("Is_Displayed_Today: ",
-                                      is_displayed_today)
+                                        is_displayed_today)
                             else:
                                 is_displayed_today = 'True'
                                 print("Is_Displayed_Today: ",
-                                      is_displayed_today)
+                                        is_displayed_today)
 
                     # UPDATE GRATIS
                     print("\nGetting Ready to update GRATIS for: ",
-                          goal['gr_unique_id'], type(goal['gr_unique_id']))
+                            goal['gr_unique_id'], type(goal['gr_unique_id']))
                     # print(str(is_displayed_today).title(), type(str(is_displayed_today).title()))
                     # print(goal['gr_unique_id'], type(goal['gr_unique_id']))
 
@@ -9216,8 +9222,10 @@ def ManifestHistory_CRON():
                         WHERE goal_routine_id = \'"""+goal['gr_unique_id']+"""\';
                     """
                     # print(getATquery)
-                    actions_task_response = execute(getATquery, 'get', conn)
-                    print(actions_task_response, type(actions_task_response))
+                    actions_task_response = execute(
+                        getATquery, 'get', conn)
+                    print(actions_task_response,
+                            type(actions_task_response))
 
                     print(actions_task_response['result'], type(
                         actions_task_response['result']))
@@ -9237,7 +9245,8 @@ def ManifestHistory_CRON():
                             # print(updateISquery)
                             updateIS = execute(updateISquery, 'post', conn)
                             print(updateIS)
-                    print("finished Reset for Goal: ", goal['gr_unique_id'])
+                    print("finished Reset for Goal: ",
+                            goal['gr_unique_id'])
 
             else:
                 # TIME IS AFTER THRESHOLD AND DATE AFFECTED IS CURRENT DATE
