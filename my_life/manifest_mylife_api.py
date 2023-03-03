@@ -250,14 +250,14 @@ def allowed_file(filename):
 
 
 def helper_upload_img(file):
-    print("In helper_upload_img 1: ", file)
+    # print("In helper_upload_img 1: ", file)
     bucket = S3_BUCKET
     # creating key for image name
     salt = os.urandom(8)
     dk = hashlib.pbkdf2_hmac('sha256',  (file.filename).encode(
         'utf-8'), salt, 100000, dklen=64)
     key = (salt + dk).hex()
-    print("In helper_upload_img 2: ", bucket, key, file.filename)
+    # print("In helper_upload_img 2: ", bucket, key, file.filename)
 
     if file and allowed_file(file.filename):
 
@@ -274,8 +274,8 @@ def helper_upload_img(file):
             ACL='public-read',
             ContentType='image/jpeg'
         )
-        print("File upload response : ", upload_file)
-        print("File uploaded to s3: ", filename)
+        # print("File upload response : ", upload_file)
+        # print("File uploaded to s3: ", filename)
         return filename
     return None
 
@@ -5614,21 +5614,21 @@ class UpdateTA(Resource):
             employer = request.form.get('employer')
             phone_number = request.form.get('phone_number')
             ta_time_zone = request.form.get("ta_time_zone")
-            print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone)
+            # print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone)
 
             ta_photo_url = request.form.get('ta_photo_url')
-            print("Picture URL Input from Form: ", ta_photo_url)
+            # print("Picture URL Input from Form: ", ta_photo_url)
             try: 
                 ta_picture = request.files.get("ta_picture")
-                print("Picture Input from Form: ", ta_picture)
+                # print("Picture Input from Form: ", ta_picture)
 
                 if ta_picture.filename != '':
-                    print("Received a picture: ", ta_picture)
+                    # print("Received a picture: ", ta_picture)
                     ta_photo_url = helper_upload_img(ta_picture)
-                    print("After Image Helper: ", ta_photo_url)
+                    # print("After Image Helper: ", ta_photo_url)
 
             finally:
-                print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone, ta_photo_url)
+                # print(ta_unique_id, first_name, last_name, employer, phone_number, ta_time_zone, ta_photo_url)
 
                 # updates ta_people table
                 query = """UPDATE  ta_people
@@ -5642,7 +5642,7 @@ class UpdateTA(Resource):
                                 , ta_picture = \'""" + str(ta_photo_url) + """\'
                             WHERE ta_unique_id = \'""" + ta_unique_id + """\' ;"""
 
-                print("Update TA Query: ", query)            
+                # print("Update TA Query: ", query)            
                 execute(query,'post', conn)
 
                 response['message'] = 'successful'
@@ -7750,13 +7750,13 @@ class AboutMe(Resource):
                                     LIMIT 1;""", 'get', conn)
 
             progress_list = progress['result']
-            print(progress_list)
+            # print(progress_list)
 
             if len(progress_list) > 0:
                 first_date = progress_list[0]['datetime_gmt']
             else:
                 first_date = ''
-            print(first_date)
+            # print(first_date)
 
             # returns important people
             query = """ SELECT ta_people_id
@@ -7776,8 +7776,8 @@ class AboutMe(Resource):
                             WHERE important = 'TRUE' and user_uid = \'""" + user_id + """\';"""
 
             items1 = execute(query, 'get', conn)
-            print("item1")
-            print(items1)
+            # print("item1")
+            # print(items1)
 
             # returns users information
             items = execute("""SELECT user_have_pic
@@ -7802,20 +7802,20 @@ class AboutMe(Resource):
                             WHERE user_unique_id = \'""" + user_id + """\';""", 'get', conn)
 
             items['result'][0]['datetime'] = first_date
-            print("items")
-            print(items)
+            # print("items")
+            # print(items)
 
             # Combining the data resulted form both queries
             if len(items1['result']) > 0:
                 response['result'] = items['result'] + items1['result']
-                print("if block : Combining the data resulted form both queries")
-                print(response['result'])
+                # print("if block : Combining the data resulted form both queries")
+                # print(response['result'])
             else:
                 items1['result'] = [
                     {"important_people": "no important people"}]
                 response['result'] = items['result'] + items1['result']
-            print("else block : Combining the data resulted form both queries")
-            print(response['result'])
+            # print("else block : Combining the data resulted form both queries")
+            # print(response['result'])
 
             response['message'] = 'successful'
             return response, 200
