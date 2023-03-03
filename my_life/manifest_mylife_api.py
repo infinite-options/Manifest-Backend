@@ -8222,46 +8222,46 @@ def notify(msg, tag, user_id, badge):
 
 
 def getGUID(guid):
-    print("In getGUID")
+    # print("In getGUID")
     # GET UNIQUE LIST OF GUIDS
     s = ''
-    print('inside getGUID')
-    print(guid, type(guid))
+    # print('inside getGUID')
+    # print(guid, type(guid))
     l = []
-    print("Initialize GUID List: ", l)
+    # print("Initialize GUID List: ", l)
     json_guid = json.loads(
         guid)
     for i, vals in enumerate(json_guid):
-        print(i, vals)
+        # print(i, vals)
         if vals == None or vals == 'null':
-            print(guid)
+            # print(guid)
             guid = ['null']
-            print(guid)
+            # print(guid)
             continue
         if vals['notification'] == 'True' or vals['notification'] == 'TRUE':
-            print(guid)
+            # print(guid)
             guid.append(vals)
-            print(guid)
+            # print(guid)
             continue
-    print('guid', guid, type(guid))
+    # print('guid', guid, type(guid))
     if 'guid' in str(guid):
-        print('in if')
+        # print('in if')
         guid_list = str(guid).split(' ')
-        print("List after split:")
-        print("List after split: ", guid_list)
-        print("guid_list_len: ", len(guid_list))
+        # print("List after split:")
+        # print("List after split: ", guid_list)
+        # print("guid_list_len: ", len(guid_list))
         if(len(guid_list) > 1):
             for i in range(len(guid_list)):
                 # if(guid_list[i]=="guid"):
                 if(re.search('guid', guid_list[i])):
                     s = 'guid_'+guid_list[i+1][1:-2]
-                    print("S: ", s)
+                    # print("S: ", s)
                     # CHECKS TO MAKE SURE THERE ARE ONLY UNIQUE GUIDS IN THE LIST
                     if s not in l:
                         l.append(s)
-                        print("Current List: ", l)
+                        # print("Current List: ", l)
                     s = ''
-    print("Final List:   ", l)
+    # print("Final List:   ", l)
     return l
 
 
@@ -8353,11 +8353,11 @@ def ManifestNotification_CRON():
         # print(notifications)
 
         for n in notifications['result']:
-            print(n)
+            # print(n)
             try:
                 # NOTE:  CHECK is_available and is_displayed_today BEFORE PROCEEDING
 
-                print("\nNotification Info:", n['notification_id'])
+                # print("\nNotification Info:", n['notification_id'])
                 if n['user_ta_id'][0] == '1':
                     guid = n['cust_guid_device_id_notification']
                 else:
@@ -8390,10 +8390,10 @@ def ManifestNotification_CRON():
                         # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                         # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                         if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                            print("\nBEFORE Notification Criteria met")
+                            # print("\nBEFORE Notification Criteria met")
                             for id in getGUID(guid):
                                 # id = getGUID(n)
-                                print("GUID 2: ", id)
+                                # print("GUID 2: ", id)
                                 if (id != ''):
                                     if(n['before_message'] != ''):
                                         notify(
@@ -8519,14 +8519,14 @@ class ManifestNotification_CLASS(Resource):
                 """
 
             notifications = execute(notifications_query, 'get', conn)
-            print(len(notifications['result']))
+            # print(len(notifications['result']))
             # print(notifications)
 
             for n in notifications['result']:
-                print(n)
+                # print(n)
                 # CHECK is_available and is_displayed_today BEFORE PROCEEDING
                 try:
-                    print("\nNotification Info:", n['notification_id'])
+                    # print("\nNotification Info:", n['notification_id'])
                     if n['user_ta_id'][0] == '1':
                         guid = n['cust_guid_device_id_notification']
 
@@ -8972,27 +8972,27 @@ def ManifestHistory_CRON():
         for u in user_tz['result']:
             # GET TIME AND DATE FOR SPECIFIC USER
             user = u['user_unique_id']
-            print("\nUser: ", user)
+            # print("\nUser: ", user)
             # CURRENT DATETIME IN THE USER OR TAS TIMEZONE
             cur_datetime = datetime.now(pytz.timezone(u['time_zone']))
-            print("Current datetime: ", cur_datetime, type(cur_datetime))
+            # print("Current datetime: ", cur_datetime, type(cur_datetime))
 
             # CURRENT TIME IN THE USER OR TAS TIMEZONE
             cur_time = cur_datetime.time()
-            print("Current time:     ", cur_time, type(cur_time))
+            # print("Current time:     ", cur_time, type(cur_time))
 
             # CURRENT DATE IN THE USER OR TAS TIMEZONE IN DATETIME FORMAT
             cur_date = cur_datetime.date()
-            print("Current date:     ", cur_date, type(cur_date))
+            # print("Current date:     ", cur_date, type(cur_date))
 
             # CURRENT DATE IN THE USER OR TAS TIMEZONE IN A SPECIFIC FORMAT
             date_format = '%Y-%m-%d %H:%M:%S'
             date = cur_datetime.strftime(date_format)
-            print("Current date in ", date_format, ": ", date, type(date))
+            # print("Current date in ", date_format, ": ", date, type(date))
 
             # THRESHOLD TIME
             threshold_time = datetime(2000, 1, 1, 12, 0, 0, 0).time()
-            print("Threshold time:   ", threshold_time, type(threshold_time))
+            # print("Threshold time:   ", threshold_time, type(threshold_time))
 
             # DETERMINE IF WE SHOULD UPDATE USER HISTORY BASED ON THRESHOLD TIME (IE BEFORE 1AM)
             if cur_time < threshold_time:
@@ -9172,25 +9172,21 @@ def ManifestHistory_CRON():
                                 #     is_displayed_today = 'True'
                                 #     print("Is_Displayed_Today: ", is_displayed_today)
 
-                            print("\nRepeat End on: ",
-                                    repeat_ends_on, type(repeat_ends_on))
+                            # print("\nRepeat End on: ",repeat_ends_on, type(repeat_ends_on))
                             if repeat_ends_on < cur_date:
                                 is_displayed_today = 'False'
-                                print("Is_Displayed_Today: ",
-                                        is_displayed_today)
+                                # print("Is_Displayed_Today: ",is_displayed_today)
                             else:
                                 is_displayed_today = 'True'
-                                print("Is_Displayed_Today: ",
-                                        is_displayed_today)
+                                # print("Is_Displayed_Today: ",is_displayed_today)
 
                     # UPDATE GRATIS
-                    print("\nGetting Ready to update GRATIS for: ",
-                            goal['gr_unique_id'], type(goal['gr_unique_id']))
+                    # print("\nGetting Ready to update GRATIS for: ", goal['gr_unique_id'], type(goal['gr_unique_id']))
                     # print(str(is_displayed_today).title(), type(str(is_displayed_today).title()))
                     # print(goal['gr_unique_id'], type(goal['gr_unique_id']))
 
                     # UPDATE GOALS AND ROUTINES
-                    print("Update GR")
+                    # print("Update GR")
                     updateGRquery = """
                         UPDATE goals_routines
                         SET is_in_progress = \'""" + 'False'+"""\'
@@ -9200,10 +9196,10 @@ def ManifestHistory_CRON():
                     """
                     # print(updateGRquery)
                     updateGR = execute(updateGRquery, 'post', conn)
-                    print(updateGR)
+                    # print(updateGR)
 
                     # UPDATE ACTIONS AND TASKS
-                    print("Update AT")
+                    # print("Update AT")
                     updateATquery = """
                         UPDATE actions_tasks
                         SET is_in_progress = \'""" + 'False'+"""\'
@@ -9212,10 +9208,10 @@ def ManifestHistory_CRON():
                     """
                     # print(updateATquery)
                     updateAT = execute(updateATquery, 'post', conn)
-                    print(updateAT)
+                    # print(updateAT)
 
                     # UPDATE INSTRUCTIONS AND STEPS
-                    print("Update IS")
+                    # print("Update IS")
                     getATquery = """
                         SELECT * 
                         FROM actions_tasks 
@@ -9224,18 +9220,15 @@ def ManifestHistory_CRON():
                     # print(getATquery)
                     actions_task_response = execute(
                         getATquery, 'get', conn)
-                    print(actions_task_response,
-                            type(actions_task_response))
+                    # print(actions_task_response, type(actions_task_response))
 
-                    print(actions_task_response['result'], type(
-                        actions_task_response['result']))
-                    print("Length: ", len(actions_task_response['result']))
+                    # print(actions_task_response['result'], type(actions_task_response['result']))
+                    # print("Length: ", len(actions_task_response['result']))
                     # print("AT length: ", len(actions_task_response['result']))
                     if len(actions_task_response['result']) > 0:
                         for i in range(len(actions_task_response['result'])):
-                            print(i)
-                            print(actions_task_response['result'][i]['at_unique_id'], type(
-                                actions_task_response['result'][i]['at_unique_id']))
+                            # print(i)
+                            # print(actions_task_response['result'][i]['at_unique_id'], type(actions_task_response['result'][i]['at_unique_id']))
                             updateISquery = """
                                 UPDATE instructions_steps
                                 SET is_in_progress = \'""" + 'False'+"""\'
@@ -9244,9 +9237,8 @@ def ManifestHistory_CRON():
                             """
                             # print(updateISquery)
                             updateIS = execute(updateISquery, 'post', conn)
-                            print(updateIS)
-                    print("finished Reset for Goal: ",
-                            goal['gr_unique_id'])
+                            # print(updateIS)
+                    # print("finished Reset for Goal: ", goal['gr_unique_id'])
 
             else:
                 # TIME IS AFTER THRESHOLD AND DATE AFFECTED IS CURRENT DATE
@@ -9597,34 +9589,34 @@ class TodayGoalsRoutines(Resource):
                     WHERE user_unique_id = \'""" + user_id + """\'; 
             """
             user_tz = execute(user_tz_query, "get", conn)
-            print(user_tz)
+            # print(user_tz)
 
             for u in user_tz['result']:
                 # GET TIME AND DATE FOR SPECIFIC USER
                 user = u['user_unique_id']
-                print("\nUser: ", user)
+                # print("\nUser: ", user)
                 # CURRENT DATETIME IN THE USER OR TAS TIMEZONE
                 cur_datetime = datetime.now(pytz.timezone(u['time_zone']))
-                print("Current datetime: ", cur_datetime, type(cur_datetime))
+                # print("Current datetime: ", cur_datetime, type(cur_datetime))
 
                 # CURRENT TIME IN THE USER OR TAS TIMEZONE
                 cur_time = cur_datetime.time()
-                print("Current time:     ", cur_time, type(cur_time))
+                # print("Current time:     ", cur_time, type(cur_time))
 
                 # CURRENT DATE IN THE USER OR TAS TIMEZONE IN DATETIME FORMAT
                 cur_date = cur_datetime.date()
-                print("Current date:     ", cur_date, type(cur_date))
+                # print("Current date:     ", cur_date, type(cur_date))
 
                 # CURRENT DATE IN THE USER OR TAS TIMEZONE IN A SPECIFIC FORMAT
                 date_format = '%Y-%m-%d %H:%M:%S'
                 date = cur_datetime.strftime(date_format)
-                print("Current date in ", date_format, ": ", date, type(date))
+                # print("Current date in ", date_format, ": ", date, type(date))
 
                 date_affected = cur_datetime.date()
 
                 # CAPTURE GRATIS SNAPSHOT
                 getGRATIS_History = GRATIS_History(user)
-                print("Return from GRATIS_History: ", getGRATIS_History)
+                # print("Return from GRATIS_History: ", getGRATIS_History)
 
                 # MAP GRATIS DATA TO HISTORY FIELDS - CURRENTLY DONE IN GRATIS_History
 
@@ -9683,7 +9675,7 @@ class TodayGoalsRoutines(Resource):
                     # print(query)
                     # print("Before Update execution: ", query)
                     historyUpdate = execute(query, 'post', conn)
-                    print(historyUpdate)
+                    # print(historyUpdate)
                     response = historyUpdate
 
             return response, 200
@@ -9703,70 +9695,68 @@ class TimeFunction(Resource):
         from pytz import timezone
         response = {}
         try:
-            print("Entering Time Function")
+            # print("Entering Time Function")
 
             conn = connect()
 
             # TIME MANIPULATION: TAKE CURRENT TIME IN LOCAL TIMEZONE AND ISOLATE THE DATE AND TIME
-            print("\nGET DATE AND TIME IN DATETIME FORMAT")
+            # print("\nGET DATE AND TIME IN DATETIME FORMAT")
             time_zone = 'America/Tijuana'
-            print("Time Zone: ", time_zone)
+            # print("Time Zone: ", time_zone)
 
             # GETS CURRENT DATETIME IN UTC
             current = datetime.now()
-            print("Current Date Time               : ", current, type(current))
+            # print("Current Date Time               : ", current, type(current))
 
             # GETS CURRENT DATETIME IN UTC
             current = datetime.now(tz=pytz.utc)
-            print("Current Date Time in GMT        : ", current, type(current))
+            # print("Current Date Time in GMT        : ", current, type(current))
 
             # CONVERTS UTC DATETIME INTO LOCAL DATETIME
             current = current.astimezone(timezone('America/Tijuana'))
-            print("Current Date Time in LOCAL TIME : ", current, type(current))
+            # print("Current Date Time in LOCAL TIME : ", current, type(current))
 
             # CONVERTS UTC DATETIME INTO LOCAL DATETIME
             current = current.astimezone(timezone(str(time_zone)))
-            print("Current Date Time in LOCAL TIME : ", current, type(current))
+            # print("Current Date Time in LOCAL TIME : ", current, type(current))
 
             # CONVERTS UTC DATETIME INTO LOCAL DATETIME
             current = current.astimezone(timezone(str(time_zone)))
-            print("Current Date Time in LOCAL TIME : ", current, type(current))
+            # print("Current Date Time in LOCAL TIME : ", current, type(current))
 
             # DEFINE DATE TIME FORMAT AND CONVERT TO A STRING
-            print("\nGET DATETIME IN STR FORMAT")
+            # print("\nGET DATETIME IN STR FORMAT")
             date_format = '%Y-%m-%d %H:%M:%S'
             date = current.strftime(date_format)
-            print("Current Date Time in PST Formatted: ", date, type(date))
+            # print("Current Date Time in PST Formatted: ", date, type(date))
 
             # GETS CURRENT DATE FROM DATETIME IN STR FORMAT
             current_date = current.strftime("%Y-%m-%d")
-            print("Current date: ", current_date, type(current_date))
+            # print("Current date: ", current_date, type(current_date))
 
             # GETS CURRENT TIME FROM DATETIME IN STR FORMAT
             current_time = current.strftime("%H:%M:%S")
-            print("Current time: ", current_time, type(current_time))
+            # print("Current time: ", current_time, type(current_time))
 
             # CONVERT TO TIME FORMAT
-            print("\nCONVERT STR TO DATETIME FORMAT")
+            # print("\nCONVERT STR TO DATETIME FORMAT")
             # CONVERTS TIME FROM STR TO TIME FORMAT TO DO MATH
             current_date = datetime.strptime(current_date, "%Y-%m-%d").date()
-            print("Current date: ", current_date, type(current_date))
+            # print("Current date: ", current_date, type(current_date))
 
             # CONVERTS TIME FROM STR TO TIME FORMAT TO DO MATH
             current_time = datetime.strptime(current_time, "%H:%M:%S").time()
-            print("Current time: ", current_time, type(current_time))
+            # print("Current time: ", current_time, type(current_time))
 
             # CONVERTS TIME TO ANOTHER TIME ZONE
-            print("\nCONVERT STR TO ANOTHER TIMEZONE")
+            # print("\nCONVERT STR TO ANOTHER TIMEZONE")
             result_time = current
-            print(result_time, type(result_time))
-            print('America/Denver',
-                  result_time.astimezone(timezone('America/Denver')))
-            print('America/Denver',
-                  result_time.astimezone(timezone('America/Denver')))
+            # print(result_time, type(result_time))
+            # print('America/Denver', result_time.astimezone(timezone('America/Denver')))
+            # print('America/Denver',result_time.astimezone(timezone('America/Denver')))
 
             # CONVERTS TIME TO UTC
-            print("UTC", result_time.astimezone(timezone('UTC')))
+            # print("UTC", result_time.astimezone(timezone('UTC')))
 
             return response, 200
         except:
@@ -9933,21 +9923,21 @@ class Calender(Resource):
                         if goal['repeat_frequency'].lower() == 'day':
 
                             epoch = dt.datetime.utcfromtimestamp(0).date()
-                            print(epoch)
+                            # print(epoch)
                             current_time = (
                                 currentDate - epoch).total_seconds() * 1000.0
-                            print(current_time)
+                            # print(current_time)
                             start_time = (
                                 start_date - epoch).total_seconds() * 1000.0
-                            print(start_time)
+                            # print(start_time)
                             is_displayed_today = (math.floor(
                                 (current_time - start_time)/(24*3600*1000)) % repeat_every) == 0
-                            print(goal['gr_title'], is_displayed_today)
+                            # print(goal['gr_title'], is_displayed_today)
 
                         if goal['repeat_frequency'].lower() == 'week':
-                            print(current_week_day)
+                            # print(current_week_day)
                             if current_week_day in week_days:
-                                print(current_week_day)
+                                # print(current_week_day)
                                 epoch = dt.datetime.utcfromtimestamp(0).date()
                                 current_time = (
                                     currentDate - epoch).total_seconds() * 1000.0
@@ -9956,17 +9946,17 @@ class Calender(Resource):
                                 is_displayed_today = (math.floor(
                                     (current_time - start_time)/(7*24*3600*1000)) % repeat_every) == 0
 
-                            print(goal['gr_title'], is_displayed_today)
+                            # print(goal['gr_title'], is_displayed_today)
 
                         if goal['repeat_frequency'].lower() == 'month':
                             is_displayed_today = currentDate.day == start_date.day and (
                                 (currentDate.year - start_date.year) * 12 + currentDate.month - start_date.month) % repeat_every == 0
-                            print(goal['gr_title'], is_displayed_today)
+                            # print(goal['gr_title'], is_displayed_today)
 
                         if goal['repeat_frequency'].lower() == 'year':
                             is_displayed_today = currentDate.day == start_date.day and currentDate.month == start_date.month and (
                                 currentDate.year - start_date.year) % repeat_every == 0
-                            print(goal['gr_title'], is_displayed_today)
+                            # print(goal['gr_title'], is_displayed_today)
 
             response['message'] = 'successful'
 
