@@ -8215,46 +8215,46 @@ def notify(msg, tag, user_id, badge):
 
 
 def getGUID(guid):
-    print("In getGUID")
+    # print("In getGUID")
     # GET UNIQUE LIST OF GUIDS
     s = ''
-    print('inside getGUID')
-    print(guid, type(guid))
+    # print('inside getGUID')
+    # print(guid, type(guid))
     l = []
-    print("Initialize GUID List: ", l)
+    # print("Initialize GUID List: ", l)
     json_guid = json.loads(
         guid)
     for i, vals in enumerate(json_guid):
-        print(i, vals)
+        # print(i, vals)
         if vals == None or vals == 'null':
-            print(guid)
+            # print(guid)
             guid = ['null']
-            print(guid)
+            # print(guid)
             continue
         if vals['notification'] == 'True' or vals['notification'] == 'TRUE':
-            print(guid)
+            # print(guid)
             guid.append(vals)
-            print(guid)
+            # print(guid)
             continue
-    print('guid', guid, type(guid))
+    # print('guid', guid, type(guid))
     if 'guid' in str(guid):
-        print('in if')
+        # print('in if')
         guid_list = str(guid).split(' ')
-        print("List after split:")
-        print("List after split: ", guid_list)
-        print("guid_list_len: ", len(guid_list))
+        # print("List after split:")
+        # print("List after split: ", guid_list)
+        # print("guid_list_len: ", len(guid_list))
         if(len(guid_list) > 1):
             for i in range(len(guid_list)):
                 # if(guid_list[i]=="guid"):
                 if(re.search('guid', guid_list[i])):
                     s = 'guid_'+guid_list[i+1][1:-2]
-                    print("S: ", s)
+                    # print("S: ", s)
                     # CHECKS TO MAKE SURE THERE ARE ONLY UNIQUE GUIDS IN THE LIST
                     if s not in l:
                         l.append(s)
-                        print("Current List: ", l)
+                        # print("Current List: ", l)
                     s = ''
-    print("Final List:   ", l)
+    # print("Final List:   ", l)
     return l
 
 
