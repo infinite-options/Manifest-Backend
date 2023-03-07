@@ -4194,7 +4194,7 @@ class ListAllPeople(Resource):
                         ON ta_people_id = ta_unique_id
                         JOIN users on user_uid = user_unique_id
                         WHERE user_uid = \'""" + user_id + """\';"""
-            print(query)
+            # print(query)
             items = execute(query, 'get', conn)
 
             response['message'] = 'successful'
@@ -8219,11 +8219,11 @@ def getGUID(guid):
     # GET UNIQUE LIST OF GUIDS
     s = ''
     # print('inside getGUID')
-    print(guid, type(guid))
+    # print(guid, type(guid))
     l = []
     # print("Initialize GUID List: ", l)
     json_guid = json.loads(guid)
-    print("JSON GUID: ", json_guid)
+    # print("JSON GUID: ", json_guid)
     guid = []
 
     # Loop to test what is in enumerate
