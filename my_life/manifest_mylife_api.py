@@ -8486,7 +8486,7 @@ def ManifestNotification_CRON():
                 # mail.send(msg)
 
         print("Successfully completed Notification CRON Function")
-        print(response)
+        # print(response)
         return response, 200
 
     except:
@@ -8681,7 +8681,7 @@ class ManifestNotification_CLASS(Resource):
                     # mail.send(msg)
 
             print("Successfully completed Notification CRON Function")
-            print(response)
+            # print(response)
             return response, 200
 
         except:
