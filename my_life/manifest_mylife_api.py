@@ -463,7 +463,6 @@ class GetGoals(Resource):
 
             response['message'] = 'successful'
             response['result'] = items['result']
-
             return response, 200
         except:
             raise BadRequest(
@@ -7798,6 +7797,9 @@ class AboutMe(Resource):
                                     , user_birth_date
                                     , user_history
                                     , user_major_events
+                                    , happy
+                                    , motivation
+                                    , what_is_important
                                 FROM users
                             WHERE user_unique_id = \'""" + user_id + """\';""", 'get', conn)
 
