@@ -4256,14 +4256,14 @@ class CreateNewPeople(Resource):
                         LEFT JOIN relationship 
                         ON ta_people_id = ta_unique_id;"""
             peopleResponse = execute(query, 'get', conn)
-            print('peopleResponse', peopleResponse)
+            # print('peopleResponse', peopleResponse)
 
             email_id_list = []
             user_uid_list = []
             for i in range(len(peopleResponse['result'])):
                 email_id_existing = peopleResponse['result'][i]['ta_email_id']
                 email_id_list.append(email_id_existing)
-            print('email_id_list', email_id_list)
+            # print('email_id_list', email_id_list)
 
             if people_email in email_id_list:
                 print('ta email exists')
@@ -4276,12 +4276,12 @@ class CreateNewPeople(Resource):
                                             LEFT JOIN relationship 
                                             ON ta_people_id = ta_unique_id 
                                             WHERE ta_email_id = \'""" + people_email + """\';""", 'get', conn)
-                print(typeResponse['result'])
+                # print(typeResponse['result'])
 
                 for i in range(len(typeResponse['result'])):
                     user_uid_existing = typeResponse['result'][i]['user_uid']
                     user_uid_list.append(user_uid_existing)
-                print('user_uid_list', user_uid_list)
+                # print('user_uid_list', user_uid_list)
 
                 # relationResponse = execute("""SELECT id from relationship
                 #                             WHERE ta_people_id = \'""" + typeResponse['result'][0]['ta_unique_id'] + """\'
@@ -6009,6 +6009,34 @@ class UpdateAccessToken(Resource):
 
             execute("""UPDATE ta_people
                        SET ta_google_auth_token = \'""" + ta_google_auth_token + """\'
+                       WHERE ta_unique_id = \'""" + ta_id + """\';
+                        """, 'post', conn)
+
+            response['message'] = 'successful'
+            # response['ta_google_auth_token'] = items['result'][0]['ta_google_auth_token']
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
+class UpdateAccessAndRefreshToken(Resource):
+    def post(self, ta_id=None):
+        print("In UpdateAccessAndRefreshToken")
+        response = {}
+        items = {}
+
+        try:
+            conn = connect()
+            query = None
+            data = request.get_json(force=True)
+            ta_google_auth_token = data['ta_google_auth_token']
+            ta_google_refresh_token = data['ta_google_refresh_token']
+
+            execute("""UPDATE ta_people
+                       SET ta_google_auth_token = \'""" + ta_google_auth_token + """\',
+                       ta_google_refresh_token = \'""" + ta_google_refresh_token + """\'
                        WHERE ta_unique_id = \'""" + ta_id + """\';
                         """, 'post', conn)
 
@@ -10398,6 +10426,8 @@ api.add_resource(UpdateUserAccessToken,
 
 api.add_resource(TAToken, '/api/v2/taToken/<string:ta_id>')
 api.add_resource(UpdateAccessToken, '/api/v2/UpdateAccessToken/<string:ta_id>')
+
+api.add_resource(UpdateAccessAndRefreshToken, '/api/v2/UpdateAccessAndRefreshToken/<string:ta_id>')
 # NOT USED - Used in Apple Watch
 api.add_resource(UserLogin, '/api/v2/userLogin/<string:email_id>')
 # working MOBILE ONLY 092821
