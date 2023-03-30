@@ -4375,7 +4375,7 @@ class CreateNewPeople(Resource):
                                 ta_have_pic = \'""" + str(people_have_pic).title() + """\',
                                 ta_picture = \'""" + people_picture_url + """\',
                                 important = \'""" + str(people_important).title() + """\',
-                                advisor = \'""" + advisor + """\';""", 'post', conn)
+                                advisor = \'""" + str(advisor).title() + """\';""", 'post', conn)
                 else:
                     people_picture_url = helper_upload_img(people_pic)
                     print('pic', people_picture_url)
