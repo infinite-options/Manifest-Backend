@@ -5693,7 +5693,7 @@ class UpdateTA2(Resource):
 
             ta_photo_url = request.form.get('ta_photo_url')
             # print("Picture URL Input from Form: ", ta_photo_url)
-            try: 
+            try:
                 ta_picture = request.files.get("ta_picture")
                 # print("Picture Input from Form: ", ta_picture)
 
@@ -5717,8 +5717,8 @@ class UpdateTA2(Resource):
                                 , ta_picture = \'""" + str(ta_photo_url) + """\'
                             WHERE ta_unique_id = \'""" + ta_unique_id + """\' ;"""
 
-                # print("Update TA Query: ", query)            
-                execute(query,'post', conn)
+                # print("Update TA Query: ", query)
+                execute(query, 'post', conn)
 
                 response['message'] = 'successful'
                 response['result'] = 'Update to People successful'
@@ -5948,7 +5948,7 @@ class TaTokenEmail(Resource):
         try:
             conn = connect()
             query = None
-
+            temp = False
             query = (
                 """SELECT ta_unique_id
                                 , ta_email_id
@@ -5963,16 +5963,22 @@ class TaTokenEmail(Resource):
 
             items = execute(query, "get", conn)
             print(items)
-            response["message"] = "successful"
-            response["ta_unique_id"] = items["result"][0]["ta_unique_id"]
-            response["ta_email_id"] = items["result"][0]["ta_email_id"]
-            response["ta_google_auth_token"] = items["result"][0]["ta_google_auth_token"]
-            response["ta_google_refresh_token"] = items["result"][0][
-                "ta_google_refresh_token"]
-            response["ta_picture"] = items["result"][0][
-                "ta_picture"
-            ]
-            response["result"] = items["result"][0]
+            if len(items['result']) > 0:
+                temp = True
+            if temp == True:
+                response["message"] = "successful"
+                response["ta_unique_id"] = items["result"][0]["ta_unique_id"]
+                response["ta_email_id"] = items["result"][0]["ta_email_id"]
+                response["ta_google_auth_token"] = items["result"][0]["ta_google_auth_token"]
+                response["ta_google_refresh_token"] = items["result"][0][
+                    "ta_google_refresh_token"]
+                response["ta_picture"] = items["result"][0][
+                    "ta_picture"
+                ]
+                response["result"] = items["result"][0]
+            if temp == False:
+                response['message'] = 'Email ID doesnt exist'
+                response["result"] = []
 
             return response, 200
         except:
@@ -6096,6 +6102,7 @@ class UpdateAccessToken(Resource):
             raise BadRequest('Request failed, please try again later.')
         finally:
             disconnect(conn)
+
 
 class UpdateAccessAndRefreshToken(Resource):
     def post(self, ta_id=None):
@@ -7322,7 +7329,7 @@ class GetHistory(Resource):
             # TodayGoalsRoutines.post(self, user_id)
             # print("after Function call")
 
-            # APPARENTLY THIS QUERY RETURNS TOO MUCH DATA SO IN SOME CASES IT RETURNED AN ERROR 
+            # APPARENTLY THIS QUERY RETURNS TOO MUCH DATA SO IN SOME CASES IT RETURNED AN ERROR
             # items = execute(
             #     """SELECT * FROM manifest_mylife.history where user_id = \'""" + user_id + """\';""", 'get', conn)
 
@@ -7338,6 +7345,8 @@ class GetHistory(Resource):
             disconnect(conn)
 
 # USED TO TEST GetHistory
+
+
 class GetHistoryDateRange(Resource):
     def get(self, user_id, date1_affected, date2_affected):
         print("In GetHistory")
@@ -8281,7 +8290,7 @@ def send_mail(notify_id, user_id, gr_title):
 
 def notify(msg, tag, user_id, badge):
     print("In Notify")
-    print(msg,tag)
+    print(msg, tag)
     # hub = AzureNotificationHub("Endpoint=sb://manifest-notifications-namespace.servicebus.windows.net/;SharedAccessKeyName=DefaultFullSharedAccessSignature;SharedAccessKey=UWW7...m3xuVg=", "Manifest-Notification-Hub", isDebug)
 
     try:
@@ -8470,11 +8479,11 @@ def ManifestNotification_CRON():
 
         for n in notifications['result']:
             # print("Notification ID: ", n['notification_id'], n['notification_badge_num'])
-            
+
             # CHECK is_available and is_displayed_today BEFORE PROCEEDING
             try:
                 # print("\nNotification Info:", n['notification_id'])
-                if n['user_ta_id'][0] == '1':   
+                if n['user_ta_id'][0] == '1':
                     guid = n['cust_guid_device_id_notification']
                     # print("User GUID: ", guid)
 
@@ -8511,7 +8520,8 @@ def ManifestNotification_CRON():
                         # print("GUID1: ", guid)
                         if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
 
-                            print("\nBEFORE Notification Criteria met", n['notification_id'])
+                            print("\nBEFORE Notification Criteria met",
+                                  n['notification_id'])
                             for id in getGUID(guid):
 
                                 # print("Stepping through BEFORE GUIDs: ", id)
@@ -8524,7 +8534,8 @@ def ManifestNotification_CRON():
                                     else:
                                         notify(
                                             n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
-                                    print("Sent before notification", n['before_message'],id)
+                                    print("Sent before notification",
+                                          n['before_message'], id)
 
                     if n['during_is_enable'].lower() == 'true':
                         # print("During enabled: ", n['notification_id'], n['during_is_enable'], n['during_time'], type(n['during_time']))
@@ -8536,7 +8547,8 @@ def ManifestNotification_CRON():
                         # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                         # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                         if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                            print("\nDURING Notification Criteria met", n['notification_id'])
+                            print("\nDURING Notification Criteria met",
+                                  n['notification_id'])
                             for id in getGUID(guid):
                                 # print("Stepping through DURING GUIDs: ", id)
 
@@ -8551,7 +8563,8 @@ def ManifestNotification_CRON():
                                         # print(n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'] )
                                         notify(
                                             n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
-                                    print("Sent during notification", n['during_message'],id)
+                                    print("Sent during notification",
+                                          n['during_message'], id)
 
                     if n['after_is_enable'].lower() == 'true':
                         # print("After enabled: ", n['notification_id'], n['after_is_enable'], n['after_time'], type(n['after_time']))
@@ -8563,7 +8576,8 @@ def ManifestNotification_CRON():
                         # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                         # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                         if(notification_time_diff.total_seconds() < 30 and notification_time_diff.total_seconds() > -30):
-                            print("\nAFTER Notification Criteria met", n['notification_id'])
+                            print("\nAFTER Notification Criteria met",
+                                  n['notification_id'])
                             for id in getGUID(guid):
                                 # print("Stepping through AFTER GUIDs: ", id)
 
@@ -8580,12 +8594,13 @@ def ManifestNotification_CRON():
                                         # print(n['notification_badge_num'] )
                                         notify(
                                             n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
-                                    print("Sent after notification", n['after_message'],id)
+                                    print("Sent after notification",
+                                          n['after_message'], id)
             except:
                 print('ManifestNotification_CLASS error')
 
                 send_mail(n['notification_id'],
-                            n['user_ta_id'], n['gr_title'])
+                          n['user_ta_id'], n['gr_title'])
                 # msg = Message(
                 #     subject="Notifications failed MyLife CLASS",
                 #     sender="support@manifestmy.life",
@@ -8665,11 +8680,11 @@ class ManifestNotification_CLASS(Resource):
 
             for n in notifications['result']:
                 # print("Notification ID: ", n['notification_id'], n['notification_badge_num'])
-                
+
                 # CHECK is_available and is_displayed_today BEFORE PROCEEDING
                 try:
                     # print("\nNotification Info:", n['notification_id'])
-                    if n['user_ta_id'][0] == '1':   
+                    if n['user_ta_id'][0] == '1':
                         guid = n['cust_guid_device_id_notification']
                         # print("User GUID: ", guid)
 
@@ -8706,7 +8721,8 @@ class ManifestNotification_CLASS(Resource):
                             # print("GUID1: ", guid)
                             if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
 
-                                print("\nBEFORE Notification Criteria met", n['notification_id'])
+                                print("\nBEFORE Notification Criteria met",
+                                      n['notification_id'])
                                 for id in getGUID(guid):
 
                                     # print("Stepping through BEFORE GUIDs: ", id)
@@ -8719,7 +8735,8 @@ class ManifestNotification_CLASS(Resource):
                                         else:
                                             notify(
                                                 n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
-                                        print("Sent before notification", n['before_message'],id)
+                                        print("Sent before notification",
+                                              n['before_message'], id)
 
                         if n['during_is_enable'].lower() == 'true':
                             # print("During enabled: ", n['notification_id'], n['during_is_enable'], n['during_time'], type(n['during_time']))
@@ -8731,7 +8748,8 @@ class ManifestNotification_CLASS(Resource):
                             # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                             # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                             if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                                print("\nDURING Notification Criteria met", n['notification_id'])
+                                print("\nDURING Notification Criteria met",
+                                      n['notification_id'])
                                 for id in getGUID(guid):
                                     # print("Stepping through DURING GUIDs: ", id)
 
@@ -8746,7 +8764,8 @@ class ManifestNotification_CLASS(Resource):
                                             # print(n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'] )
                                             notify(
                                                 n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
-                                        print("Sent during notification", n['during_message'],id)
+                                        print("Sent during notification",
+                                              n['during_message'], id)
 
                         if n['after_is_enable'].lower() == 'true':
                             # print("After enabled: ", n['notification_id'], n['after_is_enable'], n['after_time'], type(n['after_time']))
@@ -8758,7 +8777,8 @@ class ManifestNotification_CLASS(Resource):
                             # print("Time Difference vs UTC: ", notification_time_diff, type(notification_time_diff))
                             # print('time_diff in seconds:', notification_time_diff.total_seconds(), type(notification_time_diff.total_seconds()))
                             if(notification_time_diff.total_seconds() < 300 and notification_time_diff.total_seconds() > -300):
-                                print("\nAFTER Notification Criteria met", n['notification_id'])
+                                print("\nAFTER Notification Criteria met",
+                                      n['notification_id'])
                                 for id in getGUID(guid):
                                     # print("Stepping through AFTER GUIDs: ", id)
 
@@ -8775,7 +8795,8 @@ class ManifestNotification_CLASS(Resource):
                                             # print(n['notification_badge_num'] )
                                             notify(
                                                 n['gr_title'], id, n['user_ta_id'], n['notification_badge_num'])
-                                        print("Sent after notification", n['after_message'],id)
+                                        print("Sent after notification",
+                                              n['after_message'], id)
                 except:
                     print('ManifestNotification_CLASS error')
 
@@ -9196,7 +9217,7 @@ def ManifestHistory_CRON():
                 # IF IT DOES EXIST THEN UPDATE HISTORY TABLE
                 else:
                     print("info exists in CRON Job  ==>  Prepare to UPDATE",
-                            currentGR['result'][0]['id'])
+                          currentGR['result'][0]['id'])
                     query = """
                         UPDATE manifest_mylife.history
                         SET id = \'""" + currentGR['result'][0]['id'] + """\',
@@ -9262,13 +9283,13 @@ def ManifestHistory_CRON():
 
                     # IF NO REPEAT, IS_DISPLAYED_TODAY IS TRUE ONLY IF CURRENT DATE = START DATE
                     if repeat.lower() == 'false':
-                    # if repeat_type.lower() != 'occur' || repeat_type.lower() != 'never' || repeat_type.lower() != 'on':
+                        # if repeat_type.lower() != 'occur' || repeat_type.lower() != 'never' || repeat_type.lower() != 'on':
                         is_displayed_today = (start_date == cur_date)
                         print("Is_Displayed_Today: ", is_displayed_today)
 
                     # IF REPEAT
                     else:
-            
+
                         # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
                         if cur_date >= start_date:
                             # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
@@ -9310,9 +9331,10 @@ def ManifestHistory_CRON():
                                 # print(repeat_ends_on)
                                 # repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
                                 if repeat_ends_on == '':
-                                        repeat_ends_on = cur_date
+                                    repeat_ends_on = cur_date
                                 else:
-                                    repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
+                                    repeat_ends_on = datetime.strptime(
+                                        repeat_ends_on, "%Y-%m-%d").date()
                                 # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
                                 # if repeat_ends_on < cur_date:
                                 #     is_displayed_today = 'False'
@@ -9398,7 +9420,8 @@ def ManifestHistory_CRON():
         print("Successfully completed Manifest History CRON Function")
         return response, 200
     except:
-        raise BadRequest('History CRON Request failed, please try again later.')
+        raise BadRequest(
+            'History CRON Request failed, please try again later.')
     finally:
         disconnect(conn)
 
@@ -9569,13 +9592,13 @@ class ManifestHistory_CLASS(Resource):
 
                         # IF NO REPEAT, IS_DISPLAYED_TODAY IS TRUE ONLY IF CURRENT DATE = START DATE
                         if repeat.lower() == 'false':
-                        # if repeat_type.lower() != 'occur' || repeat_type.lower() != 'never' || repeat_type.lower() != 'on':
+                            # if repeat_type.lower() != 'occur' || repeat_type.lower() != 'never' || repeat_type.lower() != 'on':
                             is_displayed_today = (start_date == cur_date)
                             print("Is_Displayed_Today: ", is_displayed_today)
 
                         # IF REPEAT
                         else:
-                
+
                             # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
                             if cur_date >= start_date:
                                 # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
@@ -9617,9 +9640,10 @@ class ManifestHistory_CLASS(Resource):
                                     # print(repeat_ends_on)
                                     # repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d %H:%M:%S %p").date()
                                     if repeat_ends_on == '':
-                                            repeat_ends_on = cur_date
+                                        repeat_ends_on = cur_date
                                     else:
-                                        repeat_ends_on = datetime.strptime(repeat_ends_on, "%Y-%m-%d").date()
+                                        repeat_ends_on = datetime.strptime(
+                                            repeat_ends_on, "%Y-%m-%d").date()
                                     # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
                                     # if repeat_ends_on < cur_date:
                                     #     is_displayed_today = 'False'
@@ -9713,7 +9737,8 @@ class ManifestHistory_CLASS(Resource):
             print("Successfully completed Manifest History CRON Function")
             return response, 200
         except:
-            raise BadRequest('History CRON Request failed, please try again later.')
+            raise BadRequest(
+                'History CRON Request failed, please try again later.')
         finally:
             disconnect(conn)
 
@@ -10503,7 +10528,8 @@ api.add_resource(UpdateUserAccessToken,
 api.add_resource(TAToken, '/api/v2/taToken/<string:ta_id>')
 api.add_resource(UpdateAccessToken, '/api/v2/UpdateAccessToken/<string:ta_id>')
 
-api.add_resource(UpdateAccessAndRefreshToken, '/api/v2/UpdateAccessAndRefreshToken/<string:ta_id>')
+api.add_resource(UpdateAccessAndRefreshToken,
+                 '/api/v2/UpdateAccessAndRefreshToken/<string:ta_id>')
 # NOT USED - Used in Apple Watch
 api.add_resource(UserLogin, '/api/v2/userLogin/<string:email_id>')
 # working MOBILE ONLY 092821
@@ -10522,7 +10548,8 @@ api.add_resource(GetImages, '/api/v2/getImages/<string:user_id>')
 api.add_resource(GetPeopleImages, '/api/v2/getPeopleImages/<string:ta_id>')
 # working 092821
 api.add_resource(GetHistory, '/api/v2/getHistory/<string:user_id>')
-api.add_resource(GetHistoryDateRange, '/api/v2/getHistoryDateRange/<string:user_id>,<string:date1_affected>,<string:date2_affected>')
+api.add_resource(GetHistoryDateRange,
+                 '/api/v2/getHistoryDateRange/<string:user_id>,<string:date1_affected>,<string:date2_affected>')
 # working Mobile only 092821
 api.add_resource(
     GetHistoryDate, '/api/v2/getHistoryDate/<string:user_id>,<string:date_affected>')
