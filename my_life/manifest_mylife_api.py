@@ -7920,19 +7920,23 @@ class AboutMe(Resource):
             # print("items")
             # print(items)
 
-            # Combining the data resulted form both queries
-            if len(items1['result']) > 0:
-                response['result'] = items['result'] + items1['result']
-                # print("if block : Combining the data resulted form both queries")
-                # print(response['result'])
-            else:
-                items1['result'] = [
-                    {"important_people": "no important people"}]
-                response['result'] = items['result'] + items1['result']
-            # print("else block : Combining the data resulted form both queries")
-            # print(response['result'])
-
+            # # Combining the data resulted form both queries
+            # if len(items1['result']) > 0:
+            #     response['result'] = items['result'] + items1['result']
+            #     # print("if block : Combining the data resulted form both queries")
+            #     # print(response['result'])
+            # else:
+            #     items1['result'] = [
+            #         {"important_people": "no important people"}]
+            #     response['result'] = items['result'] + items1['result']
+            # # print("else block : Combining the data resulted form both queries")
+            # # print(response['result'])
+            
             response['message'] = 'successful'
+            # user information
+            response['result'] = items['result']
+            # important people information
+            response['result_important_people'] = items1['result']
             return response, 200
 
         except:
