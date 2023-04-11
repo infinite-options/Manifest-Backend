@@ -5288,10 +5288,43 @@ class UpdateAboutMe(Resource):
             morning_time = time_settings["morning"]
             night_time = time_settings["night"]
             time_zone = time_settings["timeZone"]
+            motivation_data = request.form.get('motivation')
+            motivation = json.loads(motivation_data)
+            important_data = request.form.get('important')
+            important = json.loads(important_data)
+            happy_data = request.form.get('happy')
+            happy = json.loads(happy_data)
 
             print(user_id)
             # print(time_settings)
 
+            # print("motivation", motivation)
+            while '' in motivation:
+                motivation.remove('')
+            if len(motivation) == 0:
+                motivationJson = 'null'
+            else:
+                motivationJson = json.dumps(motivation)
+            # print("motivationJson", motivationJson)
+
+            # print("important", important)
+            while '' in important:
+                important.remove('')
+            if len(important) == 0:
+                importantJson = 'null'
+            else:
+                importantJson = json.dumps(important)
+            # print('Important people', importantJson)
+
+            # print("happy", happy)
+            while '' in happy:
+                happy.remove('')
+            if len(happy) == 0:
+                happyJson = 'null'
+            else:
+                happyJson = json.dumps(happy)
+            # print('happy', happyJson)
+            
             # birth_date = birth_date[0:len(birth_date)-1]
             if not picture:
                 execute("""UPDATE  users
@@ -5314,6 +5347,10 @@ class UpdateAboutMe(Resource):
                                     , user_phone_number = \'""" + phone_number + """\'
                                     , user_history = \'""" + str(history).replace("'", "''") + """\'
                                     , user_major_events = \'""" + str(major_events).replace("'", "''") + """\'
+                                    , user_major_events = \'""" + str(major_events).replace("'", "''") + """\'
+                                    , motivation = \'""" + motivationJson + """\'
+                                    , what_is_important = \'""" + importantJson + """\'
+                                    , happy = \'""" + happyJson + """\'
                                 WHERE user_unique_id = \'""" + user_id + """\';""", 'post', conn)
             else:
                 user_photo_url = helper_upload_img(picture)
@@ -5337,6 +5374,9 @@ class UpdateAboutMe(Resource):
                                     , user_phone_number = \'""" + phone_number + """\'
                                     , user_history = \'""" + str(history).replace("'", "''") + """\'
                                     , user_major_events = \'""" + str(major_events).replace("'", "''") + """\'
+                                    , motivation = \'""" + motivationJson + """\'
+                                    , what_is_important = \'""" + importantJson + """\'
+                                    , happy = \'""" + happyJson + """\'
                                 WHERE user_unique_id = \'""" + user_id + """\' ;""", 'post', conn)
 
                 NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
@@ -7936,7 +7976,7 @@ class AboutMe(Resource):
             # user information
             response['result'] = items['result']
             # important people information
-            response['result_important_people'] = items1['result']
+            # response['result_important_people'] = items1['result']
             return response, 200
 
         except:
@@ -8144,7 +8184,8 @@ class UpdateImportant(Resource):
 
             while '' in important:
                 important.remove('')
-
+            print('Important people', json.dumps(important))
+            
             if len(important) == 0:
                 items = execute("""UPDATE  users
                         SET 
