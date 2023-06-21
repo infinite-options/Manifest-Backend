@@ -1639,9 +1639,379 @@ class InstructionsAndSteps(Resource):
         finally:
             disconnect(conn)
 
+# Insert blank rows in goals_routines and notifications table with row IDs for adding new GRs by file upload
+class CreateGR_IDs(Resource):
+    def post(self):
+        print("In CreateGR_IDs")
+        response = {}
+
+        try:
+            conn = connect()
+
+            data = request.get_json(force=True)
+            newGRCount = data['newGRCount']
+            print("newGRCount ", newGRCount)
+            
+            gr_id_list = []
+            ta_notfication_id_list = []
+            user_notification_id_list = []
+            counter=0
+            while counter < newGRCount:
+                # New Goal/Routine ID
+                query = ["CALL get_gr_id;"]
+                new_gr_id_response = execute(query[0],  'get', conn)
+                new_gr_id = new_gr_id_response['result'][0]['new_id']
+                print("new_gr_id ", new_gr_id)
+                # insert a blank row with new ID
+                insert_gr_id = execute("""
+                        INSERT INTO goals_routines
+                        SET gr_unique_id = \'""" + new_gr_id + """\'
+                            """, 'post', conn)
+                print("Got new GR id. Status - ", insert_gr_id)
+                gr_id_list.append(new_gr_id)
+
+                # New Notification ID
+                ta_notification_id_response = execute(
+                    "CALL get_notification_id;",  'get', conn)
+                ta_notfication_id = ta_notification_id_response['result'][0]['new_id']
+                print("Got new TA notification id. Status - ", ta_notfication_id)
+                insert_ta_notification_id = execute("""
+                        INSERT into notifications
+                        SET notification_id = \'""" + ta_notfication_id + """\'
+                            """, 'post', conn)
+                print("insert_ta_notification_id ", insert_ta_notification_id)
+                ta_notfication_id_list.append(ta_notfication_id)
+
+                # New notification ID
+                user_notification_id_response = execute(
+                    "CALL get_notification_id;",  'get', conn)
+                user_notification_id = user_notification_id_response['result'][0]['new_id']
+                print("Got new USER notification id. Status - ", user_notification_id)
+                insert_user_notification_id = execute("""
+                        INSERT into notifications
+                        SET notification_id = \'""" + user_notification_id + """\'
+                            """, 'post', conn)
+                print("insert_user_notification_id ", insert_user_notification_id)
+                user_notification_id_list.append(user_notification_id)
+
+                counter=counter+1
+                print("counter ", counter)
+
+            result = {'data': [{'gr_id': g, 'ta_notfication_id': t, 'user_notification_id': u} for g, t, u in zip(gr_id_list, ta_notfication_id_list, user_notification_id_list)]}
+            print("result ", result)
+
+            response['message'] = 'successful'
+            response['result'] = result
+            print("response ", response)
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+                
+# Add new Goal/Routine from file upload
+class UploadGR(Resource):
+    def post(self):
+        print("In Upload Goal/Routine")
+        response = {}
+        items = {}
+        try:
+            conn = connect()
+
+            audio = request.form.get('audio')
+            id = request.form.get('gr_unique_id')
+            ta_notfication_id = request.form.get('ta_notfication_id')
+            user_notfication_id = request.form.get('user_notfication_id')
+            print("gr_unique_id ", id, " ta_notfication_id ", ta_notfication_id, " user_notfication_id ", user_notfication_id)
+            datetime_completed = request.form.get('datetime_completed')
+            datetime_started = request.form.get('datetime_started')
+            end_day_and_time = request.form.get('end_day_and_time')
+            expected_completion_time = request.form.get(
+                'expected_completion_time')
+            user_id = request.form.get('user_id')
+            ta_id = request.form.get('ta_people_id')
+            is_available = request.form.get('is_available')
+            is_complete = request.form.get('is_complete')
+            is_displayed_today = request.form.get('is_displayed_today')
+            is_in_progress = request.form.get('is_in_progress')
+            is_persistent = request.form.get('is_persistent')
+            is_sublist_available = request.form.get('is_sublist_available')
+            is_timed = request.form.get('is_timed')
+            photo = request.files.get('photo')
+            photo_url = request.form.get('photo_url')
+            repeat = request.form.get('repeat')
+            repeat_ends = request.form.get('repeat_type')
+            repeat_ends_on = request.form.get('repeat_ends_on')
+            repeat_every = request.form.get('repeat_every')
+            repeat_frequency = request.form.get('repeat_frequency')
+            repeat_occurences = request.form.get('repeat_occurences')
+            repeat_week_days = request.form.get('repeat_week_days')
+            start_day_and_time = request.form.get('start_day_and_time')
+            ta_notifications = request.form.get('ta_notifications')
+            ta_notifications = json.loads(ta_notifications)
+            ta_before_is_enabled = ta_notifications['before']['is_enabled']
+            ta_before_is_set = ta_notifications['before']['is_set']
+            ta_before_message = ta_notifications['before']['message']
+            ta_before_time = ta_notifications['before']['time']
+            ta_during_is_enabled = ta_notifications['during']['is_enabled']
+            ta_during_is_set = ta_notifications['during']['is_set']
+            ta_during_message = ta_notifications['during']['message']
+            ta_during_time = ta_notifications['during']['time']
+            ta_after_is_enabled = ta_notifications['after']['is_enabled']
+            ta_after_is_set = ta_notifications['after']['is_set']
+            ta_after_message = ta_notifications['after']['message']
+            ta_after_time = ta_notifications['after']['time']
+            gr_title = request.form.get('title')
+            user_notifications = request.form.get('user_notifications')
+            user_notifications = json.loads(user_notifications)
+            user_before_is_enabled = user_notifications['before']['is_enabled']
+            user_before_is_set = user_notifications['before']['is_set']
+            user_before_message = user_notifications['before']['message']
+            user_before_time = user_notifications['before']['time']
+            user_during_is_enabled = user_notifications['during']['is_enabled']
+            user_during_is_set = user_notifications['during']['is_set']
+            user_during_message = user_notifications['during']['message']
+            user_during_time = user_notifications['during']['time']
+            user_after_is_enabled = user_notifications['after']['is_enabled']
+            user_after_is_set = user_notifications['after']['is_set']
+            user_after_message = user_notifications['after']['message']
+            user_after_time = user_notifications['after']['time']
+            icon_type = request.form.get('type')
+            description = 'Other'
+
+            print("repeat", repeat, type(repeat))
+            print("repeat_ends", repeat_ends, type(repeat_ends))
+            print("repeat_ends_on", repeat_ends_on, type(repeat_ends_on))
+            print("repeat_every", repeat_every, type(repeat_every))
+            print("repeat_frequency", repeat_frequency, type(repeat_frequency))
+            print("repeat_occurences", repeat_occurences,
+                  type(repeat_occurences))
+            print("repeat_week_days", repeat_week_days, type(repeat_week_days))
+
+            print("Received Input")
+
+            repeat_week_days = json.loads(repeat_week_days)
+            dict_week_days = {"Sunday": "False", "Monday": "False", "Tuesday": "False",
+                              "Wednesday": "False", "Thursday": "False", "Friday": "False", "Saturday": "False"}
+            for key in repeat_week_days:
+                if repeat_week_days[key] == "Sunday":
+                    dict_week_days["Sunday"] = "True"
+                if repeat_week_days[key] == "Monday":
+                    dict_week_days["Monday"] = "True"
+                if repeat_week_days[key] == "Tuesday":
+                    dict_week_days["Tuesday"] = "True"
+                if repeat_week_days[key] == "Wednesday":
+                    dict_week_days["Wednesday"] = "True"
+                if repeat_week_days[key] == "Thursday":
+                    dict_week_days["Thursday"] = "True"
+                if repeat_week_days[key] == "Friday":
+                    dict_week_days["Friday"] = "True"
+                if repeat_week_days[key] == "Saturday":
+                    dict_week_days["Saturday"] = "True"
+
+            # DETERMINE SETTING FOR IS_DISPLAYED_TODAY
+            user_tz_query = """
+                    SELECT user_unique_id, time_zone
+                    FROM manifest_mylife.users
+                    WHERE user_unique_id = \'""" + str(user_id) + """\'; 
+                """
+            user_tz = execute(user_tz_query, "get", conn)
+            print(user_tz)
+
+            # GET TIME AND DATE FOR SPECIFIC USER
+            user = user_tz['result'][0]['user_unique_id']
+            print("\nUser: ", user)
+            # CURRENT DATETIME IN THE USER OR TAS TIMEZONE
+            cur_datetime = datetime.now(pytz.timezone(
+                user_tz['result'][0]['time_zone']))
+            print("Current datetime: ", cur_datetime, type(cur_datetime))
+
+            # CURRENT DATE IN THE USER OR TAS TIMEZONE IN DATETIME FORMAT
+            cur_date = cur_datetime.date()
+            print("Current date:     ", cur_date, type(cur_date))
+
+            # CONVERT START DATE INPUT INTO DATE TIME FORMAT
+            print("start_day_and_time", start_day_and_time,
+                  type(start_day_and_time))
+            start_date = datetime.strptime(
+                start_day_and_time, '%Y-%m-%d %I:%M:%S %p').date()
+            print("start_date", start_date, type(start_date))
+
+            # IF NO REPEAT, IS_DISPLAYED_TODAY IS TRUE ONLY IF CURRENT DATE = START DATE
+            if repeat.lower() == 'false':
+                is_displayed_today = (start_date == cur_date)
+                print("Is_Displayed_Today: ", is_displayed_today)
+
+            # IF REPEAT
+            else:
+
+                # CHECK TO MAKE SURE GOAL OR ROUTINE IS IN NOT IN THE FUTURE
+                if cur_date >= start_date:
+
+                    repeat_type = repeat_ends
+                    # IF REPEAT ENDS AFTER SOME NUMBER OF OCCURANCES
+                    if repeat_type.lower() == 'occur':
+                        print("\nIn if after")
+                        if repeat_frequency.lower() == 'day':
+                            repeat_occurences = int(repeat_occurences) - 1
+                            number_days = int(
+                                repeat_occurences) * int(repeat_every)
+                            repeat_ends_on = start_date + \
+                                timedelta(days=number_days)
+                            # print("Repeat Ends on: ", repeat_ends_on, type(repeat_ends_on))
+                            
+                    # IF REPEAT NEVER ENDS
+                    elif repeat_type.lower() == 'never':
+                        print("In if never ")
+                        repeat_ends_on = cur_date
+                        # print("Repeat Ends on: ", repeat_ends_on)
+
+                    # IF REPEAT ENDS ON A SPECIFIC DAY
+                    elif repeat_type.lower() == 'on':
+                        print("In if on ")
+                        repeat_ends_on = datetime.strptime(
+                            repeat_ends_on, "%Y-%m-%d").date()
+                        # print("Repeat Ends On: ", repeat_ends_on, type(repeat_ends_on))
+
+                    print("\nRepeat End on: ", repeat_ends_on,
+                          type(repeat_ends_on))
+                    if repeat_ends_on < cur_date:
+                        is_displayed_today = 'False'
+                        print("Is_Displayed_Today: ", is_displayed_today)
+                    else:
+                        is_displayed_today = 'True'
+                        print("Is_Displayed_Today: ", is_displayed_today)
+
+            print(photo)
+            if not photo:
+                print("not photo")
+                query = """UPDATE goals_routines
+                                SET gr_title = \'""" + str(gr_title).replace("'", "''") + """\'
+                                    ,user_id = \'""" + user_id + """\'
+                                    ,is_available = \'""" + str(is_available).title() + """\'
+                                    ,is_complete = \'""" + str(is_complete).title() + """\'
+                                    ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
+                                    ,is_displayed_today = \'""" + str(is_displayed_today).title() + """\'
+                                    ,is_persistent = \'""" + str(is_persistent).title() + """\'
+                                    ,is_timed = \'""" + str(is_timed).title() + """\'
+                                    ,gr_start_day_and_time = \'""" + start_day_and_time + """\'
+                                    ,gr_end_day_and_time = \'""" + end_day_and_time + """\'
+                                    ,gr_datetime_started = \'""" + datetime_started + """\'
+                                    ,gr_datetime_completed = \'""" + datetime_completed + """\'
+                                    ,`repeat` = \'""" + str(repeat).title() + """\'
+                                    ,repeat_type = \'""" + str(repeat_ends).title() + """\'
+                                    ,repeat_ends_on = \'""" + str(repeat_ends_on) + """\'
+                                    ,repeat_every = \'""" + str(repeat_every) + """\'
+                                    ,repeat_week_days = \'""" + json.dumps(dict_week_days) + """\'
+                                    ,repeat_frequency = \'""" + repeat_frequency + """\'
+                                    ,repeat_occurences = \'""" + str(repeat_occurences) + """\'
+                                    ,gr_expected_completion_time = \'""" + expected_completion_time + """\'
+                                    ,gr_photo = \'""" + photo_url + """\'
+                            WHERE gr_unique_id = \'""" + id + """\';"""
+
+            else:
+                print("photo")
+                gr_picture = helper_upload_img(photo)
+
+                # Update G/R to database
+                query = """UPDATE goals_routines
+                                SET gr_title = \'""" + str(gr_title).replace("'", "''") + """\'
+                                    ,user_id = \'""" + user_id + """\'
+                                    ,is_available = \'""" + str(is_available).title() + """\'
+                                    ,is_complete = \'""" + str(is_complete).title() + """\'
+                                    ,is_sublist_available = \'""" + str(is_sublist_available).title() + """\'
+                                    ,is_in_progress = \'""" + str(is_in_progress).title() + """\'
+                                    ,is_displayed_today = \'""" + str(is_displayed_today).title() + """\'
+                                    ,is_persistent = \'""" + str(is_persistent).title() + """\'
+                                    ,is_timed = \'""" + str(is_timed).title() + """\'
+                                    ,gr_start_day_and_time = \'""" + start_day_and_time + """\'
+                                    ,gr_end_day_and_time = \'""" + end_day_and_time + """\'
+                                    ,gr_datetime_started = \'""" + datetime_started + """\'
+                                    ,gr_datetime_completed = \'""" + datetime_completed + """\'
+                                    ,`repeat` = \'""" + str(repeat).title() + """\'
+                                    ,repeat_type = \'""" + str(repeat_ends).title() + """\'
+                                    ,repeat_ends_on = \'""" + str(repeat_ends_on) + """\'
+                                    ,repeat_week_days = \'""" + json.dumps(dict_week_days) + """\'
+                                    ,repeat_every = \'""" + str(repeat_every) + """\'
+                                    ,repeat_frequency = \'""" + repeat_frequency + """\'
+                                    ,repeat_occurences = \'""" + str(repeat_occurences) + """\'
+                                    ,gr_expected_completion_time = \'""" + expected_completion_time + """\'
+                                    ,gr_photo = \'""" + gr_picture + """\'
+                            WHERE gr_unique_id = \'""" + id + """\';"""
+
+                if icon_type == 'icon':
+                    NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
+                    NewID = NewIDresponse['result'][0]['new_id']
+
+                    execute("""INSERT INTO icons
+                               SET uid = \'""" + NewID + """\',
+                                   Description = \'""" + description + """\',
+                                   url = \'""" + gr_picture + """\';""", 'post', conn)
+
+                else:
+
+                    NewIDresponse = execute("CALL get_icon_id;",  'get', conn)
+                    NewID = NewIDresponse['result'][0]['new_id']
+
+                    execute("""INSERT INTO icons
+                               SET uid = \'""" + NewID + """\',
+                                   url = \'""" + gr_picture + """\',
+                                   Description = \'""" + 'Image Uploaded' + """\',
+                                   user_id = \'""" + user_id + """\'; """, 'post', conn)
+
+            items = execute(query, 'post', conn)
+            print("Updated Goals and routines in UploadGR. Status - ", items)
+
+            # TA notfication
+            query1 = ("""UPDATE notifications
+                            SET user_ta_id = \'""" + ta_id + """\', 
+                                gr_at_id = \'""" + id + """\', 
+                                before_is_enable = \'""" + str(ta_before_is_enabled).title() + """\', 
+                                before_is_set =\'""" + str(ta_before_is_set).title() + """\', 
+                                before_message = \'""" + str(ta_before_message).replace("'", "''") + """\', 
+                                before_time = \'""" + ta_before_time + """\', 
+                                during_is_enable = \'""" + str(ta_during_is_enabled).title() + """\', 
+                                during_is_set = \'""" + str(ta_during_is_set).title() + """\', 
+                                during_message = \'""" + str(ta_during_message).replace("'", "''") + """\', 
+                                during_time = \'""" + ta_during_time + """\', 
+                                after_is_enable = \'""" + str(ta_after_is_enabled).title() + """\', 
+                                after_is_set = \'""" + str(ta_after_is_set).title() + """\', 
+                                after_message = \'""" + str(ta_after_message).replace("'", "''") + """\', 
+                                after_time = \'""" + ta_after_time + """\'
+                            WHERE notification_id = \'""" + ta_notfication_id + """\';""")
+            item1 = execute(query1, 'post', conn)
+            print("Inserted TA notifications in UploadGR. Status - ", item1)
+
+            # User notfication
+            query2 = ("""UPDATE notifications
+                            SET user_ta_id = \'""" + user_id + """\',
+                                gr_at_id = \'""" + id + """\',
+                                before_is_enable = \'""" + str(user_before_is_enabled).title() + """\',
+                                before_is_set = \'""" + str(user_before_is_set).title() + """\',
+                                before_message = \'""" + str(user_before_message).replace("'", "''") + """\',
+                                before_time = \'""" + user_before_time + """\',
+                                during_is_enable = \'""" + str(user_during_is_enabled).title() + """\',
+                                during_is_set = \'""" + str(user_during_is_set).title() + """\',
+                                during_message = \'""" + str(user_during_message).replace("'", "''") + """\',
+                                during_time = \'""" + user_during_time + """\',
+                                after_is_enable = \'""" + str(user_after_is_enabled).title() + """\',
+                                after_is_set = \'""" + str(user_after_is_set).title() + """\',
+                                after_message = \'""" + str(user_after_message).replace("'", "''") + """\',
+                                after_time = \'""" + user_after_time + """\'
+                                WHERE notification_id = \'""" + user_notfication_id + """\';""")
+            item2 = execute(query2, 'post', conn)
+            print("Inserted User notifications in UploadGR. Status - ", item2)
+
+            response['message'] = 'goals and routines uploaded successfully'
+            # response['result'] = new_gr_id
+
+            return response, 200
+        except:
+            raise BadRequest('Request failed, please try again later.')
+        finally:
+            disconnect(conn)
+
 # Add new Goal/Routine for a user
-
-
 class AddNewGR(Resource):
     def post(self):
         print("In AddNewGR")
@@ -1654,6 +2024,7 @@ class AddNewGR(Resource):
             # Information getting from the application
             audio = request.form.get('audio')
             datetime_completed = request.form.get('datetime_completed')
+            # print("In AddNewGR datetime_completed", datetime_completed)
             datetime_started = request.form.get('datetime_started')
             end_day_and_time = request.form.get('end_day_and_time')
             expected_completion_time = request.form.get(
@@ -1708,6 +2079,7 @@ class AddNewGR(Resource):
             user_after_time = user_notifications['after']['time']
             icon_type = request.form.get('type')
             description = 'Other'
+            print("here ")
 
             # for i, char in enumerate(gr_title):
             #     if char == "'":
@@ -1768,7 +2140,7 @@ class AddNewGR(Resource):
             query = ["CALL get_gr_id;"]
             new_gr_id_response = execute(query[0],  'get', conn)
             new_gr_id = new_gr_id_response['result'][0]['new_id']
-            print(new_gr_id)
+            print("new_gr_id ", new_gr_id)
 
             # If picture is a link and not a file uploaded
             print(photo)
@@ -1802,7 +2174,8 @@ class AddNewGR(Resource):
                         gr_expected_completion_time = \'""" + expected_completion_time + """\'
                             ;""")
                 # print(query[1])
-                execute(query[1], 'post', conn)
+                insertGR = execute(query[1], 'post', conn)
+                print("insertGR ", insertGR, "GR = ", gr_title)
 
             # If a new picture is uploaded
             else:
@@ -1947,8 +2320,6 @@ class AddNewGR(Resource):
             disconnect(conn)
 
 # Update Goal/Routine of a user
-
-
 class UpdateGR(Resource):
     def post(self):
         print("In Update Goal/Routine")
@@ -2752,8 +3123,6 @@ class UpdateAT(Resource):
             disconnect(conn)
 
 # Delete Goal/Routine
-
-
 class DeleteGR(Resource):
     def post(self):
         print("In DeleteGR")
@@ -10639,6 +11008,8 @@ api.add_resource(AssociateUser, '/api/v2/AssociateUser')
 api.add_resource(AddNewAT, '/api/v2/addAT')  # working 092721
 api.add_resource(AddNewIS, '/api/v2/addIS')  # working 092721
 api.add_resource(AddNewGR, '/api/v2/addGR')  # working 092721
+api.add_resource(UploadGR, '/api/v2/uploadGR')
+api.add_resource(CreateGR_IDs, '/api/v2/createGR_IDs')
 api.add_resource(UpdateGR, '/api/v2/updateGR')  # working 092721
 api.add_resource(UpdateAT, '/api/v2/updateAT')  # working 092821
 api.add_resource(UpdateIS, '/api/v2/updateIS')  # working 092821
