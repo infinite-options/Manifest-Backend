@@ -1669,6 +1669,7 @@ class CreateGR_IDs(Resource):
                             """, 'post', conn)
                 print("Got new GR id. Status - ", insert_gr_id)
                 gr_id_list.append(new_gr_id)
+                print("New GR ID added to list - ", gr_id_list)
 
                 # New Notification ID
                 ta_notification_id_response = execute(
@@ -1681,6 +1682,7 @@ class CreateGR_IDs(Resource):
                             """, 'post', conn)
                 print("insert_ta_notification_id ", insert_ta_notification_id)
                 ta_notfication_id_list.append(ta_notfication_id)
+                print("New notification ID added to ta notification list - ", ta_notfication_id_list)
 
                 # New notification ID
                 user_notification_id_response = execute(
@@ -1693,6 +1695,7 @@ class CreateGR_IDs(Resource):
                             """, 'post', conn)
                 print("insert_user_notification_id ", insert_user_notification_id)
                 user_notification_id_list.append(user_notification_id)
+                print("New notification ID added to user notification list - ", user_notification_id_list)
 
                 counter=counter+1
                 print("counter ", counter)
@@ -2356,18 +2359,45 @@ class UpdateGR(Resource):
             start_day_and_time = request.form.get('start_day_and_time')
             ta_notifications = request.form.get('ta_notifications')
             ta_notifications = json.loads(ta_notifications)
-            ta_before_is_enabled = ta_notifications['before']['is_enabled']
+            ta_before_is_enabled = 'false'
+            if ta_notifications['before'].get('is_enabled')!=None: 
+                ta_before_is_enabled = ta_notifications['before']['is_enabled'] 
+            # print(ta_before_is_enabled)
             ta_before_is_set = ta_notifications['before']['is_set']
-            ta_before_message = ta_notifications['before']['message']
-            ta_before_time = ta_notifications['before']['time']
-            ta_during_is_enabled = ta_notifications['during']['is_enabled']
+            ta_before_message = ""
+            if ta_notifications['before'].get('message')!=None: 
+                ta_before_message = ta_notifications['before']['message'] 
+            # print(ta_before_message)
+            ta_before_time = '00:00:00'
+            if ta_notifications['before'].get('time')!='NaN:NaN:00': 
+                ta_before_time = ta_notifications['before']['time'] 
+            # print(ta_before_time)
+            ta_during_is_enabled = 'false'
+            if ta_notifications['during'].get('is_enabled')!=None: 
+                ta_during_is_enabled = ta_notifications['during']['is_enabled'] 
+            # print(ta_during_is_enabled)
             ta_during_is_set = ta_notifications['during']['is_set']
-            ta_during_message = ta_notifications['during']['message']
-            ta_during_time = ta_notifications['during']['time']
-            ta_after_is_enabled = ta_notifications['after']['is_enabled']
+            ta_during_message = ""
+            if ta_notifications['during'].get('message')!=None: 
+                ta_during_message = ta_notifications['during']['message'] 
+            # print(ta_during_message)
+            ta_during_time = '00:00:00'
+            if ta_notifications['during'].get('time')!='NaN:NaN:00': 
+                ta_during_time = ta_notifications['during']['time']
+            # print(ta_during_time)
+            ta_after_is_enabled = 'false'
+            if ta_notifications['after'].get('is_enabled')!=None: 
+                ta_after_is_enabled = ta_notifications['after']['is_enabled'] 
+            # print(ta_after_is_enabled)
             ta_after_is_set = ta_notifications['after']['is_set']
-            ta_after_message = ta_notifications['after']['message']
-            ta_after_time = ta_notifications['after']['time']
+            ta_after_message = ""
+            if ta_notifications['after'].get('message')!=None: 
+                ta_after_message = ta_notifications['after']['message'] 
+            # print(ta_after_message)
+            ta_after_time = '00:00:00'
+            if ta_notifications['after'].get('time')!='NaN:NaN:00': 
+                ta_after_time = ta_notifications['after']['time']
+            # print(ta_after_time)
             gr_title = request.form.get('title')
             user_notifications = request.form.get('user_notifications')
             user_notifications = json.loads(user_notifications)
@@ -2386,6 +2416,7 @@ class UpdateGR(Resource):
             icon_type = request.form.get('type')
             description = 'Other'
 
+            print("ta_before_is_enabled = ", ta_before_is_enabled, " ta_after_message = ", ta_after_message)
             print("repeat", repeat, type(repeat))
             print("repeat_ends", repeat_ends, type(repeat_ends))
             print("repeat_ends_on", repeat_ends_on, type(repeat_ends_on))
